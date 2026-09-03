@@ -1,6 +1,6 @@
-# Populates and maintains the pinned upstream checkouts under eng\upstream\.
+# Downloads and maintains pinned upstream checkouts under .cache\upstream\.
 #
-# The lock file (eng\upstream\sources.lock.json) is the single source of truth for
+# The lock file (Scripts\sources.lock.json) is the single source of truth for
 # which upstream revisions this repository is built against. This script can:
 #
 #   -Check          Verify every checkout matches its pin (offline, read-only).
@@ -28,9 +28,9 @@ param(
 $ErrorActionPreference = 'Stop'
 # $PSScriptRoot is empty in parameter defaults on Windows PowerShell 5.1 when
 # [CmdletBinding()] is present, so resolve defaults here instead.
-if (-not $UpstreamDirectory) { $UpstreamDirectory = Join-Path $PSScriptRoot "upstream" }
+if (-not $UpstreamDirectory) { $UpstreamDirectory = Join-Path (Split-Path $PSScriptRoot -Parent) ".cache\upstream" }
 $upstream = [System.IO.Path]::GetFullPath($UpstreamDirectory)
-$lockPath = Join-Path $upstream "sources.lock.json"
+$lockPath = Join-Path $PSScriptRoot "sources.lock.json"
 
 if (-not (Test-Path $lockPath)) {
     throw "Lock file not found: $lockPath"
@@ -91,7 +91,7 @@ foreach ($entry in $entries) {
             continue
         }
         Write-Host "Checking out $label at $($entry.Commit) ..."
-        git -C $path fetch --all --tags --quiet
+        git -C $path fetch origin $entry.Commit --quiet
         git -C $path checkout --detach $entry.Commit
         if ($LASTEXITCODE -ne 0) { throw "git checkout failed for $label" }
         $head = Get-HeadCommit $path
@@ -145,7 +145,7 @@ foreach ($pinSpec in ($Pin | Where-Object { $_ })) {
     if ($null -eq $prop) { throw "No lock entry named '$key'." }
     $path = Join-Path $upstream $prop.Value.Name
     if (-not (Test-Path (Join-Path $path ".git"))) { throw "Checkout for '$key' is missing; run without -Pin first." }
-    git -C $path fetch --all --tags --quiet
+    git -C $path fetch origin $commit --quiet
     $date = git -C $path show -s --format='%cI' $commit
     if ($LASTEXITCODE -ne 0) { throw "Commit $commit not found in $($prop.Value.Name)." }
     $prop.Value.Ref = $commit
@@ -160,5 +160,5 @@ if ($Pin) {
     $lock.generatedAt = (Get-Date).ToUniversalTime().ToString("o")
     $lock | ConvertTo-Json -Depth 8 | Set-Content $lockPath -Encoding utf8
     Write-Host "Lock file updated: $lockPath"
-    Write-Host "Re-run this script with -Check to verify the new state, then rebuild the daemon: eng\build-daemon.ps1"
+    Write-Host "Re-run this script with -Check to verify the new state, then build the app: Scripts\Build.ps1"
 }

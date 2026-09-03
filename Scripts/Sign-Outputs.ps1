@@ -6,7 +6,8 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)] [string[]] $Paths,
-    [string] $CertificateSubject = "CN=sing-box-for-windows-dev"
+    [string] $CertificateSubject = "CN=sing-box-for-windows-dev",
+    [string] $ExportCertificatePath
 )
 
 $ErrorActionPreference = 'Stop'
@@ -50,6 +51,14 @@ if (-not $cert) {
         -CertStoreLocation Cert:\CurrentUser\My `
         -NotAfter ([datetime]::Now.AddYears(10)) `
         -TextExtension @('2.5.29.37={text}1.3.6.1.5.5.7.3.3')
+}
+
+if ($ExportCertificatePath) {
+    $exportDirectory = Split-Path -Parent $ExportCertificatePath
+    if ($exportDirectory) { New-Item -ItemType Directory -Force $exportDirectory | Out-Null }
+    [IO.File]::WriteAllBytes($ExportCertificatePath,
+        $cert.Export([Security.Cryptography.X509Certificates.X509ContentType]::Cert))
+    Write-Host "Exported public certificate: $ExportCertificatePath"
 }
 
 foreach ($path in $Paths) {

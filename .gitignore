@@ -54,14 +54,11 @@ _ReSharper*/
 Generated\ Files/
 *_wpftmp.csproj
 
-/eng/upstream/*
-!/eng/upstream/README.md
-!/eng/upstream/sources.lock.json
 .cache/
 
 # Local daemon install output (unpacked MSIX payload)
 .daemon-install/
 
-# Local boxdd daemon build output (produced by eng/build-daemon.ps1)
+# Local boxdd daemon build output (produced by Scripts/build-daemon.ps1)
 /daemon/
 

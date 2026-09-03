@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Windows.ApplicationModel;
 using sing_box_for_windows.Services;
 
 namespace sing_box_for_windows.Services.Core;
@@ -17,14 +18,15 @@ public static class DaemonServiceManager
 
     public static string? FindDaemonExecutable()
     {
-        var candidates = new List<string>
+        var candidates = new List<string>();
+        try
         {
-            Path.Combine(AppContext.BaseDirectory, "resources", "daemon", "sing-box-daemon.exe"),
-            Path.Combine(AppContext.BaseDirectory, "daemon", "sing-box-daemon.exe"),
-        };
-        for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
+            candidates.Add(Path.Combine(Package.Current.InstalledLocation.Path,
+                "resources", "daemon", "sing-box-daemon.exe"));
+        }
+        catch (InvalidOperationException)
         {
-            candidates.Add(Path.Combine(directory.FullName, "daemon", "sing-box-daemon.exe"));
+            // Unpackaged processes have no deployable daemon location.
         }
         return candidates.FirstOrDefault(File.Exists);
     }
@@ -132,13 +134,13 @@ public static class DaemonServiceManager
             ?? throw new InvalidOperationException("sing-box-daemon.exe was not found next to the app (resources\\daemon).");
 
         var status = QueryServiceStatus();
-        if (status is null)
+        var installedPath = QueryServiceImagePath();
+        if (status is null || !PathsEqual(installedPath, daemonExe))
         {
-            log("Installing the SingBox daemon service (one-time, requires administrator)…");
-            // Development trees are not administrator-owned; the ACL hardening
-            // is skipped there via the documented escape hatch.
-            await RunElevatedAsync(daemonExe,
-                "service install --allow-unsafe-installation-directory-permissions", cancellationToken);
+            log(status is null
+                ? "Installing the SingBox daemon service (requires administrator)…"
+                : "Updating the SingBox daemon service path (requires administrator)…");
+            await RunElevatedAsync(daemonExe, "service install", cancellationToken);
         }
         else if (status != ServiceStatus.Running)
         {
@@ -156,6 +158,10 @@ public static class DaemonServiceManager
         }
         throw new InvalidOperationException("The SingBox daemon did not come up in time.");
     }
+
+    private static bool PathsEqual(string? first, string? second) =>
+        first is not null && second is not null &&
+        string.Equals(Path.GetFullPath(first), Path.GetFullPath(second), StringComparison.OrdinalIgnoreCase);
 
     private enum ServiceStatus { Stopped, Running, Other }
 

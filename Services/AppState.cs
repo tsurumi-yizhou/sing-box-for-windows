@@ -7,12 +7,6 @@ namespace sing_box_for_windows.Services;
 
 public sealed class AppState : IAsyncDisposable
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        WriteIndented = true,
-        Converters = { new JsonStringEnumConverter() },
-    };
-
     private readonly string _dataDirectory;
     private readonly string _settingsPath;
     private readonly CancellationTokenSource _autoUpdateCts = new();
@@ -150,7 +144,7 @@ public sealed class AppState : IAsyncDisposable
 
     public void Save()
     {
-        File.WriteAllText(_settingsPath, JsonSerializer.Serialize(Settings, JsonOptions));
+        File.WriteAllText(_settingsPath, JsonSerializer.Serialize(Settings, AppJsonContext.Default.AppSettings));
     }
 
     public async Task StartAsync()
@@ -534,7 +528,7 @@ public sealed class AppState : IAsyncDisposable
         var json = File.ReadAllText(_settingsPath);
         try
         {
-            return JsonSerializer.Deserialize<AppSettings>(json, JsonOptions) ?? new AppSettings();
+            return JsonSerializer.Deserialize(json, AppJsonContext.Default.AppSettings) ?? new AppSettings();
         }
         catch (JsonException)
         {
@@ -602,5 +596,11 @@ public sealed class AppState : IAsyncDisposable
         }
         return settings;
     }
+}
+
+[JsonSourceGenerationOptions(WriteIndented = true, UseStringEnumConverter = true)]
+[JsonSerializable(typeof(AppSettings))]
+internal partial class AppJsonContext : JsonSerializerContext
+{
 }
 

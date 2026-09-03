@@ -11,7 +11,7 @@ param(
 $ErrorActionPreference = 'Stop'
 # $PSScriptRoot is empty in parameter defaults on Windows PowerShell 5.1 when
 # [CmdletBinding()] is present, so resolve defaults here instead.
-if (-not $SingBoxSource) { $SingBoxSource = Join-Path $PSScriptRoot "upstream\sing-box" }
+if (-not $SingBoxSource) { $SingBoxSource = Join-Path (Split-Path $PSScriptRoot -Parent) ".cache\upstream\sing-box" }
 if (-not $OutputDirectory) { $OutputDirectory = Join-Path $PSScriptRoot "..\daemon" }
 $goExe = (Get-Command go -ErrorAction SilentlyContinue).Source
 if (-not $goExe) {
@@ -27,13 +27,13 @@ if (-not (Test-Path (Join-Path $source "go.mod"))) {
 # The daemon is built from a pinned upstream revision; the pinned toolchain
 # keeps builds reproducible across machines (mirrors the official desktop
 # client's version.json, which tracks sing-box version + Go version).
-$lockPath = Join-Path $PSScriptRoot "upstream\sources.lock.json"
+$lockPath = Join-Path $PSScriptRoot "sources.lock.json"
 if (Test-Path $lockPath) {
     $lockedGo = (Get-Content $lockPath -Raw | ConvertFrom-Json).toolchain.go
     $actualGo = (& $goExe version) -replace '^go version (\S+) .*$', '$1'
     if ($lockedGo -and $actualGo -ne $lockedGo) {
         Write-Warning "Go toolchain mismatch: lock file pins $lockedGo, found $actualGo. " +
-            "Update the pin in eng\upstream\sources.lock.json if the upgrade is intentional."
+            "Update the pin in Scripts\sources.lock.json if the upgrade is intentional."
     }
 }
 

@@ -8,11 +8,14 @@
         <AssemblyName>sing-box</AssemblyName>
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <Platforms>x86;x64;ARM64</Platforms>
-        <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">win-$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLowerInvariant())</RuntimeIdentifier>
-        <PublishProfile Condition="Exists('Properties\PublishProfiles\win-$(Platform).pubxml')">win-$(Platform).pubxml</PublishProfile>
+        <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">
+            win-$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLowerInvariant())</RuntimeIdentifier>
+        <PublishProfile Condition="Exists('Properties\PublishProfiles\win-$(Platform).pubxml')">
+            win-$(Platform).pubxml</PublishProfile>
         <UseWinUI>true</UseWinUI>
         <WinUISDKReferences>false</WinUISDKReferences>
         <EnableMsixTooling>true</EnableMsixTooling>
+        <AppxPackageSigningEnabled>true</AppxPackageSigningEnabled>
         <!-- boxdd requires the app and its Windows service daemon to reside in
              one signed layout. Use this persistent loose layout for dotnet run
              instead of the disposable bin\...\AppX staging folder. -->
@@ -43,7 +46,8 @@
          Fail with an actionable message instead of silently building a broken layout. -->
     <Target Name="RequireSingboxDaemon" BeforeTargets="Build"
         Condition="!Exists('daemon\sing-box-daemon.exe')">
-        <Error Text="daemon\sing-box-daemon.exe was not found. Build it first: eng\build-daemon.ps1" />
+        <Error
+            Text="daemon\sing-box-daemon.exe was not found. Build it first: Scripts\build-daemon.ps1" />
     </Target>
 
     <ItemGroup>
@@ -105,41 +109,24 @@
 
     <Target Name="RunProtobufCompile" BeforeTargets="PrepareForBuild"
         DependsOnTargets="Protobuf_Compile" />
-    <!-- The Windows service executes a daemon EXE for its entire lifetime. Keep
-         that installed copy outside bin\ so ordinary build and dotnet-run
-         staging copies are never locked by the running service. -->
-    <PropertyGroup>
-        <DevelopmentDaemonInstallDirectory>$(MSBuildProjectDirectory)\.daemon-install</DevelopmentDaemonInstallDirectory>
-        <DevelopmentDaemonInstallPath>$(DevelopmentDaemonInstallDirectory)\resources\daemon\sing-box-daemon.exe</DevelopmentDaemonInstallPath>
-        <DevelopmentApplicationInstallPath>$(DevelopmentDaemonInstallDirectory)\sing-box.exe</DevelopmentApplicationInstallPath>
-    </PropertyGroup>
     <Target Name="CopySingboxDaemon" AfterTargets="Build">
         <Copy SourceFiles="daemon\sing-box-daemon.exe"
             DestinationFolder="$(OutDir)resources\daemon" SkipUnchangedFiles="true" />
-    </Target>
-    <Target Name="StageDevelopmentDaemonInstallation" AfterTargets="SignOutputs"
-        Condition="Exists('$(OutDir)sing-box.exe') and Exists('$(OutDir)resources\daemon\sing-box-daemon.exe')">
-        <MakeDir Directories="$(DevelopmentDaemonInstallDirectory)\resources\daemon" />
-        <!-- Never overwrite this installed daemon while its service is running.
-             Daemon updates are applied by stopping/reinstalling the service. -->
-        <Copy SourceFiles="$(OutDir)sing-box.exe" DestinationFiles="$(DevelopmentApplicationInstallPath)"
-            SkipUnchangedFiles="true" />
-        <Copy SourceFiles="$(OutDir)resources\daemon\sing-box-daemon.exe" DestinationFiles="$(DevelopmentDaemonInstallPath)"
-            SkipUnchangedFiles="true" Condition="!Exists('$(DevelopmentDaemonInstallPath)')" />
-        <Exec Command="&quot;$(SystemRoot)\System32\WindowsPowerShell\v1.0\powershell.exe&quot; -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\eng\Sign-Outputs.ps1&quot; -Paths &quot;$(DevelopmentApplicationInstallPath);$(DevelopmentDaemonInstallPath)&quot;" />
     </Target>
     <!-- WinAppRun copies Content into AppX after the regular Build targets.
          Re-sign that final loose layout before registering/activating it: boxdd
          authenticates the actual app and daemon files that are launched, not
          the earlier regular-output copies. -->
     <Target Name="PrepareSignedDevelopmentAppXLayout" BeforeTargets="ComputeRunArguments"
-        DependsOnTargets="_WinAppCopyContentToLooseLayout;StageDevelopmentDaemonInstallation"
-        Condition="Exists('$(OutDir)AppxManifest.xml') and Exists('$(WinAppLooseLayoutPath)sing-box.exe') and Exists('$(WinAppLooseLayoutPath)resources\daemon\sing-box-daemon.exe')">
-        <Exec Command="&quot;$(SystemRoot)\System32\WindowsPowerShell\v1.0\powershell.exe&quot; -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\eng\Sign-Outputs.ps1&quot; -Paths &quot;$(WinAppLooseLayoutPath)sing-box.exe;$(WinAppLooseLayoutPath)resources\daemon\sing-box-daemon.exe&quot;" />
+        DependsOnTargets="_WinAppCopyContentToLooseLayout"
+        Condition="Exists('$(OutDir)AppxManifest.xml')">
+        <Exec
+            Command="&quot;$(SystemRoot)\System32\WindowsPowerShell\v1.0\powershell.exe&quot; -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\Scripts\Sign-Outputs.ps1&quot; -Paths &quot;$(OutDir)AppX\sing-box.exe;$(OutDir)AppX\resources\daemon\sing-box-daemon.exe&quot;" />
         <!-- The loose AppX layout is ACL-managed by the deployment service.
              Refresh its registration after signing to avoid 0x80070005 and
              ensure activation sees the signed final files. -->
-        <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;Add-AppxPackage -Register '$(OutDir)AppxManifest.xml' -ForceApplicationShutdown -ErrorAction Stop&quot;" />
+        <Exec
+            Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;Add-AppxPackage -Register '$(OutDir)AppxManifest.xml' -ForceApplicationShutdown -ErrorAction Stop&quot;" />
     </Target>
     <Target Name="SignOutputs" AfterTargets="CopySingboxDaemon"
         Condition="Exists('$(OutDir)sing-box.exe') and Exists('$(OutDir)resources\daemon\sing-box-daemon.exe')">
@@ -152,10 +139,10 @@
              Sign that source too so the final loose-layout app binary retains
              the certificate required by boxdd. -->
         <Exec
-            Command="&quot;$(SystemRoot)\System32\WindowsPowerShell\v1.0\powershell.exe&quot; -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\eng\Sign-Outputs.ps1&quot; -Paths &quot;$(OutDir)sing-box.exe;$(OutDir)resources\daemon\sing-box-daemon.exe;$(IntermediateOutputPath)apphost.exe;$(MSBuildProjectDirectory)\daemon\sing-box-daemon.exe&quot;" />
+            Command="&quot;$(SystemRoot)\System32\WindowsPowerShell\v1.0\powershell.exe&quot; -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\Scripts\Sign-Outputs.ps1&quot; -Paths &quot;$(OutDir)sing-box.exe;$(OutDir)resources\daemon\sing-box-daemon.exe;$(IntermediateOutputPath)apphost.exe;$(MSBuildProjectDirectory)\daemon\sing-box-daemon.exe&quot;" />
         <Exec
             Condition="Exists('$(OutDir)AppX\sing-box.exe') and Exists('$(OutDir)AppX\resources\daemon\sing-box-daemon.exe')"
-            Command="&quot;$(SystemRoot)\System32\WindowsPowerShell\v1.0\powershell.exe&quot; -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\eng\Sign-Outputs.ps1&quot; -Paths &quot;$(OutDir)AppX\sing-box.exe;$(OutDir)AppX\resources\daemon\sing-box-daemon.exe&quot;" />
+            Command="&quot;$(SystemRoot)\System32\WindowsPowerShell\v1.0\powershell.exe&quot; -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\Scripts\Sign-Outputs.ps1&quot; -Paths &quot;$(OutDir)AppX\sing-box.exe;$(OutDir)AppX\resources\daemon\sing-box-daemon.exe&quot;" />
     </Target>
 
     <!-- Publish Properties -->
