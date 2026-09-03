@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page x:Class="sing_box_for_windows.Pages.HomePage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:controls="using:sing_box_for_windows.Controls">
+    <ScrollViewer>
+        <StackPanel Padding="40,28,40,40" Spacing="24">
+
+            <StackPanel Spacing="6">
+                <TextBlock x:Uid="HomeTitle" Style="{StaticResource PageTitleTextStyle}" Text="Dashboard" />
+                <TextBlock x:Uid="HomeSubtitle" Style="{StaticResource PageSubtitleTextStyle}" Text="Overview, selected profile and live traffic." />
+            </StackPanel>
+
+            <!-- SFA/SFM "Dashboard Items" entry point; Windows-native left-aligned toolbar -->
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button x:Name="DashboardItemsButton" Click="DashboardItemsButton_Click">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon Glyph="&#xE8A9;" FontSize="14" />
+                        <TextBlock x:Uid="DashboardItemsText" Text="Dashboard items" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+
+            <Grid ColumnSpacing="16" RowSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!-- Upload traffic -->
+                <Border x:Name="UploadCard" Grid.Row="0" Grid.Column="0" Style="{StaticResource CardBorderStyle}">
+                    <StackPanel Spacing="10">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE898;" FontSize="16" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                            <TextBlock x:Uid="UploadLabel" Style="{StaticResource CardHeaderTextStyle}" Text="Upload" />
+                        </StackPanel>
+                        <TextBlock x:Name="UploadText" Style="{StaticResource CardValueTextStyle}" Text="0 B/s" />
+                        <TextBlock x:Name="UploadTotalText" Style="{StaticResource CardCaptionTextStyle}" Text="0 B" />
+                        <controls:TrafficChart x:Name="UploadChart" Height="60" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Download traffic -->
+                <Border x:Name="DownloadCard" Grid.Row="0" Grid.Column="1" Style="{StaticResource CardBorderStyle}">
+                    <StackPanel Spacing="10">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE896;" FontSize="16" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                            <TextBlock x:Uid="DownloadLabel" Style="{StaticResource CardHeaderTextStyle}" Text="Download" />
+                        </StackPanel>
+                        <TextBlock x:Name="DownloadText" Style="{StaticResource CardValueTextStyle}" Text="0 B/s" />
+                        <TextBlock x:Name="DownloadTotalText" Style="{StaticResource CardCaptionTextStyle}" Text="0 B" />
+                        <controls:TrafficChart x:Name="DownloadChart" Height="60" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Status (SFM StatusCard / SFA DebugCard: Memory + Goroutines) -->
+                <Border x:Name="StatusCard" Grid.Row="1" Grid.Column="0" Style="{StaticResource CardBorderStyle}">
+                    <StackPanel Spacing="10">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE946;" FontSize="16" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                            <TextBlock x:Uid="StatusLabel" Style="{StaticResource CardHeaderTextStyle}" Text="Status" />
+                        </StackPanel>
+                        <Grid>
+                            <TextBlock x:Uid="MemoryLabel" Style="{StaticResource CardLineLabelTextStyle}" Text="Memory" />
+                            <TextBlock x:Name="MemoryText" Style="{StaticResource CardLineValueTextStyle}" Text="—" />
+                        </Grid>
+                        <Grid>
+                            <TextBlock x:Uid="GoroutinesLabel" Style="{StaticResource CardLineLabelTextStyle}" Text="Goroutines" />
+                            <TextBlock x:Name="GoroutinesText" Style="{StaticResource CardLineValueTextStyle}" Text="—" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Connections -->
+                <Border x:Name="ConnectionsCard" Grid.Row="1" Grid.Column="1" Style="{StaticResource CardBorderStyle}">
+                    <StackPanel Spacing="10">
+                        <Grid>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon Glyph="&#xE71B;" FontSize="16" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                                <TextBlock x:Uid="ConnectionsLabel" Style="{StaticResource CardHeaderTextStyle}" Text="Connections" />
+                            </StackPanel>
+                            <HyperlinkButton x:Uid="ViewConnectionsButton" x:Name="ViewConnectionsButton" HorizontalAlignment="Right" Content="View" Click="ViewConnectionsButton_Click" />
+                        </Grid>
+                        <Grid>
+                            <TextBlock x:Uid="InboundLabel" Style="{StaticResource CardLineLabelTextStyle}" Text="Inbound" />
+                            <TextBlock x:Name="InboundText" Style="{StaticResource CardLineValueTextStyle}" Text="0" />
+                        </Grid>
+                        <Grid>
+                            <TextBlock x:Uid="OutboundLabel" Style="{StaticResource CardLineLabelTextStyle}" Text="Outbound" />
+                            <TextBlock x:Name="OutboundText" Style="{StaticResource CardLineValueTextStyle}" Text="0" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- System HTTP Proxy -->
+                <Border x:Name="SystemProxyCard" Grid.Row="2" Grid.ColumnSpan="2" Style="{StaticResource CardBorderStyle}">
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <FontIcon Glyph="&#xE968;" FontSize="16" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                            <TextBlock x:Uid="SystemProxyLabel" Style="{StaticResource CardHeaderTextStyle}" Text="System HTTP Proxy" />
+                        </StackPanel>
+                        <ToggleSwitch x:Name="SystemProxyToggle" Grid.Column="1" MinWidth="0" HorizontalAlignment="Right" VerticalAlignment="Center" Toggled="SystemProxyToggle_Toggled" />
+                    </Grid>
+                </Border>
+
+                <!-- Clash mode -->
+                <Border x:Name="ModeCard" Grid.Row="3" Grid.ColumnSpan="2" Style="{StaticResource CardBorderStyle}" Visibility="Collapsed">
+                    <StackPanel Spacing="12">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE8A7;" FontSize="16" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                            <TextBlock x:Uid="ModeLabel" Style="{StaticResource CardHeaderTextStyle}" Text="Mode" />
+                        </StackPanel>
+                        <Border x:Name="ModeSegmented" Style="{StaticResource SegmentedContainerStyle}" Visibility="Collapsed">
+                            <Grid x:Name="ModeSegmentedPanel" />
+                        </Border>
+                        <ComboBox x:Uid="ModeBox" x:Name="ModeBox" PlaceholderText="No Clash modes reported" HorizontalAlignment="Stretch" Visibility="Collapsed" SelectionChanged="ModeBox_SelectionChanged" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Profiles (always visible, like SFA/SFM) -->
+                <Border x:Name="ProfilesCard" Grid.Row="4" Grid.ColumnSpan="2" Style="{StaticResource CardBorderStyle}">
+                    <StackPanel Spacing="12">
+                        <Grid>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon Glyph="&#xE8A5;" FontSize="16" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                                <TextBlock x:Uid="ProfilesLabel" Style="{StaticResource CardHeaderTextStyle}" Text="Profiles" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Right">
+                                <Button x:Name="AddLocalProfileButton" Style="{StaticResource ToolbarButtonStyle}" Click="AddLocalProfileButton_Click" ToolTipService.ToolTip="Add local profile">
+                                    <FontIcon Glyph="&#xE710;" />
+                                </Button>
+                                <Button x:Name="AddSubscriptionButton" Style="{StaticResource ToolbarButtonStyle}" Click="AddSubscriptionButton_Click" ToolTipService.ToolTip="Add subscription">
+                                    <FontIcon Glyph="&#xE8F1;" />
+                                </Button>
+                                <HyperlinkButton x:Uid="ManageProfilesButton" x:Name="ManageProfilesButton" Content="Manage profiles" Click="ManageProfilesButton_Click" />
+                            </StackPanel>
+                        </Grid>
+                        <ComboBox x:Uid="ProfileBox" x:Name="ProfileBox" PlaceholderText="No profile selected" DisplayMemberPath="Name" SelectionChanged="ProfileBox_SelectionChanged" />
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Button x:Uid="DashboardEditProfileButton" x:Name="DashboardEditProfileButton" Content="Edit" Click="DashboardEditProfileButton_Click" IsEnabled="False" />
+                            <Button x:Uid="DashboardUpdateProfileButton" x:Name="DashboardUpdateProfileButton" Content="Update" Click="DashboardUpdateProfileButton_Click" IsEnabled="False" />
+                            <Button x:Uid="DashboardRemoveProfileButton" x:Name="DashboardRemoveProfileButton" Content="Remove" Click="DashboardRemoveProfileButton_Click" IsEnabled="False" />
+                        </StackPanel>
+                        <InfoBar x:Uid="ProfileHint" x:Name="ProfileHint" IsOpen="True" IsClosable="False" Visibility="Collapsed" Severity="Informational" Title="Get started" Message="Add or select a profile, then start the service." />
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

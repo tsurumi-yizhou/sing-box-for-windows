@@ -1,0 +1,55 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  app:
+    name: Build WinUI app (x64)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      # boxdd is required: the app build fails without daemon\sing-box-daemon.exe.
+      # eng/upstream/* is gitignored, so fetch the pinned sing-box sources in CI.
+      - name: Read pinned sing-box revision
+        id: pins
+        shell: pwsh
+        run: |
+          $lock = Get-Content eng/upstream/sources.lock.json -Raw | ConvertFrom-Json
+          "singbox=$($lock.singbox.Commit)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Checkout sing-box (pinned)
+        uses: actions/checkout@v6
+        with:
+          repository: SagerNet/sing-box
+          ref: ${{ steps.pins.outputs.singbox }}
+          path: eng/upstream/sing-box
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: 'stable'
+
+      - name: Build boxdd daemon
+        shell: pwsh
+        run: ./eng/build-daemon.ps1 -SingBoxSource ./eng/upstream/sing-box
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore SFW.csproj
+
+      - name: Build
+        run: dotnet build SFW.csproj -c Release -p:Platform=x64 --no-restore

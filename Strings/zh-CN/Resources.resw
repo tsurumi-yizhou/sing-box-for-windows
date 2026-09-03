@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+    <resheader name="version"><value>2.0</value></resheader>
+    <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+    <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+    <data name="NavDashboard.Content" xml:space="preserve"><value>仪表板</value></data>
+    <data name="NavGroups.Content" xml:space="preserve"><value>分组</value></data>
+    <data name="NavConnections.Content" xml:space="preserve"><value>连接</value></data>
+    <data name="NavLogs.Content" xml:space="preserve"><value>日志</value></data>
+    <data name="NavTools.Content" xml:space="preserve"><value>工具</value></data>
+    <data name="NavSettings.Content" xml:space="preserve"><value>设置</value></data>
+    <data name="StartButtonText.Text" xml:space="preserve"><value>启动</value></data>
+    <data name="TrayShow.Text" xml:space="preserve"><value>显示主窗口</value></data>
+    <data name="TrayQuit.Text" xml:space="preserve"><value>退出</value></data>
+    <data name="HomeTitle.Text" xml:space="preserve"><value>仪表板</value></data>
+    <data name="HomeSubtitle.Text" xml:space="preserve"><value>概览、当前配置和实时流量。</value></data>
+    <data name="UploadLabel.Text" xml:space="preserve"><value>上传</value></data>
+    <data name="DownloadLabel.Text" xml:space="preserve"><value>下载</value></data>
+    <data name="StatusLabel.Text" xml:space="preserve"><value>状态</value></data>
+    <data name="MemoryLabel.Text" xml:space="preserve"><value>内存</value></data>
+    <data name="GoroutinesLabel.Text" xml:space="preserve"><value>协程</value></data>
+    <data name="ConnectionsLabel.Text" xml:space="preserve"><value>连接</value></data>
+    <data name="InboundLabel.Text" xml:space="preserve"><value>入站</value></data>
+    <data name="OutboundLabel.Text" xml:space="preserve"><value>出站</value></data>
+    <data name="ViewConnectionsButton.Content" xml:space="preserve"><value>查看</value></data>
+    <data name="SystemProxyLabel.Text" xml:space="preserve"><value>系统 HTTP 代理</value></data>
+    <data name="ModeLabel.Text" xml:space="preserve"><value>模式</value></data>
+    <data name="ModeBox.PlaceholderText" xml:space="preserve"><value>未报告 Clash 模式</value></data>
+    <data name="ProfilesLabel.Text" xml:space="preserve"><value>配置</value></data>
+    <data name="ManageProfilesButton.Content" xml:space="preserve"><value>管理配置</value></data>
+    <data name="ProfileBox.PlaceholderText" xml:space="preserve"><value>未选择配置</value></data>
+    <data name="DashboardEditProfileButton.Content" xml:space="preserve"><value>编辑</value></data>
+    <data name="DashboardUpdateProfileButton.Content" xml:space="preserve"><value>更新</value></data>
+    <data name="DashboardRemoveProfileButton.Content" xml:space="preserve"><value>删除</value></data>
+    <data name="ProfileHint.Title" xml:space="preserve"><value>开始使用</value></data>
+    <data name="ProfileHint.Message" xml:space="preserve"><value>添加或选择一个配置，然后启动服务。</value></data>
+    <data name="ProfilesTitle.Text" xml:space="preserve"><value>配置</value></data>
+    <data name="ProfilesSubtitle.Text" xml:space="preserve"><value>标准 sing-box JSON 配置与 HTTP(S) 远程订阅。</value></data>
+    <data name="NameBox.Header" xml:space="preserve"><value>配置名称</value></data>
+    <data name="NameBox.PlaceholderText" xml:space="preserve"><value>我的服务器</value></data>
+    <data name="ConfigBox.Header" xml:space="preserve"><value>配置文件或订阅 URL</value></data>
+    <data name="ConfigBox.PlaceholderText" xml:space="preserve"><value>C:\Configs\config.json 或 https://example.com/config.json</value></data>
+    <data name="BrowseText.Text" xml:space="preserve"><value>浏览</value></data>
+    <data name="AddProfileText.Text" xml:space="preserve"><value>添加配置</value></data>
+    <data name="GroupsTitle.Text" xml:space="preserve"><value>分组</value></data>
+    <data name="GroupsSubtitle.Text" xml:space="preserve"><value>由核心服务提供的选择器分组。</value></data>
+    <data name="ConnectionsTitle.Text" xml:space="preserve"><value>连接</value></data>
+    <data name="ConnectionsSubtitle.Text" xml:space="preserve"><value>由核心服务提供的实时连接。</value></data>
+    <data name="SortByDate.Text" xml:space="preserve"><value>日期</value></data>
+    <data name="SortByTraffic.Text" xml:space="preserve"><value>流量</value></data>
+    <data name="SortByTrafficTotal.Text" xml:space="preserve"><value>总流量</value></data>
+    <data name="ConnectionSearchBox.PlaceholderText" xml:space="preserve"><value>搜索连接</value></data>
+    <data name="LogsTitle.Text" xml:space="preserve"><value>日志</value></data>
+    <data name="LogsSubtitle.Text" xml:space="preserve"><value>由核心服务提供的日志。</value></data>
+    <data name="FilterBox.PlaceholderText" xml:space="preserve"><value>搜索日志</value></data>
+    <data name="LogLevelDefault.Text" xml:space="preserve"><value>默认</value></data>
+    <data name="LogLevelDefaultItem.Text" xml:space="preserve"><value>默认</value></data>
+    <data name="SaveToClipboardItem.Text" xml:space="preserve"><value>复制到剪贴板</value></data>
+    <data name="SaveToFileItem.Text" xml:space="preserve"><value>保存到文件</value></data>
+    <data name="ClearLogsItem.Text" xml:space="preserve"><value>清空日志</value></data>
+    <data name="ClearFilterButton.Content" xml:space="preserve"><value>清除</value></data>
+    <data name="ToolsTitle.Text" xml:space="preserve"><value>工具</value></data>
+    <data name="ToolsSubtitle.Text" xml:space="preserve"><value>由 libbox 命令服务器支持的诊断工具。</value></data>
+    <data name="CoreVersionTitle.Text" xml:space="preserve"><value>核心版本</value></data>
+    <data name="NetworkQualityTitle.Text" xml:space="preserve"><value>网络质量</value></data>
+    <data name="NetworkQualityDescription.Text" xml:space="preserve"><value>通过当前出站测量下载/上传容量、响应能力（RPM）与空闲延迟。</value></data>
+    <data name="NqConfigUrlBox.Header" xml:space="preserve"><value>配置 URL（可选）</value></data>
+    <data name="NqConfigUrlBox.PlaceholderText" xml:space="preserve"><value>默认测速端点</value></data>
+    <data name="NqHttp3Box.Content" xml:space="preserve"><value>使用 HTTP/3</value></data>
+    <data name="NqStartButton.Content" xml:space="preserve"><value>开始</value></data>
+    <data name="NqDownloadLabel.Text" xml:space="preserve"><value>下载</value></data>
+    <data name="NqUploadLabel.Text" xml:space="preserve"><value>上传</value></data>
+    <data name="NqRpmLabel.Text" xml:space="preserve"><value>响应能力（RPM）</value></data>
+    <data name="NqIdleLatencyLabel.Text" xml:space="preserve"><value>空闲延迟</value></data>
+    <data name="STUNTestTitle.Text" xml:space="preserve"><value>STUN 测试</value></data>
+    <data name="STUNTestDescription.Text" xml:space="preserve"><value>通过当前出站探测外部地址与 NAT 映射/过滤行为。</value></data>
+    <data name="StunServerBox.Header" xml:space="preserve"><value>STUN 服务器（可选）</value></data>
+    <data name="StunServerBox.PlaceholderText" xml:space="preserve"><value>stun.l.google.com:19302</value></data>
+    <data name="StunStartButton.Content" xml:space="preserve"><value>开始</value></data>
+    <data name="StunExternalLabel.Text" xml:space="preserve"><value>外部地址</value></data>
+    <data name="StunLatencyLabel.Text" xml:space="preserve"><value>延迟</value></data>
+    <data name="StunMappingLabel.Text" xml:space="preserve"><value>NAT 映射行为</value></data>
+    <data name="StunFilteringLabel.Text" xml:space="preserve"><value>NAT 过滤行为</value></data>
+    <data name="SettingsTitle.Text" xml:space="preserve"><value>设置</value></data>
+    <data name="SettingsSubtitle.Text" xml:space="preserve"><value>核心与配置行为。</value></data>
+    <data name="CoreTitle.Text" xml:space="preserve"><value>核心</value></data>
+    <data name="DevelopmentFallbackTitle.Text" xml:space="preserve"><value>开发后备</value></data>
+    <data name="BinaryPathBox.Header" xml:space="preserve"><value>sing-box.exe 路径</value></data>
+    <data name="BinaryPathBox.PlaceholderText" xml:space="preserve"><value>从应用目录或 PATH 自动检测</value></data>
+    <data name="WorkingDirectoryBox.Header" xml:space="preserve"><value>工作目录（可选）</value></data>
+    <data name="WorkingDirectoryBox.PlaceholderText" xml:space="preserve"><value>默认为可执行文件所在目录</value></data>
+    <data name="SettingsProfilesTitle.Text" xml:space="preserve"><value>配置</value></data>
+    <data name="AboutTitle.Text" xml:space="preserve"><value>关于</value></data>
+    <data name="SaveButton.Content" xml:space="preserve"><value>保存</value></data>
+    <data name="AppSectionTitle.Text" xml:space="preserve"><value>应用</value></data>
+    <data name="ThemeCard.Header" xml:space="preserve"><value>主题</value></data>
+    <data name="ThemeCard.Description" xml:space="preserve"><value>跟随系统设置，或强制使用浅色/深色主题。</value></data>
+    <data name="ThemeDefault.Content" xml:space="preserve"><value>默认</value></data>
+    <data name="ThemeLight.Content" xml:space="preserve"><value>浅色</value></data>
+    <data name="ThemeDark.Content" xml:space="preserve"><value>深色</value></data>
+    <data name="BackdropCard.Header" xml:space="preserve"><value>背景材质</value></data>
+    <data name="BackdropCard.Description" xml:space="preserve"><value>选择云母或亚克力作为窗口背景。</value></data>
+    <data name="BackdropMica.Content" xml:space="preserve"><value>云母</value></data>
+    <data name="BackdropAcrylic.Content" xml:space="preserve"><value>亚克力</value></data>
+    <data name="LaunchCard.Header" xml:space="preserve"><value>登录时启动</value></data>
+    <data name="LaunchCard.Description" xml:space="preserve"><value>登录 Windows 时启动 sing-box for Windows。</value></data>
+    <data name="CoreModeCard.Header" xml:space="preserve"><value>核心控制</value></data>
+    <data name="DataFolderCard.Header" xml:space="preserve"><value>数据文件夹</value></data>
+    <data name="FallbackCardHeader.Text" xml:space="preserve"><value>外部 sing-box 进程</value></data>
+    <data name="FallbackCardDescription.Text" xml:space="preserve"><value>仅在 libbox 桥接可执行文件不可用时使用。</value></data>
+    <data name="ProfilesCard.Header" xml:space="preserve"><value>管理配置</value></data>
+    <data name="ProfilesCard.Description" xml:space="preserve"><value>配置是存储在应用数据目录中的标准 sing-box JSON 配置。</value></data>
+    <data name="SourceCard.Header" xml:space="preserve"><value>源代码</value></data>
+    <data name="SourceCard.Description" xml:space="preserve"><value>基于 libbox 命令客户端与标准 sing-box JSON 配置构建的原生客户端。</value></data>
+    <data name="ImportClipboardText.Text" xml:space="preserve"><value>粘贴</value></data>
+    <data name="UpdateAllText.Text" xml:space="preserve"><value>全部更新</value></data>
+    <data name="DashboardItemsText.Text" xml:space="preserve"><value>仪表盘项目</value></data>
+    <data name="ExpandAllText.Text" xml:space="preserve"><value>展开全部</value></data>
+    <data name="RefreshText.Text" xml:space="preserve"><value>刷新</value></data>
+    <data name="CloseAllText.Text" xml:space="preserve"><value>全部关闭</value></data>
+    <data name="StateFilterActiveText.Text" xml:space="preserve"><value>活动</value></data>
+    <data name="FilterAll.Text" xml:space="preserve"><value>全部</value></data>
+    <data name="FilterActive.Text" xml:space="preserve"><value>活动</value></data>
+    <data name="FilterClosed.Text" xml:space="preserve"><value>已关闭</value></data>
+    <data name="SortByDateText.Text" xml:space="preserve"><value>日期</value></data>
+    <data name="PauseText.Text" xml:space="preserve"><value>暂停</value></data>
+</root>

@@ -1,0 +1,7 @@
+<UserControl x:Class="sing_box_for_windows.Controls.TrafficChart" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <Path x:Name="GridPath" Stretch="None" StrokeThickness="1" Opacity="0.3"/>
+        <Path x:Name="AreaPath" Stretch="None"/>
+        <Path x:Name="LinePath" StrokeThickness="2" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Stretch="None"/>
+    </Grid>
+</UserControl>

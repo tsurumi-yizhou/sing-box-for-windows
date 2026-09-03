@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "sing-box-for-windows (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "sing-box-for-windows (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

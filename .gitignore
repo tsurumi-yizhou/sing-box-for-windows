@@ -1,0 +1,67 @@
+## .NET / Visual Studio
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+artifacts/
+
+# Build logs
+[Ll]og/
+[Ll]ogs/
+*.log
+*.binlog
+
+# Test results
+[Tt]est[Rr]esult*/
+*.trx
+*.coverage
+*.coveragexml
+
+# NuGet
+*.nupkg
+*.snupkg
+*.nuget.props
+*.nuget.targets
+project.lock.json
+
+# MSIX packaging output
+AppPackages/
+BundleArtifacts/
+*.msix
+*.msixupload
+*.appx
+*.appxbundle
+*.appxupload
+
+# Publish output
+publish/
+*.pubxml
+PublishScripts/
+
+# Code analysis and tooling
+_ReSharper*/
+*.DotSettings.user
+*.dotCover
+.idea/
+.vscode/
+
+# Generated files
+Generated\ Files/
+*_wpftmp.csproj
+
+/eng/upstream/*
+!/eng/upstream/README.md
+!/eng/upstream/sources.lock.json
+.cache/
+
+# Local daemon install output (unpacked MSIX payload)
+.daemon-install/
+
+# Local boxdd daemon build output (produced by eng/build-daemon.ps1)
+/daemon/
+

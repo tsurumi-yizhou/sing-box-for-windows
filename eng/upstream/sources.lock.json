@@ -1,0 +1,26 @@
+{
+  "generatedAt": "2026-09-02T14:50:12.9797335+00:00",
+  "toolchain": {
+    "go": "go1.27.0"
+  },
+  "apple": {
+    "Name": "sing-box-for-apple",
+    "Ref": "8ce05ea68cd6fe8b7aa71e279c7404274b4c5d24",
+    "Commit": "8ce05ea68cd6fe8b7aa71e279c7404274b4c5d24"
+  },
+  "singbox": {
+    "Name": "sing-box",
+    "Ref": "5ee65a5ca9e6a448a5fa2f47b55b51fe2fcf578d",
+    "Commit": "5ee65a5ca9e6a448a5fa2f47b55b51fe2fcf578d"
+  },
+  "android": {
+    "Name": "sing-box-for-android",
+    "Ref": "caf5eeb121b75baa9be245e34d49c10e63772c66",
+    "Commit": "caf5eeb121b75baa9be245e34d49c10e63772c66"
+  },
+  "desktop": {
+    "Name": "sing-box-for-desktop",
+    "Ref": "699fcaf3502c0ce5679d2aeeca4ec2ea665000a0",
+    "Commit": "699fcaf3502c0ce5679d2aeeca4ec2ea665000a0"
+  }
+}

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page x:Class="sing_box_for_windows.Pages.ToolsPage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer>
+        <StackPanel Padding="40,28,40,40" Spacing="20">
+
+            <StackPanel Spacing="6">
+                <TextBlock x:Uid="ToolsTitle" Style="{StaticResource PageTitleTextStyle}" Text="Tools" />
+                <TextBlock x:Uid="ToolsSubtitle" Style="{StaticResource PageSubtitleTextStyle}" Text="Diagnostics backed by the libbox command server." />
+            </StackPanel>
+
+            <InfoBar x:Uid="ToolsStatusBar" x:Name="StatusBar" IsClosable="False" IsOpen="False" Severity="Informational" Title="Tools" />
+
+            <!-- Core version -->
+            <Border Style="{StaticResource CardBorderStyle}">
+                <Grid ColumnSpacing="14">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <FontIcon Glyph="&#xE9F5;" FontSize="20" VerticalAlignment="Center" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                    <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                        <TextBlock x:Uid="CoreVersionTitle" Text="Core version" FontSize="14" />
+                        <TextBlock x:Name="CoreVersionText" Style="{StaticResource CardCaptionTextStyle}" Text="..." />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <Grid ColumnSpacing="16" RowSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Network quality -->
+                <Border Grid.Column="0" Style="{StaticResource CardBorderStyle}">
+                    <StackPanel Spacing="12">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE945;" FontSize="16" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                            <TextBlock x:Uid="NetworkQualityTitle" Style="{StaticResource CardHeaderTextStyle}" Text="Network Quality" />
+                        </StackPanel>
+                        <TextBlock x:Uid="NetworkQualityDescription" TextWrapping="Wrap" Style="{StaticResource CardCaptionTextStyle}" Text="Measure download/upload capacity, responsiveness (RPM) and idle latency through the current outbound." />
+                        <TextBox x:Uid="NqConfigUrlBox" x:Name="NqConfigUrlBox" Header="Config URL (optional)" PlaceholderText="https://mensura.cdn-apple.com/api/v1/gm/config" />
+                        <CheckBox x:Uid="NqHttp3Box" x:Name="NqHttp3Box" Content="Use HTTP/3" />
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <Button x:Uid="NqStartButton" x:Name="NqStartButton" Style="{StaticResource AccentButtonStyle}" Content="Start" Click="NqStartButton_Click" />
+                            <ProgressRing x:Name="NqProgress" IsActive="False" Visibility="Collapsed" Width="24" Height="24" VerticalAlignment="Center" />
+                            <TextBlock x:Name="NqPhaseText" Style="{StaticResource CardCaptionTextStyle}" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <StackPanel x:Name="NqResults" Spacing="4" Visibility="Collapsed">
+                            <Grid>
+                                <TextBlock x:Uid="NqDownloadLabel" Style="{StaticResource CardLineLabelTextStyle}" Text="Download" />
+                                <TextBlock x:Name="NqDownloadText" Style="{StaticResource CardLineValueTextStyle}" />
+                            </Grid>
+                            <Grid>
+                                <TextBlock x:Uid="NqUploadLabel" Style="{StaticResource CardLineLabelTextStyle}" Text="Upload" />
+                                <TextBlock x:Name="NqUploadText" Style="{StaticResource CardLineValueTextStyle}" />
+                            </Grid>
+                            <Grid>
+                                <TextBlock x:Uid="NqRpmLabel" Style="{StaticResource CardLineLabelTextStyle}" Text="Responsiveness (RPM)" />
+                                <TextBlock x:Name="NqRpmText" Style="{StaticResource CardLineValueTextStyle}" />
+                            </Grid>
+                            <Grid>
+                                <TextBlock x:Uid="NqIdleLatencyLabel" Style="{StaticResource CardLineLabelTextStyle}" Text="Idle latency" />
+                                <TextBlock x:Name="NqIdleLatencyText" Style="{StaticResource CardLineValueTextStyle}" />
+                            </Grid>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- STUN -->
+                <Border Grid.Column="1" Style="{StaticResource CardBorderStyle}">
+                    <StackPanel Spacing="12">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE774;" FontSize="16" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                            <TextBlock x:Uid="STUNTestTitle" Style="{StaticResource CardHeaderTextStyle}" Text="STUN Test" />
+                        </StackPanel>
+                        <TextBlock x:Uid="STUNTestDescription" TextWrapping="Wrap" Style="{StaticResource CardCaptionTextStyle}" Text="Discover the external address and NAT mapping/filtering behavior through the current outbound." />
+                        <TextBox x:Uid="StunServerBox" x:Name="StunServerBox" Header="STUN server (optional)" PlaceholderText="stun.voipgate.com:3478" />
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <Button x:Uid="StunStartButton" x:Name="StunStartButton" Style="{StaticResource AccentButtonStyle}" Content="Start" Click="StunStartButton_Click" />
+                            <ProgressRing x:Name="StunProgress" IsActive="False" Visibility="Collapsed" Width="24" Height="24" VerticalAlignment="Center" />
+                            <TextBlock x:Name="StunPhaseText" Style="{StaticResource CardCaptionTextStyle}" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <StackPanel x:Name="StunResults" Spacing="4" Visibility="Collapsed">
+                            <Grid>
+                                <TextBlock x:Uid="StunExternalLabel" Style="{StaticResource CardLineLabelTextStyle}" Text="External address" />
+                                <TextBlock x:Name="StunExternalText" Style="{StaticResource CardLineValueTextStyle}" />
+                            </Grid>
+                            <Grid>
+                                <TextBlock x:Uid="StunLatencyLabel" Style="{StaticResource CardLineLabelTextStyle}" Text="Latency" />
+                                <TextBlock x:Name="StunLatencyText" Style="{StaticResource CardLineValueTextStyle}" />
+                            </Grid>
+                            <Grid>
+                                <TextBlock x:Uid="StunMappingLabel" Style="{StaticResource CardLineLabelTextStyle}" Text="NAT mapping" />
+                                <TextBlock x:Name="StunMappingText" Style="{StaticResource CardLineValueTextStyle}" />
+                            </Grid>
+                            <Grid>
+                                <TextBlock x:Uid="StunFilteringLabel" Style="{StaticResource CardLineLabelTextStyle}" Text="NAT filtering" />
+                                <TextBlock x:Name="StunFilteringText" Style="{StaticResource CardLineValueTextStyle}" />
+                            </Grid>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

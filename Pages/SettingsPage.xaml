@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page x:Class="sing_box_for_windows.Pages.SettingsPage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:toolkit="using:CommunityToolkit.WinUI.Controls">
+    <ScrollViewer>
+        <StackPanel Padding="40,28,40,40" Spacing="8">
+
+            <StackPanel Spacing="6" Margin="0,0,0,16">
+                <TextBlock x:Uid="SettingsTitle" Style="{StaticResource PageTitleTextStyle}" Text="Settings" />
+                <TextBlock x:Uid="SettingsSubtitle" Style="{StaticResource PageSubtitleTextStyle}" Text="Core and profile behavior." />
+            </StackPanel>
+
+            <!-- App -->
+            <TextBlock x:Uid="AppSectionTitle" Style="{StaticResource CardLabelTextStyle}" Text="APP" Margin="4,8,0,4" />
+            <StackPanel Spacing="4">
+                <toolkit:SettingsCard x:Uid="ThemeCard" Header="Theme" Description="Use the system setting or force a light or dark theme.">
+                    <toolkit:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xE790;" />
+                    </toolkit:SettingsCard.HeaderIcon>
+                    <ComboBox x:Name="ThemeBox" MinWidth="140" SelectionChanged="ThemeBox_SelectionChanged">
+                        <ComboBoxItem x:Uid="ThemeDefault" Content="Default" Tag="default" />
+                        <ComboBoxItem x:Uid="ThemeLight" Content="Light" Tag="light" />
+                        <ComboBoxItem x:Uid="ThemeDark" Content="Dark" Tag="dark" />
+                    </ComboBox>
+                </toolkit:SettingsCard>
+                <toolkit:SettingsCard x:Uid="BackdropCard" Header="Backdrop material" Description="Choose Mica or Acrylic for the window background.">
+                    <toolkit:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xE7F8;" />
+                    </toolkit:SettingsCard.HeaderIcon>
+                    <ComboBox x:Name="BackdropBox" MinWidth="140" SelectionChanged="BackdropBox_SelectionChanged">
+                        <ComboBoxItem x:Uid="BackdropMica" Content="Mica" Tag="mica" />
+                        <ComboBoxItem x:Uid="BackdropAcrylic" Content="Acrylic" Tag="acrylic" />
+                    </ComboBox>
+                </toolkit:SettingsCard>
+                <toolkit:SettingsCard x:Uid="LaunchCard" x:Name="LaunchCard" Header="Start at login" Description="Start sing-box for Windows when you sign in.">
+                    <toolkit:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xE8EC;" />
+                    </toolkit:SettingsCard.HeaderIcon>
+                    <ToggleSwitch x:Name="LaunchAtLoginToggle" Toggled="LaunchAtLoginToggle_Toggled" />
+                </toolkit:SettingsCard>
+            </StackPanel>
+
+            <!-- Core -->
+            <TextBlock x:Uid="CoreTitle" Style="{StaticResource CardLabelTextStyle}" Text="CORE" Margin="4,16,0,4" />
+            <StackPanel Spacing="4">
+                <toolkit:SettingsCard x:Uid="CoreModeCard" x:Name="CoreModeCard" Header="Core control">
+                    <toolkit:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xE9F5;" />
+                    </toolkit:SettingsCard.HeaderIcon>
+                </toolkit:SettingsCard>
+                <toolkit:SettingsCard x:Uid="DataFolderCard" x:Name="DataFolderCard" Header="Data folder" IsClickEnabled="True" Click="OpenDataFolder_Click">
+                    <toolkit:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xE8B7;" />
+                    </toolkit:SettingsCard.HeaderIcon>
+                </toolkit:SettingsCard>
+            </StackPanel>
+
+            <!-- Profiles -->
+            <TextBlock x:Uid="SettingsProfilesTitle" Style="{StaticResource CardLabelTextStyle}" Text="PROFILES" Margin="4,16,0,4" />
+            <toolkit:SettingsCard x:Uid="ProfilesCard" Header="Manage profiles" Description="Profiles are standard sing-box JSON configurations stored in the app data directory." IsClickEnabled="True" Click="OpenProfilesButton_Click">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE8A5;" />
+                </toolkit:SettingsCard.HeaderIcon>
+            </toolkit:SettingsCard>
+
+            <!-- About -->
+            <TextBlock x:Uid="AboutTitle" Style="{StaticResource CardLabelTextStyle}" Text="ABOUT" Margin="4,16,0,4" />
+            <StackPanel Spacing="4">
+                <toolkit:SettingsCard x:Name="VersionCard" Header="sing-box for Windows">
+                    <toolkit:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xE946;" />
+                    </toolkit:SettingsCard.HeaderIcon>
+                </toolkit:SettingsCard>
+                <toolkit:SettingsCard x:Uid="SourceCard" Header="Source code" Description="A native client built on the libbox command client and standard sing-box JSON profiles." IsClickEnabled="True" Click="SourceCard_Click">
+                    <toolkit:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xE8A5;" />
+                    </toolkit:SettingsCard.HeaderIcon>
+                </toolkit:SettingsCard>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

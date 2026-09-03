@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+    <resheader name="version"><value>2.0</value></resheader>
+    <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+    <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+    <data name="NavDashboard.Content" xml:space="preserve"><value>Dashboard</value></data>
+    <data name="NavGroups.Content" xml:space="preserve"><value>Groups</value></data>
+    <data name="NavConnections.Content" xml:space="preserve"><value>Connections</value></data>
+    <data name="NavLogs.Content" xml:space="preserve"><value>Logs</value></data>
+    <data name="NavTools.Content" xml:space="preserve"><value>Tools</value></data>
+    <data name="NavSettings.Content" xml:space="preserve"><value>Settings</value></data>
+    <data name="StartButtonText.Text" xml:space="preserve"><value>Start</value></data>
+    <data name="TrayShow.Text" xml:space="preserve"><value>Show window</value></data>
+    <data name="TrayQuit.Text" xml:space="preserve"><value>Quit</value></data>
+    <data name="HomeTitle.Text" xml:space="preserve"><value>Dashboard</value></data>
+    <data name="HomeSubtitle.Text" xml:space="preserve"><value>Overview, selected profile and live traffic.</value></data>
+    <data name="UploadLabel.Text" xml:space="preserve"><value>Upload</value></data>
+    <data name="DownloadLabel.Text" xml:space="preserve"><value>Download</value></data>
+    <data name="StatusLabel.Text" xml:space="preserve"><value>Status</value></data>
+    <data name="MemoryLabel.Text" xml:space="preserve"><value>Memory</value></data>
+    <data name="GoroutinesLabel.Text" xml:space="preserve"><value>Goroutines</value></data>
+    <data name="ConnectionsLabel.Text" xml:space="preserve"><value>Connections</value></data>
+    <data name="InboundLabel.Text" xml:space="preserve"><value>Inbound</value></data>
+    <data name="OutboundLabel.Text" xml:space="preserve"><value>Outbound</value></data>
+    <data name="ViewConnectionsButton.Content" xml:space="preserve"><value>View</value></data>
+    <data name="SystemProxyLabel.Text" xml:space="preserve"><value>System HTTP Proxy</value></data>
+    <data name="ModeLabel.Text" xml:space="preserve"><value>Mode</value></data>
+    <data name="ModeBox.PlaceholderText" xml:space="preserve"><value>No Clash modes reported</value></data>
+    <data name="ProfilesLabel.Text" xml:space="preserve"><value>Profiles</value></data>
+    <data name="ManageProfilesButton.Content" xml:space="preserve"><value>Manage profiles</value></data>
+    <data name="ProfileBox.PlaceholderText" xml:space="preserve"><value>No profile selected</value></data>
+    <data name="DashboardEditProfileButton.Content" xml:space="preserve"><value>Edit</value></data>
+    <data name="DashboardUpdateProfileButton.Content" xml:space="preserve"><value>Update</value></data>
+    <data name="DashboardRemoveProfileButton.Content" xml:space="preserve"><value>Remove</value></data>
+    <data name="ProfileHint.Title" xml:space="preserve"><value>Get started</value></data>
+    <data name="ProfileHint.Message" xml:space="preserve"><value>Add or select a profile, then start the service.</value></data>
+    <data name="ProfilesTitle.Text" xml:space="preserve"><value>Profiles</value></data>
+    <data name="ProfilesSubtitle.Text" xml:space="preserve"><value>Standard sing-box JSON configurations and HTTP(S) remote subscriptions.</value></data>
+    <data name="NameBox.Header" xml:space="preserve"><value>Profile name</value></data>
+    <data name="NameBox.PlaceholderText" xml:space="preserve"><value>My server</value></data>
+    <data name="ConfigBox.Header" xml:space="preserve"><value>Configuration file or subscription URL</value></data>
+    <data name="ConfigBox.PlaceholderText" xml:space="preserve"><value>C:\Configs\config.json or https://example.com/config.json</value></data>
+    <data name="BrowseText.Text" xml:space="preserve"><value>Browse</value></data>
+    <data name="AddProfileText.Text" xml:space="preserve"><value>Add profile</value></data>
+    <data name="GroupsTitle.Text" xml:space="preserve"><value>Groups</value></data>
+    <data name="GroupsSubtitle.Text" xml:space="preserve"><value>Selector groups supplied by the core service.</value></data>
+    <data name="ConnectionsTitle.Text" xml:space="preserve"><value>Connections</value></data>
+    <data name="ConnectionsSubtitle.Text" xml:space="preserve"><value>Live connections supplied by the core service.</value></data>
+    <data name="SortByDate.Text" xml:space="preserve"><value>Date</value></data>
+    <data name="SortByTraffic.Text" xml:space="preserve"><value>Traffic</value></data>
+    <data name="SortByTrafficTotal.Text" xml:space="preserve"><value>Traffic Total</value></data>
+    <data name="ConnectionSearchBox.PlaceholderText" xml:space="preserve"><value>Search connections</value></data>
+    <data name="LogsTitle.Text" xml:space="preserve"><value>Logs</value></data>
+    <data name="LogsSubtitle.Text" xml:space="preserve"><value>Logs delivered by the core service.</value></data>
+    <data name="FilterBox.PlaceholderText" xml:space="preserve"><value>Search logs</value></data>
+    <data name="LogLevelDefault.Text" xml:space="preserve"><value>Default</value></data>
+    <data name="LogLevelDefaultItem.Text" xml:space="preserve"><value>Default</value></data>
+    <data name="SaveToClipboardItem.Text" xml:space="preserve"><value>Copy to clipboard</value></data>
+    <data name="SaveToFileItem.Text" xml:space="preserve"><value>Save to file</value></data>
+    <data name="ClearLogsItem.Text" xml:space="preserve"><value>Clear logs</value></data>
+    <data name="ClearFilterButton.Content" xml:space="preserve"><value>Clear</value></data>
+    <data name="ToolsTitle.Text" xml:space="preserve"><value>Tools</value></data>
+    <data name="ToolsSubtitle.Text" xml:space="preserve"><value>Diagnostics backed by the libbox command server.</value></data>
+    <data name="CoreVersionTitle.Text" xml:space="preserve"><value>Core version</value></data>
+    <data name="NetworkQualityTitle.Text" xml:space="preserve"><value>Network Quality</value></data>
+    <data name="NetworkQualityDescription.Text" xml:space="preserve"><value>Measure download/upload capacity, responsiveness (RPM) and idle latency through the current outbound.</value></data>
+    <data name="NqConfigUrlBox.Header" xml:space="preserve"><value>Config URL (optional)</value></data>
+    <data name="NqConfigUrlBox.PlaceholderText" xml:space="preserve"><value>Default speed test endpoint</value></data>
+    <data name="NqHttp3Box.Content" xml:space="preserve"><value>Use HTTP/3</value></data>
+    <data name="NqStartButton.Content" xml:space="preserve"><value>Start</value></data>
+    <data name="NqDownloadLabel.Text" xml:space="preserve"><value>Download</value></data>
+    <data name="NqUploadLabel.Text" xml:space="preserve"><value>Upload</value></data>
+    <data name="NqRpmLabel.Text" xml:space="preserve"><value>Responsiveness (RPM)</value></data>
+    <data name="NqIdleLatencyLabel.Text" xml:space="preserve"><value>Idle latency</value></data>
+    <data name="STUNTestTitle.Text" xml:space="preserve"><value>STUN Test</value></data>
+    <data name="STUNTestDescription.Text" xml:space="preserve"><value>Discover the external address and NAT mapping/filtering behavior through the current outbound.</value></data>
+    <data name="StunServerBox.Header" xml:space="preserve"><value>STUN server (optional)</value></data>
+    <data name="StunServerBox.PlaceholderText" xml:space="preserve"><value>stun.l.google.com:19302</value></data>
+    <data name="StunStartButton.Content" xml:space="preserve"><value>Start</value></data>
+    <data name="StunExternalLabel.Text" xml:space="preserve"><value>External address</value></data>
+    <data name="StunLatencyLabel.Text" xml:space="preserve"><value>Latency</value></data>
+    <data name="StunMappingLabel.Text" xml:space="preserve"><value>NAT mapping</value></data>
+    <data name="StunFilteringLabel.Text" xml:space="preserve"><value>NAT filtering</value></data>
+    <data name="SettingsTitle.Text" xml:space="preserve"><value>Settings</value></data>
+    <data name="SettingsSubtitle.Text" xml:space="preserve"><value>Core and profile behavior.</value></data>
+    <data name="CoreTitle.Text" xml:space="preserve"><value>CORE</value></data>
+    <data name="DevelopmentFallbackTitle.Text" xml:space="preserve"><value>DEVELOPMENT FALLBACK</value></data>
+    <data name="BinaryPathBox.Header" xml:space="preserve"><value>sing-box.exe path</value></data>
+    <data name="BinaryPathBox.PlaceholderText" xml:space="preserve"><value>Auto-detect from app directory or PATH</value></data>
+    <data name="WorkingDirectoryBox.Header" xml:space="preserve"><value>Working directory (optional)</value></data>
+    <data name="WorkingDirectoryBox.PlaceholderText" xml:space="preserve"><value>Defaults to the executable folder</value></data>
+    <data name="SettingsProfilesTitle.Text" xml:space="preserve"><value>PROFILES</value></data>
+    <data name="AboutTitle.Text" xml:space="preserve"><value>ABOUT</value></data>
+    <data name="SaveButton.Content" xml:space="preserve"><value>Save</value></data>
+    <data name="AppSectionTitle.Text" xml:space="preserve"><value>APP</value></data>
+    <data name="ThemeCard.Header" xml:space="preserve"><value>Theme</value></data>
+    <data name="ThemeCard.Description" xml:space="preserve"><value>Use the system setting or force a light or dark theme.</value></data>
+    <data name="ThemeDefault.Content" xml:space="preserve"><value>Default</value></data>
+    <data name="ThemeLight.Content" xml:space="preserve"><value>Light</value></data>
+    <data name="ThemeDark.Content" xml:space="preserve"><value>Dark</value></data>
+    <data name="BackdropCard.Header" xml:space="preserve"><value>Backdrop material</value></data>
+    <data name="BackdropCard.Description" xml:space="preserve"><value>Choose Mica or Acrylic for the window background.</value></data>
+    <data name="BackdropMica.Content" xml:space="preserve"><value>Mica</value></data>
+    <data name="BackdropAcrylic.Content" xml:space="preserve"><value>Acrylic</value></data>
+    <data name="LaunchCard.Header" xml:space="preserve"><value>Start at login</value></data>
+    <data name="LaunchCard.Description" xml:space="preserve"><value>Start sing-box for Windows when you sign in.</value></data>
+    <data name="CoreModeCard.Header" xml:space="preserve"><value>Core control</value></data>
+    <data name="DataFolderCard.Header" xml:space="preserve"><value>Data folder</value></data>
+    <data name="FallbackCardHeader.Text" xml:space="preserve"><value>External sing-box process</value></data>
+    <data name="FallbackCardDescription.Text" xml:space="preserve"><value>Used only when the libbox bridge executable is unavailable.</value></data>
+    <data name="ProfilesCard.Header" xml:space="preserve"><value>Manage profiles</value></data>
+    <data name="ProfilesCard.Description" xml:space="preserve"><value>Profiles are standard sing-box JSON configurations stored in the app data directory.</value></data>
+    <data name="SourceCard.Header" xml:space="preserve"><value>Source code</value></data>
+    <data name="SourceCard.Description" xml:space="preserve"><value>A native client built on the libbox command client and standard sing-box JSON profiles.</value></data>
+    <data name="ImportClipboardText.Text" xml:space="preserve"><value>Paste</value></data>
+    <data name="UpdateAllText.Text" xml:space="preserve"><value>Update all</value></data>
+    <data name="DashboardItemsText.Text" xml:space="preserve"><value>Dashboard items</value></data>
+    <data name="ExpandAllText.Text" xml:space="preserve"><value>Expand all</value></data>
+    <data name="RefreshText.Text" xml:space="preserve"><value>Refresh</value></data>
+    <data name="CloseAllText.Text" xml:space="preserve"><value>Close all</value></data>
+    <data name="StateFilterActiveText.Text" xml:space="preserve"><value>Active</value></data>
+    <data name="FilterAll.Text" xml:space="preserve"><value>All</value></data>
+    <data name="FilterActive.Text" xml:space="preserve"><value>Active</value></data>
+    <data name="FilterClosed.Text" xml:space="preserve"><value>Closed</value></data>
+    <data name="SortByDateText.Text" xml:space="preserve"><value>Date</value></data>
+    <data name="PauseText.Text" xml:space="preserve"><value>Pause</value></data>
+</root>
