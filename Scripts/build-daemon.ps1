@@ -32,8 +32,8 @@ if (Test-Path $lockPath) {
     $lockedGo = (Get-Content $lockPath -Raw | ConvertFrom-Json).toolchain.go
     $actualGo = (& $goExe version) -replace '^go version (\S+) .*$', '$1'
     if ($lockedGo -and $actualGo -ne $lockedGo) {
-        Write-Warning "Go toolchain mismatch: lock file pins $lockedGo, found $actualGo. " +
-            "Update the pin in Scripts\sources.lock.json if the upgrade is intentional."
+        Write-Warning ("Go toolchain mismatch: lock file pins $lockedGo, found $actualGo. " +
+            "Update the pin in Scripts\sources.lock.json if the upgrade is intentional.")
     }
 }
 
