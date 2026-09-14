@@ -18,7 +18,12 @@ public sealed partial class MainWindow : Window
     private DateTimeOffset? _connectedAt;
     private bool _exiting;
 
-    public MainWindow()
+    /// <param name="startHidden">
+    /// Login launch: keep the window out of the way and live in the tray only. The
+    /// tray entry is created explicitly, because H.NotifyIcon normally creates it
+    /// when the window is shown.
+    /// </param>
+    public MainWindow(bool startHidden = false)
     {
         InitializeComponent();
         Instance = this;
@@ -33,6 +38,10 @@ public sealed partial class MainWindow : Window
         // for H.NotifyIcon.WinUI to create the Shell_NotifyIcon entry).
         // NOTE: the Win32 popup menu mode invokes Command, not Click handlers.
         LoadTrayIcon();
+        if (startHidden)
+        {
+            TrayIcon.ForceCreate();
+        }
         TrayIcon.LeftClickCommand = new RelayCommand(ShowWindow);
         TrayShowItem.Command = new RelayCommand(ShowWindow);
         TrayToggleItem.Command = new AsyncRelayCommand(async () =>
@@ -143,6 +152,13 @@ public sealed partial class MainWindow : Window
         AppWindow.Show();
         Activate();
     }
+
+    /// <summary>
+    /// Brings the window up from the tray (or from a redirected launch) on the UI
+    /// thread, so it can be called from the tray icon or an activation callback.
+    /// </summary>
+    public void ShowFromTray() =>
+        DispatcherQueue.TryEnqueue(ShowWindow);
 
     private void UpdateTrayToggle()
     {

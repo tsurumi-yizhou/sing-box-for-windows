@@ -38,7 +38,20 @@ if (Test-Path $lockPath) {
 }
 
 $commit = (git -C $source rev-parse --short HEAD 2>$null)
-$singBoxVersion = if ($commit) { "sing-box@$commit" } else { "sing-box (pinned revision)" }
+
+# The version the built daemon reports. Show the release version users expect
+# ("1.14.0" — the same value the official desktop client pins in its version.json)
+# rather than this repository's internal `sing-box@<commit>` build tag, so take it
+# from the release tag of the pinned checkout. Falls back to the build tag when the
+# checkout carries no tags (for example an exported source archive).
+$releaseTag = (git -C $source describe --tags --abbrev=0 2>$null)
+$singBoxVersion = if ($releaseTag) {
+    $releaseTag.Trim() -replace '^v', ''
+} elseif ($commit) {
+    "sing-box@$commit"
+} else {
+    "sing-box (pinned revision)"
+}
 
 # Official Windows release tags, minus `tfogo_checklinkname0` (tfo-go's
 # //go:linkname tricks break on newer Go toolchains; the official stub fallback

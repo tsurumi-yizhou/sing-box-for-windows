@@ -26,6 +26,16 @@ public sealed class BoxddCoreController : ICoreController
     private readonly object _gate = new();
     private readonly Dictionary<string, CoreConnection> _connections = new();
 
+    /// <summary>
+    /// Closed connections are retained only as recent history. The daemon streams
+    /// one closed event per connection, so a busy core retires thousands per
+    /// minute; an uncapped dictionary would grow all session and make every
+    /// per-second snapshot sort an ever larger set.
+    /// </summary>
+    private const int MaxClosedConnections = 1000;
+
+    private int _closedConnectionCount;
+
     private Process? _workerProcess;
     private string? _workerPipeName;
     private string? _relayPipeName;
@@ -53,7 +63,6 @@ public sealed class BoxddCoreController : ICoreController
     public IReadOnlyList<CoreConnection> Connections { get; private set; } = [];
     public IReadOnlyList<CoreProxyGroupItem> Outbounds { get; private set; } = [];
     public CoreSystemProxy SystemProxy { get; private set; } = CoreSystemProxy.Empty;
-    public bool IsAvailable => DaemonServiceManager.FindWorkerExecutable() is not null;
 
     public async Task StartAsync(string configContent, CancellationToken cancellationToken = default)
     {
@@ -77,10 +86,12 @@ public sealed class BoxddCoreController : ICoreController
         // One-time, elevated; afterwards the service starts with Windows.
         await DaemonServiceManager.EnsureRunningAsync(RaiseLog, cancellationToken);
         StartupDiag.Log("Core.StartAsync: EnsureRunningAsync done");
-        await StartWorkerAsync(cancellationToken);
-        StartupDiag.Log("Core.StartAsync: StartWorkerAsync done (worker READY)");
         try
         {
+        // Spawned inside the try so a worker that never became ready is still
+        // reaped by the catch below instead of outliving the failed start.
+        await StartWorkerAsync(cancellationToken);
+        StartupDiag.Log("Core.StartAsync: StartWorkerAsync done (worker READY)");
 
         _channel = NamedPipeChannel.Create(_relayPipeName!);
         _client = new Daemon.StartedService.StartedServiceClient(_channel);
@@ -148,10 +159,13 @@ public sealed class BoxddCoreController : ICoreController
     /// <summary>
     /// Spawns the non-privileged worker that relays an authenticated daemon
     /// connection to this app (boxdd three-tier model: daemon service →
-    /// worker → app).
+    /// worker → app). Exactly one worker is alive at a time: any previous one is
+    /// killed first, and a failed readiness handshake kills the one just started
+    /// instead of leaving it behind until the app exits.
     /// </summary>
     private async Task StartWorkerAsync(CancellationToken cancellationToken)
     {
+        await KillWorkerProcessAsync(CancellationToken.None);
         var daemonExe = DaemonServiceManager.FindWorkerExecutable()
             ?? throw new InvalidOperationException("sing-box-daemon.exe was not found.");
         StartupDiag.Log($"StartWorkerAsync: daemonExe={daemonExe}");
@@ -184,46 +198,59 @@ public sealed class BoxddCoreController : ICoreController
         startInfo.ArgumentList.Add($@"\\.\pipe\{_relayPipeName}");
         RaiseLog($"Starting boxdd worker: {daemonExe} worker --socket {startInfo.ArgumentList[2]} --parent-pid {Environment.ProcessId} --daemon-relay-socket {startInfo.ArgumentList[6]}");
 
-        _workerProcess = new Process { StartInfo = startInfo };
+        var worker = new Process { StartInfo = startInfo };
+        _workerProcess = worker;
         StartupDiag.Log($"StartWorkerAsync: launching worker pid-caller={Environment.ProcessId}");
-        if (!_workerProcess.Start())
+        if (!worker.Start())
+        {
+            _workerProcess = null;
+            worker.Dispose();
             throw new InvalidOperationException("Unable to start the SingBox worker process.");
-        StartupDiag.Log($"StartWorkerAsync: worker started pid={_workerProcess.Id}");
-
-        var outputTask = _workerProcess.StandardOutput.ReadLineAsync(cancellationToken).AsTask();
-        // Read this stream exactly once. It completes when the worker exits,
-        // which lets startup errors be reported instead of masquerading as a timeout.
-        var errorTask = _workerProcess.StandardError.ReadToEndAsync(cancellationToken);
-        var exitTask = _workerProcess.WaitForExitAsync(cancellationToken);
-        var timeoutTask = Task.Delay(WorkerReadyTimeout, cancellationToken);
-        var completed = await Task.WhenAny(outputTask, errorTask, exitTask, timeoutTask);
-        StartupDiag.Log($"StartWorkerAsync: WhenAny completed={completed switch { var t when t == outputTask => "output", var t when t == errorTask => "error", var t when t == exitTask => "exit", _ => "timeout" }} workerExited={_workerProcess.HasExited}");
-        if (completed != outputTask || outputTask.IsFaulted || outputTask.Result != "READY")
-        {
-            var error = errorTask.IsCompletedSuccessfully ? errorTask.Result : null;
-            throw new InvalidOperationException(string.IsNullOrWhiteSpace(error)
-                ? "The SingBox worker did not become ready in time."
-                : $"The SingBox worker failed to start: {error.Trim()}");
         }
+        StartupDiag.Log($"StartWorkerAsync: worker started pid={worker.Id}");
 
-        // Forward the worker's remaining stdout and eventual stderr to the log page.
-        _ = Task.Run(async () =>
+        try
         {
-            try
+            var outputTask = worker.StandardOutput.ReadLineAsync(cancellationToken).AsTask();
+            // Read this stream exactly once. It completes when the worker exits,
+            // which lets startup errors be reported instead of masquerading as a timeout.
+            var errorTask = worker.StandardError.ReadToEndAsync(cancellationToken);
+            var exitTask = worker.WaitForExitAsync(cancellationToken);
+            var timeoutTask = Task.Delay(WorkerReadyTimeout, cancellationToken);
+            var completed = await Task.WhenAny(outputTask, errorTask, exitTask, timeoutTask);
+            StartupDiag.Log($"StartWorkerAsync: WhenAny completed={completed switch { var t when t == outputTask => "output", var t when t == errorTask => "error", var t when t == exitTask => "exit", _ => "timeout" }} workerExited={worker.HasExited}");
+            if (completed != outputTask || outputTask.IsFaulted || outputTask.Result != "READY")
             {
-                while (await _workerProcess.StandardOutput.ReadLineAsync() is { } line) RaiseLog(line);
+                var error = errorTask.IsCompletedSuccessfully ? errorTask.Result : null;
+                throw new InvalidOperationException(string.IsNullOrWhiteSpace(error)
+                    ? "The SingBox worker did not become ready in time."
+                    : $"The SingBox worker failed to start: {error.Trim()}");
             }
-            catch { /* worker exited */ }
-        });
-        _ = Task.Run(async () =>
+
+            // Forward the worker's remaining stdout and eventual stderr to the log page.
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    while (await worker.StandardOutput.ReadLineAsync() is { } line) RaiseLog(line);
+                }
+                catch { /* worker exited */ }
+            });
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    var error = await errorTask;
+                    if (!string.IsNullOrWhiteSpace(error)) RaiseLog(error.Trim());
+                }
+                catch { /* worker exited */ }
+            });
+        }
+        catch
         {
-            try
-            {
-                var error = await errorTask;
-                if (!string.IsNullOrWhiteSpace(error)) RaiseLog(error.Trim());
-            }
-            catch { /* worker exited */ }
-        });
+            await KillWorkerProcessAsync(CancellationToken.None);
+            throw;
+        }
     }
 
     public async Task StopAsync(CancellationToken cancellationToken = default)
@@ -284,29 +311,43 @@ public sealed class BoxddCoreController : ICoreController
 
         // The worker is our non-elevated child; it also exits on its own when
         // this app exits (its --parent-pid watch).
-        if (_workerProcess is not null)
-        {
-            try
-            {
-                if (!_workerProcess.HasExited)
-                {
-                    _workerProcess.Kill(entireProcessTree: true);
-                    await _workerProcess.WaitForExitAsync(cancellationToken);
-                }
-            }
-            catch (Exception ex)
-            {
-                RaiseLog($"Error stopping the SingBox worker: {ex.Message}");
-            }
-            _workerProcess.Dispose();
-            _workerProcess = null;
-        }
+        await KillWorkerProcessAsync(cancellationToken);
         _firstServiceStatus = null;
+    }
+
+    /// <summary>
+    /// Kills and disposes the tracked worker, leaving no process handle behind.
+    /// Bounded, so a worker that refuses to die can never stall the lifecycle gate.
+    /// </summary>
+    private async Task KillWorkerProcessAsync(CancellationToken cancellationToken)
+    {
+        var worker = _workerProcess;
+        if (worker is null) return;
+        _workerProcess = null;
+        try
+        {
+            if (!worker.HasExited)
+            {
+                worker.Kill(entireProcessTree: true);
+                using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                timeout.CancelAfter(TimeSpan.FromSeconds(5));
+                await worker.WaitForExitAsync(timeout.Token);
+            }
+        }
+        catch (Exception ex)
+        {
+            RaiseLog($"Error stopping the SingBox worker: {ex.Message}");
+        }
+        finally
+        {
+            worker.Dispose();
+        }
     }
 
     private void ResetRuntimeState()
     {
         _connections.Clear();
+        _closedConnectionCount = 0;
         Status = CoreStatus.Empty;
         ClashMode = CoreClashMode.Empty;
         Groups = [];
@@ -452,13 +493,6 @@ public sealed class BoxddCoreController : ICoreController
             cancellationToken: cancellationToken);
         SystemProxy = SystemProxy with { Enabled = enabled };
         SystemProxyChanged?.Invoke(this, SystemProxy);
-    }
-
-    public async Task<string> GetCoreVersionAsync(CancellationToken cancellationToken = default)
-    {
-        var client = GetClient();
-        var version = await client.GetVersionAsync(new Empty(), cancellationToken: cancellationToken);
-        return version.Version_;
     }
 
     public async IAsyncEnumerable<CoreNetworkQualityProgress> StartNetworkQualityTestAsync(
@@ -688,6 +722,8 @@ public sealed class BoxddCoreController : ICoreController
             while (await call.ResponseStream.MoveNext(token))
             {
                 var events = call.ResponseStream.Current;
+                // The daemon ticks once per interval even when nothing happened.
+                if (!events.Reset && events.Events.Count == 0) continue;
                 ApplyConnectionEvents(events);
                 Connections = _connections.Values
                     .OrderByDescending(x => x.CreatedAt)
@@ -761,7 +797,11 @@ public sealed class BoxddCoreController : ICoreController
 
     private void ApplyConnectionEvents(Daemon.ConnectionEvents events)
     {
-        if (events.Reset) _connections.Clear();
+        if (events.Reset)
+        {
+            _connections.Clear();
+            _closedConnectionCount = 0;
+        }
 
         foreach (var e in events.Events)
         {
@@ -769,7 +809,7 @@ public sealed class BoxddCoreController : ICoreController
             {
                 case ConnectionEventType.ConnectionEventNew:
                     if (e.Connection is not null)
-                        _connections[e.Id] = ToCoreConnection(e.Connection);
+                        StoreConnection(e.Id, ToCoreConnection(e.Connection));
                     break;
 
                 case ConnectionEventType.ConnectionEventUpdate:
@@ -788,25 +828,60 @@ public sealed class BoxddCoreController : ICoreController
                 case ConnectionEventType.ConnectionEventClosed:
                     if (e.Connection is not null)
                     {
-                        _connections[e.Id] = ToCoreConnection(e.Connection) with
+                        StoreConnection(e.Id, ToCoreConnection(e.Connection) with
                         {
                             ClosedAt = e.ClosedAt,
                             Uplink = 0,
                             Downlink = 0,
-                        };
+                        });
                     }
-                    else if (_connections.TryGetValue(e.Id, out var closing))
+                    else
                     {
-                        _connections[e.Id] = closing with
-                        {
-                            ClosedAt = e.ClosedAt,
-                            Uplink = 0,
-                            Downlink = 0,
-                        };
+                        MarkConnectionClosed(e.Id, e.ClosedAt);
                     }
                     break;
             }
         }
+
+        TrimClosedConnections();
+    }
+
+    private void StoreConnection(string id, CoreConnection connection)
+    {
+        if (_connections.TryGetValue(id, out var previous) && previous.ClosedAt > 0)
+        {
+            _closedConnectionCount--;
+        }
+        _connections[id] = connection;
+        if (connection.ClosedAt > 0) _closedConnectionCount++;
+    }
+
+    private void MarkConnectionClosed(string id, long closedAt)
+    {
+        if (!_connections.TryGetValue(id, out var existing)) return;
+        var wasRunning = existing.ClosedAt == 0;
+        _connections[id] = existing with
+        {
+            ClosedAt = closedAt,
+            Uplink = 0,
+            Downlink = 0,
+        };
+        if (wasRunning) _closedConnectionCount++;
+    }
+
+    /// <summary>Drops the oldest closed connections once the history cap is exceeded.</summary>
+    private void TrimClosedConnections()
+    {
+        var excess = _closedConnectionCount - MaxClosedConnections;
+        if (excess <= 0) return;
+        var stale = _connections
+            .Where(entry => entry.Value.ClosedAt > 0)
+            .OrderBy(entry => entry.Value.ClosedAt)
+            .Take(excess)
+            .Select(entry => entry.Key)
+            .ToList();
+        foreach (var id in stale) _connections.Remove(id);
+        _closedConnectionCount -= stale.Count;
     }
 
     private static CoreProxyGroup ToCoreProxyGroup(Daemon.Group group) =>

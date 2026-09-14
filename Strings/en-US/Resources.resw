@@ -39,10 +39,12 @@
     <data name="ProfilesSubtitle.Text" xml:space="preserve"><value>Standard sing-box JSON configurations and HTTP(S) remote subscriptions.</value></data>
     <data name="NameBox.Header" xml:space="preserve"><value>Profile name</value></data>
     <data name="NameBox.PlaceholderText" xml:space="preserve"><value>My server</value></data>
-    <data name="ConfigBox.Header" xml:space="preserve"><value>Configuration file or subscription URL</value></data>
-    <data name="ConfigBox.PlaceholderText" xml:space="preserve"><value>C:\Configs\config.json or https://example.com/config.json</value></data>
+    <data name="AddProfileTypeLabel.Text" xml:space="preserve"><value>Profile type</value></data>
+    <data name="AddProfileTypeLocal.Content" xml:space="preserve"><value>Local</value></data>
+    <data name="AddProfileTypeRemote.Content" xml:space="preserve"><value>Remote</value></data>
     <data name="BrowseText.Text" xml:space="preserve"><value>Browse</value></data>
-    <data name="AddProfileText.Text" xml:space="preserve"><value>Add profile</value></data>
+    <data name="AddProfileCardHeader.Text" xml:space="preserve"><value>Add profile</value></data>
+    <data name="AddProfileText.Text" xml:space="preserve"><value>Add</value></data>
     <data name="GroupsTitle.Text" xml:space="preserve"><value>Groups</value></data>
     <data name="GroupsSubtitle.Text" xml:space="preserve"><value>Selector groups supplied by the core service.</value></data>
     <data name="ConnectionsTitle.Text" xml:space="preserve"><value>Connections</value></data>
@@ -85,6 +87,7 @@
     <data name="SettingsTitle.Text" xml:space="preserve"><value>Settings</value></data>
     <data name="SettingsSubtitle.Text" xml:space="preserve"><value>Core and profile behavior.</value></data>
     <data name="CoreTitle.Text" xml:space="preserve"><value>CORE</value></data>
+    <data name="CoreVersionCard.Header" xml:space="preserve"><value>Core version</value></data>
     <data name="DevelopmentFallbackTitle.Text" xml:space="preserve"><value>DEVELOPMENT FALLBACK</value></data>
     <data name="BinaryPathBox.Header" xml:space="preserve"><value>sing-box.exe path</value></data>
     <data name="BinaryPathBox.PlaceholderText" xml:space="preserve"><value>Auto-detect from app directory or PATH</value></data>
@@ -104,8 +107,7 @@
     <data name="BackdropMica.Content" xml:space="preserve"><value>Mica</value></data>
     <data name="BackdropAcrylic.Content" xml:space="preserve"><value>Acrylic</value></data>
     <data name="LaunchCard.Header" xml:space="preserve"><value>Start at login</value></data>
-    <data name="LaunchCard.Description" xml:space="preserve"><value>Start sing-box for Windows when you sign in.</value></data>
-    <data name="CoreModeCard.Header" xml:space="preserve"><value>Core control</value></data>
+    <data name="LaunchCard.Description" xml:space="preserve"><value>Run in the tray and start the service when you sign in, without opening a window.</value></data>
     <data name="DataFolderCard.Header" xml:space="preserve"><value>Data folder</value></data>
     <data name="FallbackCardHeader.Text" xml:space="preserve"><value>External sing-box process</value></data>
     <data name="FallbackCardDescription.Text" xml:space="preserve"><value>Used only when the libbox bridge executable is unavailable.</value></data>

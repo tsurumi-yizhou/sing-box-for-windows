@@ -5,7 +5,7 @@ namespace sing_box_for_windows;
 
 public partial class App : Application
 {
-    private Window? _window;
+    private static Window? _window;
     private static int _coreStopAttempted;
     public static AppState State { get; } = new();
 
@@ -30,15 +30,64 @@ public partial class App : Application
         };
     }
 
+    /// <summary>
+    /// A later launch of the app was redirected to this instance: surface the window
+    /// the launch asked for, because the primary may be sitting in the tray (the
+    /// login instance starts hidden). A redirected startup-task activation is not a
+    /// user gesture, so it never shows anything.
+    /// </summary>
+    internal static void ShowInstanceFromActivation(Microsoft.Windows.AppLifecycle.AppActivationArguments activation)
+    {
+        if (activation.Kind == Microsoft.Windows.AppLifecycle.ExtendedActivationKind.StartupTask) return;
+        StartupDiag.Log($"OnActivated: {activation.Kind} redirected to the running instance");
+
+        if (_window is MainWindow window)
+        {
+            window.ShowFromTray();
+        }
+        else
+        {
+            // Redirected before the window existed: the launch path shows it.
+            _windowRequested = true;
+        }
+    }
+
+    private static bool _windowRequested;
+
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
-        _window = new MainWindow();
-        _window.Closed += (_, _) =>
+        // "Start at login" launches the app through its packaged startup task; that
+        // run belongs in the tray only — no window, and the core is started with the
+        // selected profile so the proxy is up without anyone clicking anything.
+        var loginLaunch = IsLoginLaunch();
+        StartupDiag.Log($"OnLaunched: loginLaunch={loginLaunch}");
+
+        var window = new MainWindow(startHidden: loginLaunch);
+        _window = window;
+        window.Closed += (_, _) =>
         {
             TryStopCoreBeforeExit("Window.Closed");
             _ = State.DisposeAsync();
         };
-        _window.Activate();
+
+        if (loginLaunch && !_windowRequested)
+        {
+            // The daemon's own WasRunning restore is the desired behaviour here, so
+            // skip the orphan reconcile and just start the core.
+            _ = StartAtLoginAsync();
+            return;
+        }
+
+        if (_windowRequested)
+        {
+            // A launch was redirected here before the window existed.
+            _windowRequested = false;
+            window.ShowFromTray();
+        }
+        else
+        {
+            window.Activate();
+        }
 
         // Lifecycle binding, other direction: a core must not outlive the app.
         // The daemon service is resident and restores a previously running core
@@ -56,6 +105,36 @@ public partial class App : Application
                 StartupDiag.Log($"OnLaunched: orphan reconcile failed: {exception.GetType().Name}: {exception.Message}");
             }
         });
+    }
+
+    private static async Task StartAtLoginAsync()
+    {
+        try
+        {
+            await State.TryStartAtLoginAsync();
+        }
+        catch (Exception exception)
+        {
+            StartupDiag.Log($"OnLaunched: login start failed: {exception.GetType().Name}: {exception.Message}");
+        }
+    }
+
+    /// <summary>
+    /// True when Windows started this process from the app's startup task rather
+    /// than from a user gesture opening the app.
+    /// </summary>
+    private static bool IsLoginLaunch()
+    {
+        try
+        {
+            var activation = Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent().GetActivatedEventArgs();
+            return activation.Kind == Microsoft.Windows.AppLifecycle.ExtendedActivationKind.StartupTask;
+        }
+        catch (Exception exception)
+        {
+            StartupDiag.Log($"OnLaunched: activation kind unavailable: {exception.GetType().Name}");
+            return false;
+        }
     }
 
     /// <summary>

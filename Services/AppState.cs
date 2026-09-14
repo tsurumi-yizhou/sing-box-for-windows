@@ -165,6 +165,40 @@ public sealed class AppState : IAsyncDisposable
 
     public Task StopAsync() => Core.StopAsync();
 
+    /// <summary>
+    /// Login launch: bring the core up without any UI. The daemon service already
+    /// starts itself at boot, so this only has to start the core with the selected
+    /// profile; when the daemon is not reachable we stay silent instead of asking
+    /// for elevation at sign-in, and the tray keeps the manual start available.
+    /// </summary>
+    public async Task<bool> TryStartAtLoginAsync()
+    {
+        var profile = ActiveProfile();
+        if (profile is null)
+        {
+            AddLog("Login start skipped: no profile is selected.");
+            return false;
+        }
+
+        if (!await DaemonServiceManager.IsDaemonReachableAsync())
+        {
+            AddLog("Login start skipped: the SingBox daemon service is not running.");
+            return false;
+        }
+
+        try
+        {
+            await StartAsync();
+            AddLog($"Started the SingBox service for '{profile.Name}' at login.");
+            return true;
+        }
+        catch (Exception exception)
+        {
+            AddLog($"Login start failed: {exception.Message}");
+            return false;
+        }
+    }
+
     public async Task UpdateAutoUpdateProfilesAsync()
     {
         if (!Monitor.TryEnter(_autoUpdateLock)) return;
@@ -246,7 +280,16 @@ public sealed class AppState : IAsyncDisposable
         return profile;
     }
 
-    public async Task<Profile> AddSubscriptionAsync(string name, string sourceUrl)
+    /// <summary>
+    /// Downloads and validates a subscription, then registers it as a remote
+    /// profile. SFA/SFM parity: a new remote profile defaults to auto update on,
+    /// every 60 minutes, and the interval is floored at 15 minutes.
+    /// </summary>
+    public async Task<Profile> AddSubscriptionAsync(
+        string name,
+        string sourceUrl,
+        bool autoUpdate = true,
+        int autoUpdateIntervalMinutes = ProfileDialogs.DefaultAutoUpdateIntervalMinutes)
     {
         if (!Uri.TryCreate(sourceUrl, UriKind.Absolute, out var uri) ||
             (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
@@ -265,8 +308,8 @@ public sealed class AppState : IAsyncDisposable
             Type = ProfileType.Remote,
             Path = Path.Combine(subscriptionsDirectory, $"{Guid.NewGuid():N}.json"),
             RemoteUrl = sourceUrl,
-            AutoUpdate = false,
-            AutoUpdateInterval = 60,
+            AutoUpdate = autoUpdate,
+            AutoUpdateInterval = ProfileDialogs.ClampAutoUpdateInterval(autoUpdateIntervalMinutes),
             LastUpdated = DateTimeOffset.Now,
         };
         await _subscriptionLock.WaitAsync();

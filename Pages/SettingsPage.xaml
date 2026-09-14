@@ -30,7 +30,7 @@
                         <ComboBoxItem x:Uid="BackdropAcrylic" Content="Acrylic" Tag="acrylic" />
                     </ComboBox>
                 </toolkit:SettingsCard>
-                <toolkit:SettingsCard x:Uid="LaunchCard" x:Name="LaunchCard" Header="Start at login" Description="Start sing-box for Windows when you sign in.">
+                <toolkit:SettingsCard x:Uid="LaunchCard" x:Name="LaunchCard" Header="Start at login" Description="Run in the tray and start the service when you sign in.">
                     <toolkit:SettingsCard.HeaderIcon>
                         <FontIcon Glyph="&#xE8EC;" />
                     </toolkit:SettingsCard.HeaderIcon>
@@ -41,9 +41,9 @@
             <!-- Core -->
             <TextBlock x:Uid="CoreTitle" Style="{StaticResource CardLabelTextStyle}" Text="CORE" Margin="4,16,0,4" />
             <StackPanel Spacing="4">
-                <toolkit:SettingsCard x:Uid="CoreModeCard" x:Name="CoreModeCard" Header="Core control">
+                <toolkit:SettingsCard x:Uid="CoreVersionCard" x:Name="CoreVersionCard" Header="Core version">
                     <toolkit:SettingsCard.HeaderIcon>
-                        <FontIcon Glyph="&#xE9F5;" />
+                        <FontIcon Glyph="&#xE946;" />
                     </toolkit:SettingsCard.HeaderIcon>
                 </toolkit:SettingsCard>
                 <toolkit:SettingsCard x:Uid="DataFolderCard" x:Name="DataFolderCard" Header="Data folder" IsClickEnabled="True" Click="OpenDataFolder_Click">
@@ -64,7 +64,7 @@
             <!-- About -->
             <TextBlock x:Uid="AboutTitle" Style="{StaticResource CardLabelTextStyle}" Text="ABOUT" Margin="4,16,0,4" />
             <StackPanel Spacing="4">
-                <toolkit:SettingsCard x:Name="VersionCard" Header="sing-box for Windows">
+                <toolkit:SettingsCard x:Name="VersionCard" Header="Sing-Box for Windows">
                     <toolkit:SettingsCard.HeaderIcon>
                         <FontIcon Glyph="&#xE946;" />
                     </toolkit:SettingsCard.HeaderIcon>

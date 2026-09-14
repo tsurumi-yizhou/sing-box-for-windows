@@ -2,7 +2,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
-using Windows.Storage.Pickers;
 using sing_box_for_windows.Services;
 
 namespace sing_box_for_windows.Pages;
@@ -11,30 +10,51 @@ public sealed partial class ProfilesPage : Page
 {
     private readonly System.Collections.ObjectModel.ObservableCollection<ProfileRow> _rows = new();
 
+    /// <summary>Relative update times would otherwise freeze while the page stays open.</summary>
+    private readonly DispatcherTimer _relativeTimeTimer = new() { Interval = TimeSpan.FromSeconds(30) };
+
     public ProfilesPage()
     {
         InitializeComponent();
         ProfilesList.ItemsSource = _rows;
-        Loaded += (_, _) => Refresh();
+        _relativeTimeTimer.Tick += (_, _) => RefreshRelativeTimes();
+        Loaded += (_, _) =>
+        {
+            ApplyProfileType();
+            Refresh();
+            _relativeTimeTimer.Start();
+        };
+        Unloaded += (_, _) => _relativeTimeTimer.Stop();
+    }
+
+    /// <summary>SFA NewProfileScreen: one form whose fields follow the selected type.</summary>
+    private void NewProfileType_Checked(object sender, RoutedEventArgs e) => ApplyProfileType();
+
+    private void ApplyProfileType()
+    {
+        // Also raised during InitializeComponent, before the later fields exist.
+        if (ConfigBox is null || BrowseButton is null || RemoteOptionsPanel is null) return;
+        var remote = TypeRemoteRadio.IsChecked == true;
+        ConfigBox.Header = remote ? Loc.Get("Subscription URL", "订阅 URL") : Loc.Get("Configuration file", "配置文件");
+        ConfigBox.PlaceholderText = remote ? "https://example.com/config.json" : @"C:\Configs\config.json";
+        BrowseButton.Visibility = remote ? Visibility.Collapsed : Visibility.Visible;
+        RemoteOptionsPanel.Visibility = remote ? Visibility.Visible : Visibility.Collapsed;
+        AutoUpdateToggle.Header = Loc.Get("Auto update", "自动更新");
+        AutoUpdateIntervalBox.Header = Loc.Get("Auto update interval (minutes)", "自动更新间隔（分钟）");
+    }
+
+    private void RefreshRelativeTimes()
+    {
+        foreach (var row in _rows) row.RefreshDisplay();
     }
 
     private async void BrowseButton_Click(object sender, RoutedEventArgs e)
     {
         try
         {
-            var picker = new FileOpenPicker();
-            if (MainWindow.Instance is not null)
+            if (await ConfigFilePicker.PickAsync() is { } path)
             {
-                var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(MainWindow.Instance);
-                WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
-            }
-
-            picker.FileTypeFilter.Add(".json");
-            picker.FileTypeFilter.Add("*");
-            var file = await picker.PickSingleFileAsync();
-            if (file is not null)
-            {
-                ConfigBox.Text = file.Path;
+                ConfigBox.Text = path;
             }
         }
         catch (Exception error)
@@ -51,20 +71,25 @@ public sealed partial class ProfilesPage : Page
 
     private async Task AddProfileFromFormAsync()
     {
+        var remote = TypeRemoteRadio.IsChecked == true;
         var source = ConfigBox.Text.Trim();
         ConfigBox.Description = string.Empty;
         if (string.IsNullOrEmpty(source))
         {
-            ConfigBox.Description = Loc.Get("Enter a configuration path or an HTTP(S) subscription URL.", "请输入配置路径或 HTTP(S) 订阅 URL。");
+            ConfigBox.Description = remote
+                ? Loc.Get("Enter a valid HTTP or HTTPS subscription URL.", "请输入有效的 HTTP 或 HTTPS 订阅 URL。")
+                : Loc.Get("Enter a SingBox configuration file path.", "请输入 SingBox 配置文件路径。");
             return;
         }
 
         try
         {
-            if (Uri.TryCreate(source, UriKind.Absolute, out var uri) &&
-                (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
+            if (remote)
             {
-                await App.State.AddSubscriptionAsync(NameBox.Text.Trim(), source);
+                var intervalMinutes = double.IsNaN(AutoUpdateIntervalBox.Value)
+                    ? ProfileDialogs.DefaultAutoUpdateIntervalMinutes
+                    : ProfileDialogs.ClampAutoUpdateInterval((int)AutoUpdateIntervalBox.Value);
+                await App.State.AddSubscriptionAsync(NameBox.Text.Trim(), source, AutoUpdateToggle.IsOn, intervalMinutes);
             }
             else
             {
@@ -369,7 +394,7 @@ public sealed partial class ProfilesPage : Page
         public void RefreshDisplay()
         {
             LastUpdated = Profile.LastUpdated is { } updated
-                ? FormatRelativeTime(updated)
+                ? RelativeTime.Format(updated)
                 : string.Empty;
             // Name/DisplaySource/Type/AutoUpdate are plain getters; raise change
             // notifications so edits are reflected without reopening the page.
@@ -379,18 +404,6 @@ public sealed partial class ProfilesPage : Page
             OnPropertyChanged(nameof(AutoUpdate));
             OnPropertyChanged(nameof(LastUpdateError));
             OnPropertyChanged(nameof(HasLastUpdateError));
-        }
-
-        /// <summary>SFA/SFM RelativeDateTimeFormatter parity.</summary>
-        private static string FormatRelativeTime(DateTimeOffset time)
-        {
-            var elapsed = DateTimeOffset.Now - time;
-            if (elapsed < TimeSpan.FromMinutes(1)) return Loc.Get("Updated just now", "刚刚更新");
-            if (elapsed < TimeSpan.FromHours(1))
-                return string.Format(Loc.Get("Updated {0} min ago", "{0} 分钟前更新"), (int)elapsed.TotalMinutes);
-            if (elapsed < TimeSpan.FromDays(1))
-                return string.Format(Loc.Get("Updated {0} h ago", "{0} 小时前更新"), (int)elapsed.TotalHours);
-            return time.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
         }
 
         public string? LastUpdateError => Profile.LastUpdateError;

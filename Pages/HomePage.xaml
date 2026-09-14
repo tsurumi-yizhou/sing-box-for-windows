@@ -79,7 +79,7 @@
                 <Border x:Name="ConnectionsCard" Grid.Row="1" Grid.Column="1" Style="{StaticResource CardBorderStyle}">
                     <StackPanel Spacing="10">
                         <Grid>
-                            <StackPanel Orientation="Horizontal" Spacing="8">
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                                 <FontIcon Glyph="&#xE71B;" FontSize="16" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
                                 <TextBlock x:Uid="ConnectionsLabel" Style="{StaticResource CardHeaderTextStyle}" Text="Connections" />
                             </StackPanel>
@@ -129,21 +129,28 @@
                 <Border x:Name="ProfilesCard" Grid.Row="4" Grid.ColumnSpan="2" Style="{StaticResource CardBorderStyle}">
                     <StackPanel Spacing="12">
                         <Grid>
-                            <StackPanel Orientation="Horizontal" Spacing="8">
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                                 <FontIcon Glyph="&#xE8A5;" FontSize="16" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
                                 <TextBlock x:Uid="ProfilesLabel" Style="{StaticResource CardHeaderTextStyle}" Text="Profiles" />
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Right">
-                                <Button x:Name="AddLocalProfileButton" Style="{StaticResource ToolbarButtonStyle}" Click="AddLocalProfileButton_Click" ToolTipService.ToolTip="Add local profile">
+                                <Button x:Name="AddProfileButton" Style="{StaticResource ToolbarButtonStyle}" Click="AddProfileButton_Click" ToolTipService.ToolTip="Add profile">
                                     <FontIcon Glyph="&#xE710;" />
-                                </Button>
-                                <Button x:Name="AddSubscriptionButton" Style="{StaticResource ToolbarButtonStyle}" Click="AddSubscriptionButton_Click" ToolTipService.ToolTip="Add subscription">
-                                    <FontIcon Glyph="&#xE8F1;" />
                                 </Button>
                                 <HyperlinkButton x:Uid="ManageProfilesButton" x:Name="ManageProfilesButton" Content="Manage profiles" Click="ManageProfilesButton_Click" />
                             </StackPanel>
                         </Grid>
                         <ComboBox x:Uid="ProfileBox" x:Name="ProfileBox" PlaceholderText="No profile selected" DisplayMemberPath="Name" SelectionChanged="ProfileBox_SelectionChanged" />
+                        <!-- SFA ProfileInfoRow parity: type badge, and for remote profiles the clock + relative last update time. -->
+                        <StackPanel x:Name="ProfileInfoRow" Orientation="Horizontal" Spacing="12" Visibility="Collapsed">
+                            <Border Background="{ThemeResource ControlFillColorSecondaryBrush}" CornerRadius="4" Padding="8,2,8,2" VerticalAlignment="Center">
+                                <TextBlock x:Name="ProfileTypeText" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </Border>
+                            <StackPanel x:Name="ProfileUpdatedPanel" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center" Visibility="Collapsed">
+                                <FontIcon Glyph="&#xE823;" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <TextBlock x:Name="ProfileUpdatedText" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </StackPanel>
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <Button x:Uid="DashboardEditProfileButton" x:Name="DashboardEditProfileButton" Content="Edit" Click="DashboardEditProfileButton_Click" IsEnabled="False" />
                             <Button x:Uid="DashboardUpdateProfileButton" x:Name="DashboardUpdateProfileButton" Content="Update" Click="DashboardUpdateProfileButton_Click" IsEnabled="False" />

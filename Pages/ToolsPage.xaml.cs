@@ -50,24 +50,16 @@ public sealed partial class ToolsPage : Page
         NqStartButton.IsEnabled = libboxAvailable && running && _nqCts is null;
         StunStartButton.IsEnabled = libboxAvailable && running && _stunCts is null;
 
-        _ = RefreshVersionAsync(libboxAvailable && running);
+        _ = RefreshVersionAsync();
     }
 
-    private async Task RefreshVersionAsync(bool available)
+    private async Task RefreshVersionAsync()
     {
-        if (!available)
-        {
-            CoreVersionText.Text = Loc.Get("Service not running", "服务未运行");
-            return;
-        }
-        try
-        {
-            CoreVersionText.Text = await App.State.Core.GetCoreVersionAsync();
-        }
-        catch (Exception error)
-        {
-            CoreVersionText.Text = error.Message;
-        }
+        // SFA/SFM parity: report the core this app ships. The daemon answers its own
+        // version without elevation and without a running service, so the card is
+        // never blank.
+        CoreVersionText.Text = await DaemonServiceManager.QueryVersionAsync()
+            ?? Loc.Get("Unavailable", "不可用");
     }
 
     // ----- Network quality -----

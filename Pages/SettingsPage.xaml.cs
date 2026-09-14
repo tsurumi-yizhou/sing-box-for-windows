@@ -2,6 +2,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel;
 using sing_box_for_windows.Services;
+using sing_box_for_windows.Services.Core;
 
 namespace sing_box_for_windows.Pages;
 
@@ -19,7 +20,18 @@ public sealed partial class SettingsPage : Page
     private async void SettingsPage_Loaded(object sender, RoutedEventArgs e)
     {
         LoadSettings();
+        await LoadCoreVersionAsync();
         await LoadStartupStateAsync();
+    }
+
+    /// <summary>
+    /// SFA CoreSettingsScreen / SFM CoreView parity: the core version is read from
+    /// the bundled daemon itself, so it is shown even before the service ever runs.
+    /// </summary>
+    private async Task LoadCoreVersionAsync()
+    {
+        var version = await DaemonServiceManager.QueryVersionAsync();
+        CoreVersionCard.Description = version ?? Loc.Get("Unavailable", "不可用");
     }
 
     private void LoadSettings()
@@ -27,12 +39,6 @@ public sealed partial class SettingsPage : Page
         var settings = App.State.Settings;
         DataFolderCard.Description = App.State.DataDirectory;
         VersionCard.Description = GetVersionText();
-
-        CoreModeCard.Description = App.State.Core.IsAvailable
-            ? Loc.Get("Using the SingBox daemon (boxdd) built from the pinned SingBox revision.",
-                      "正在使用由锁定的 SingBox 版本构建的 SingBox 守护进程（boxdd）。")
-            : Loc.Get("sing-box-daemon.exe was not found next to the app; rebuild the daemon with eng/build-daemon.ps1.",
-                      "未在应用旁找到 sing-box-daemon.exe；请用 eng/build-daemon.ps1 重新构建守护进程。");
 
         _applyingTheme = true;
         try

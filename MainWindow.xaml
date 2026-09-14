@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Window x:Class="sing_box_for_windows.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:tb="using:H.NotifyIcon" Title="sing-box">
+<Window x:Class="sing_box_for_windows.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:tb="using:H.NotifyIcon" Title="Sing-Box">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="48" />
@@ -32,7 +32,7 @@
         <TitleBar x:Name="AppTitleBar" BackRequested="TitleBar_BackRequested" IsBackButtonVisible="{x:Bind NavFrame.CanGoBack, Mode=OneWay}" IsPaneToggleButtonVisible="True" PaneToggleRequested="TitleBar_PaneToggleRequested" />
 
         <!-- App name centered relative to the full title bar width -->
-        <TextBlock Grid.Row="0" Text="sing-box" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Center" IsHitTestVisible="False" />
+        <TextBlock Grid.Row="0" Text="Sing-Box" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Center" IsHitTestVisible="False" />
 
         <!-- SFM toolbar parity: start/stop control replaces the icon/title slot on the left -->
         <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center" Margin="100,0,0,0">

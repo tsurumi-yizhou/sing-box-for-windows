@@ -39,10 +39,12 @@
     <data name="ProfilesSubtitle.Text" xml:space="preserve"><value>标准 sing-box JSON 配置与 HTTP(S) 远程订阅。</value></data>
     <data name="NameBox.Header" xml:space="preserve"><value>配置名称</value></data>
     <data name="NameBox.PlaceholderText" xml:space="preserve"><value>我的服务器</value></data>
-    <data name="ConfigBox.Header" xml:space="preserve"><value>配置文件或订阅 URL</value></data>
-    <data name="ConfigBox.PlaceholderText" xml:space="preserve"><value>C:\Configs\config.json 或 https://example.com/config.json</value></data>
+    <data name="AddProfileTypeLabel.Text" xml:space="preserve"><value>配置类型</value></data>
+    <data name="AddProfileTypeLocal.Content" xml:space="preserve"><value>本地</value></data>
+    <data name="AddProfileTypeRemote.Content" xml:space="preserve"><value>远程</value></data>
     <data name="BrowseText.Text" xml:space="preserve"><value>浏览</value></data>
-    <data name="AddProfileText.Text" xml:space="preserve"><value>添加配置</value></data>
+    <data name="AddProfileCardHeader.Text" xml:space="preserve"><value>添加配置</value></data>
+    <data name="AddProfileText.Text" xml:space="preserve"><value>添加</value></data>
     <data name="GroupsTitle.Text" xml:space="preserve"><value>分组</value></data>
     <data name="GroupsSubtitle.Text" xml:space="preserve"><value>由核心服务提供的选择器分组。</value></data>
     <data name="ConnectionsTitle.Text" xml:space="preserve"><value>连接</value></data>
@@ -85,6 +87,7 @@
     <data name="SettingsTitle.Text" xml:space="preserve"><value>设置</value></data>
     <data name="SettingsSubtitle.Text" xml:space="preserve"><value>核心与配置行为。</value></data>
     <data name="CoreTitle.Text" xml:space="preserve"><value>核心</value></data>
+    <data name="CoreVersionCard.Header" xml:space="preserve"><value>核心版本</value></data>
     <data name="DevelopmentFallbackTitle.Text" xml:space="preserve"><value>开发后备</value></data>
     <data name="BinaryPathBox.Header" xml:space="preserve"><value>sing-box.exe 路径</value></data>
     <data name="BinaryPathBox.PlaceholderText" xml:space="preserve"><value>从应用目录或 PATH 自动检测</value></data>
@@ -104,8 +107,7 @@
     <data name="BackdropMica.Content" xml:space="preserve"><value>云母</value></data>
     <data name="BackdropAcrylic.Content" xml:space="preserve"><value>亚克力</value></data>
     <data name="LaunchCard.Header" xml:space="preserve"><value>登录时启动</value></data>
-    <data name="LaunchCard.Description" xml:space="preserve"><value>登录 Windows 时启动 sing-box for Windows。</value></data>
-    <data name="CoreModeCard.Header" xml:space="preserve"><value>核心控制</value></data>
+    <data name="LaunchCard.Description" xml:space="preserve"><value>登录后在托盘中静默运行并启动服务，不显示窗口。</value></data>
     <data name="DataFolderCard.Header" xml:space="preserve"><value>数据文件夹</value></data>
     <data name="FallbackCardHeader.Text" xml:space="preserve"><value>外部 sing-box 进程</value></data>
     <data name="FallbackCardDescription.Text" xml:space="preserve"><value>仅在 libbox 桥接可执行文件不可用时使用。</value></data>

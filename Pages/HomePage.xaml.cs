@@ -15,9 +15,13 @@ public sealed partial class HomePage : Page
     private bool _applyingSystemProxy;
     private string _selectedSegmentedMode = string.Empty;
 
+    /// <summary>Relative update times would otherwise freeze while the page stays open.</summary>
+    private readonly DispatcherTimer _relativeTimeTimer = new() { Interval = TimeSpan.FromSeconds(30) };
+
     public HomePage()
     {
         InitializeComponent();
+        _relativeTimeTimer.Tick += (_, _) => UpdateProfileInfo();
         Loaded += HomePage_Loaded;
         Unloaded += HomePage_Unloaded;
     }
@@ -46,10 +50,12 @@ public sealed partial class HomePage : Page
         UpdateSystemProxy(App.State.Core.SystemProxy);
         ApplyCardVisibility();
         RefreshProfiles();
+        _relativeTimeTimer.Start();
     }
 
     private void HomePage_Unloaded(object sender, RoutedEventArgs e)
     {
+        _relativeTimeTimer.Stop();
         App.State.Core.StateChanged -= Core_StateChanged;
         App.State.Core.StatusChanged -= Core_StatusChanged;
         App.State.Core.ClashModeChanged -= Core_ClashModeChanged;
@@ -68,6 +74,27 @@ public sealed partial class HomePage : Page
         DashboardEditProfileButton.IsEnabled = selected is not null;
         DashboardUpdateProfileButton.IsEnabled = selected?.IsRemote == true;
         DashboardRemoveProfileButton.IsEnabled = selected is not null;
+        UpdateProfileInfo();
+    }
+
+    /// <summary>
+    /// SFA ProfileInfoRow parity: the type badge is always shown, and remote
+    /// profiles additionally report when they were last updated.
+    /// </summary>
+    private void UpdateProfileInfo()
+    {
+        var profile = App.State.ActiveProfile();
+        if (profile is null)
+        {
+            ProfileInfoRow.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        ProfileInfoRow.Visibility = Visibility.Visible;
+        ProfileTypeText.Text = profile.IsRemote ? Loc.Get("Remote", "远程") : Loc.Get("Local", "本地");
+        var updated = profile.IsRemote ? profile.LastUpdated : null;
+        ProfileUpdatedPanel.Visibility = updated is null ? Visibility.Collapsed : Visibility.Visible;
+        ProfileUpdatedText.Text = updated is { } time ? RelativeTime.Format(time) : string.Empty;
     }
 
     // ----- Dashboard items (SFA/SFM card management) -----
@@ -173,83 +200,121 @@ public sealed partial class HomePage : Page
         }
     }
 
-    private async void AddLocalProfileButton_Click(object sender, RoutedEventArgs e)
+    /// <summary>
+    /// SFA NewProfileScreen parity: one "add profile" form whose fields follow the
+    /// selected type. A subscription is simply a remote profile — same entry point
+    /// and name field — and remote profiles carry the auto update switch plus the
+    /// interval they are scheduled with.
+    /// </summary>
+    private async void AddProfileButton_Click(object sender, RoutedEventArgs e)
     {
         var nameBox = new TextBox
         {
             Header = Loc.Get("Profile name (optional)", "配置名称（可选）"),
             PlaceholderText = Loc.Get("My server", "我的服务器"),
         };
+
+        var localRadio = new RadioButton
+        {
+            Content = Loc.Get("Local", "本地"),
+            GroupName = "NewProfileType",
+            IsChecked = true,
+        };
+        var remoteRadio = new RadioButton
+        {
+            Content = Loc.Get("Remote", "远程"),
+            GroupName = "NewProfileType",
+        };
+        var typeRow = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 20 };
+        typeRow.Children.Add(localRadio);
+        typeRow.Children.Add(remoteRadio);
+        var typePanel = new StackPanel { Spacing = 6 };
+        typePanel.Children.Add(new TextBlock { Text = Loc.Get("Profile type", "配置类型") });
+        typePanel.Children.Add(typeRow);
+
         var pathBox = new TextBox
         {
             Header = Loc.Get("Configuration file", "配置文件"),
             PlaceholderText = @"C:\Configs\config.json",
             MinWidth = 420,
         };
-        var panel = new StackPanel { Spacing = 12 };
-        panel.Children.Add(nameBox);
-        panel.Children.Add(pathBox);
-
-        var dialog = new ContentDialog
+        var browseButton = new Button
         {
-            Title = Loc.Get("Add local profile", "添加本地配置"),
-            Content = panel,
-            PrimaryButtonText = Loc.Get("Add", "添加"),
-            CloseButtonText = Loc.Get("Cancel", "取消"),
-            DefaultButton = ContentDialogButton.Primary,
-            XamlRoot = XamlRoot,
+            Content = Loc.Get("Browse", "浏览"),
+            VerticalAlignment = VerticalAlignment.Bottom,
         };
+        var pathGrid = new Grid { ColumnSpacing = 8 };
+        pathGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        pathGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        pathGrid.Children.Add(pathBox);
+        Grid.SetColumn(browseButton, 1);
+        pathGrid.Children.Add(browseButton);
 
-        if (await dialog.ShowAsync() != ContentDialogResult.Primary) return;
-        var source = pathBox.Text.Trim();
-        if (string.IsNullOrWhiteSpace(source))
-        {
-            ShowProfileError(Loc.Get("Choose a SingBox JSON configuration file.", "请选择一个 SingBox JSON 配置文件。"));
-            return;
-        }
-        if (!File.Exists(source))
-        {
-            ShowProfileError(Loc.Get("Configuration file was not found.", "未找到配置文件。"));
-            return;
-        }
-
-        try
-        {
-            AppState.ValidateJsonContent(await File.ReadAllTextAsync(source));
-        }
-        catch (Exception exception)
-        {
-            ShowProfileError(exception.Message);
-            return;
-        }
-
-        var name = string.IsNullOrWhiteSpace(nameBox.Text)
-            ? Path.GetFileNameWithoutExtension(source)
-            : nameBox.Text.Trim();
-        App.State.AddProfile(name, source);
-        RefreshProfiles();
-    }
-
-    private async void AddSubscriptionButton_Click(object sender, RoutedEventArgs e)
-    {
-        var nameBox = new TextBox
-        {
-            Header = Loc.Get("Profile name (optional)", "配置名称（可选）"),
-            PlaceholderText = Loc.Get("My subscription", "我的订阅"),
-        };
         var urlBox = new TextBox
         {
             Header = Loc.Get("Subscription URL", "订阅 URL"),
             PlaceholderText = "https://example.com/config.json",
             MinWidth = 420,
         };
+        var autoUpdateToggle = new ToggleSwitch
+        {
+            Header = Loc.Get("Auto update", "自动更新"),
+            IsOn = true,
+            MinWidth = 0,
+            OnContent = string.Empty,
+            OffContent = string.Empty,
+        };
+        var intervalBox = new NumberBox
+        {
+            Header = Loc.Get("Auto update interval (minutes)", "自动更新间隔（分钟）"),
+            Minimum = ProfileDialogs.MinAutoUpdateIntervalMinutes,
+            Maximum = 7 * 24 * 60,
+            Value = ProfileDialogs.DefaultAutoUpdateIntervalMinutes,
+            SmallChange = 15,
+            LargeChange = 60,
+            SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Inline,
+        };
+        var remotePanel = new StackPanel { Spacing = 12, Visibility = Visibility.Collapsed };
+        remotePanel.Children.Add(urlBox);
+        remotePanel.Children.Add(autoUpdateToggle);
+        remotePanel.Children.Add(intervalBox);
+
+        // Progress and errors live inside the form: the download keeps the dialog
+        // open (SFA keeps the form editable, SFM disables it behind a spinner), so
+        // the entered URL survives a failure instead of being replaced by a toast.
+        var progressRing = new ProgressRing { IsActive = false, Width = 16, Height = 16 };
+        var progressText = new TextBlock
+        {
+            Text = Loc.Get("Downloading the subscription…", "正在下载订阅…"),
+            VerticalAlignment = VerticalAlignment.Center,
+            Foreground = Application.Current.Resources["TextFillColorSecondaryBrush"] as Brush,
+        };
+        var progressRow = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            Spacing = 8,
+            Visibility = Visibility.Collapsed,
+        };
+        progressRow.Children.Add(progressRing);
+        progressRow.Children.Add(progressText);
+        var errorText = new TextBlock
+        {
+            TextWrapping = TextWrapping.Wrap,
+            Visibility = Visibility.Collapsed,
+            Foreground = Application.Current.Resources["SystemFillColorCriticalBrush"] as Brush,
+        };
+
         var panel = new StackPanel { Spacing = 12 };
         panel.Children.Add(nameBox);
-        panel.Children.Add(urlBox);
+        panel.Children.Add(typePanel);
+        panel.Children.Add(pathGrid);
+        panel.Children.Add(remotePanel);
+        panel.Children.Add(progressRow);
+        panel.Children.Add(errorText);
 
         var dialog = new ContentDialog
         {
-            Title = Loc.Get("Add subscription", "添加订阅"),
+            Title = Loc.Get("Add profile", "添加配置"),
             Content = panel,
             PrimaryButtonText = Loc.Get("Add", "添加"),
             CloseButtonText = Loc.Get("Cancel", "取消"),
@@ -257,23 +322,85 @@ public sealed partial class HomePage : Page
             XamlRoot = XamlRoot,
         };
 
-        if (await dialog.ShowAsync() != ContentDialogResult.Primary) return;
-        var source = urlBox.Text.Trim();
-        if (string.IsNullOrWhiteSpace(source))
+        void ApplyType()
         {
-            ShowProfileError(Loc.Get("Enter a valid HTTP or HTTPS subscription URL.", "请输入有效的 HTTP 或 HTTPS 订阅 URL。"));
-            return;
+            var remote = remoteRadio.IsChecked == true;
+            pathGrid.Visibility = remote ? Visibility.Collapsed : Visibility.Visible;
+            remotePanel.Visibility = remote ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        try
+        localRadio.Checked += (_, _) => ApplyType();
+        remoteRadio.Checked += (_, _) => ApplyType();
+        browseButton.Click += async (_, _) =>
         {
-            await App.State.AddSubscriptionAsync(nameBox.Text.Trim(), source);
-            RefreshProfiles();
-        }
-        catch (Exception exception)
+            try
+            {
+                if (await ConfigFilePicker.PickAsync() is { } picked) pathBox.Text = picked;
+            }
+            catch (Exception exception)
+            {
+                errorText.Text = exception.Message;
+                errorText.Visibility = Visibility.Visible;
+            }
+        };
+
+        dialog.PrimaryButtonClick += async (_, args) =>
         {
-            ShowProfileError(exception.Message);
-        }
+            // Keep the form open: it closes itself only once the profile exists.
+            args.Cancel = true;
+
+            var remote = remoteRadio.IsChecked == true;
+            var source = (remote ? urlBox.Text : pathBox.Text).Trim();
+            if (string.IsNullOrWhiteSpace(source))
+            {
+                errorText.Text = remote
+                    ? Loc.Get("Enter a valid HTTP or HTTPS subscription URL.", "请输入有效的 HTTP 或 HTTPS 订阅 URL。")
+                    : Loc.Get("Choose a SingBox JSON configuration file.", "请选择一个 SingBox JSON 配置文件。");
+                errorText.Visibility = Visibility.Visible;
+                return;
+            }
+
+            errorText.Visibility = Visibility.Collapsed;
+            progressRow.Visibility = remote ? Visibility.Visible : Visibility.Collapsed;
+            progressRing.IsActive = remote;
+            dialog.IsPrimaryButtonEnabled = false;
+            try
+            {
+                var intervalMinutes = double.IsNaN(intervalBox.Value)
+                    ? ProfileDialogs.DefaultAutoUpdateIntervalMinutes
+                    : ProfileDialogs.ClampAutoUpdateInterval((int)intervalBox.Value);
+                var profile = remote
+                    ? await App.State.AddSubscriptionAsync(nameBox.Text.Trim(), source, autoUpdateToggle.IsOn, intervalMinutes)
+                    : await AddLocalProfileAsync(nameBox.Text.Trim(), source);
+                RefreshProfiles();
+                dialog.Hide();
+                ShowProfileStatus(InfoBarSeverity.Success, Loc.Get("Add profile", "添加配置"),
+                    string.Format(Loc.Get("Added \"{0}\".", "已添加“{0}”。"), profile.Name));
+            }
+            catch (Exception exception)
+            {
+                errorText.Text = exception.Message;
+                errorText.Visibility = Visibility.Visible;
+            }
+            finally
+            {
+                progressRing.IsActive = false;
+                progressRow.Visibility = Visibility.Collapsed;
+                dialog.IsPrimaryButtonEnabled = true;
+            }
+        };
+
+        await dialog.ShowAsync();
+    }
+
+    /// <summary>Validates a local configuration file and registers it as a profile.</summary>
+    private static async Task<Profile> AddLocalProfileAsync(string name, string path)
+    {
+        if (!File.Exists(path))
+            throw new FileNotFoundException(Loc.Get("Configuration file was not found.", "未找到配置文件。"), path);
+        AppState.ValidateJsonContent(await File.ReadAllTextAsync(path));
+        var profileName = string.IsNullOrWhiteSpace(name) ? Path.GetFileNameWithoutExtension(path) : name;
+        return App.State.AddProfile(profileName, path);
     }
 
     private async void DashboardEditProfileButton_Click(object sender, RoutedEventArgs e)
@@ -327,9 +454,16 @@ public sealed partial class HomePage : Page
 
     private void ManageProfilesButton_Click(object sender, RoutedEventArgs e)
     {
-        if (Frame is not null)
+        if (Frame is null) return;
+        try
         {
             Frame.Navigate(typeof(ProfilesPage));
+        }
+        catch (Exception exception)
+        {
+            // A page that fails to construct must not look like a dead button.
+            StartupDiag.Log($"ManageProfilesButton_Click: {exception}");
+            ShowProfileError(exception.Message);
         }
     }
 
@@ -572,11 +706,14 @@ public sealed partial class HomePage : Page
         UpdateSystemProxy(App.State.Core.SystemProxy);
     }
 
-    private void ShowProfileError(string message)
+    private void ShowProfileError(string message) =>
+        ShowProfileStatus(InfoBarSeverity.Error, Loc.Get("Profile", "配置"), message);
+
+    private void ShowProfileStatus(InfoBarSeverity severity, string title, string message)
     {
         SetProfileHintOpen(true);
-        ProfileHint.Severity = InfoBarSeverity.Error;
-        ProfileHint.Title = Loc.Get("Profile", "配置");
+        ProfileHint.Severity = severity;
+        ProfileHint.Title = title;
         ProfileHint.Message = message;
     }
 

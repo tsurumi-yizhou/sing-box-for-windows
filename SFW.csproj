@@ -7,11 +7,9 @@
         <!-- boxdd layout contract: the application executable must be named sing-box.exe -->
         <AssemblyName>sing-box</AssemblyName>
         <ApplicationManifest>app.manifest</ApplicationManifest>
-        <Platforms>x86;x64;ARM64</Platforms>
-        <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">
-            win-$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLowerInvariant())</RuntimeIdentifier>
-        <PublishProfile Condition="Exists('Properties\PublishProfiles\win-$(Platform).pubxml')">
-            win-$(Platform).pubxml</PublishProfile>
+        <Platforms>x64</Platforms>
+        <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+        <PublishProfile>win-x64.pubxml</PublishProfile>
         <UseWinUI>true</UseWinUI>
         <WinUISDKReferences>false</WinUISDKReferences>
         <EnableMsixTooling>true</EnableMsixTooling>
@@ -21,6 +19,10 @@
              instead of the disposable bin\...\AppX staging folder. -->
         <WinAppLooseLayoutPath>$(MSBuildProjectDirectory)\.daemon-install\</WinAppLooseLayoutPath>
         <WinAppRunExecutable>sing-box.exe</WinAppRunExecutable>
+        <!-- Custom entry point (Program.cs): the WinUI generated Main is replaced so
+             the app can register itself as a single instance and redirect later
+             launches to the running one. -->
+        <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
@@ -113,27 +115,35 @@
         <Copy SourceFiles="daemon\sing-box-daemon.exe"
             DestinationFolder="$(OutDir)resources\daemon" SkipUnchangedFiles="true" />
     </Target>
-    <!-- WinAppRun copies Content into AppX after the regular Build targets.
-         Re-sign that final loose layout before registering/activating it: boxdd
-         authenticates the actual app and daemon files that are launched, not
-         the earlier regular-output copies. -->
-    <Target Name="PrepareSignedDevelopmentAppXLayout" BeforeTargets="ComputeRunArguments"
-        DependsOnTargets="_WinAppCopyContentToLooseLayout"
-        Condition="Exists('$(OutDir)AppxManifest.xml')">
+    <!-- The installed daemon service runs resources\daemon\sing-box-daemon.exe straight
+         out of the loose layout and locks its own binary for writing on purpose, so a
+         rebuilt daemon cannot be copied over it while the service runs. The copy below
+         then fails with MSB3026/MSB3027 naming a PID; say what to do about it instead. -->
+    <Target Name="WarnWhenDaemonIsLockedByService"
+        BeforeTargets="_WinAppCopyContentToLooseLayout"
+        Condition="Exists('$(WinAppLooseLayoutPath)resources\daemon\sing-box-daemon.exe')">
         <Exec
-            Command="&quot;$(SystemRoot)\System32\WindowsPowerShell\v1.0\powershell.exe&quot; -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\Scripts\Sign-Outputs.ps1&quot; -Paths &quot;$(OutDir)AppX\sing-box.exe;$(OutDir)AppX\resources\daemon\sing-box-daemon.exe&quot;" />
-        <!-- The loose AppX layout is ACL-managed by the deployment service.
-             Refresh its registration after signing to avoid 0x80070005 and
-             ensure activation sees the signed final files. -->
-        <Exec
-            Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;Add-AppxPackage -Register '$(OutDir)AppxManifest.xml' -ForceApplicationShutdown -ErrorAction Stop&quot;" />
+            Command="&quot;$(SystemRoot)\System32\WindowsPowerShell\v1.0\powershell.exe&quot; -NoProfile -ExecutionPolicy Bypass -Command &quot;try { $stream = [IO.File]::Open('$(WinAppLooseLayoutPath)resources\daemon\sing-box-daemon.exe', 'Open', 'ReadWrite', 'None'); $stream.Close() } catch { 'locked' }&quot;"
+            ConsoleToMSBuild="true"
+            StandardOutputImportance="low">
+            <Output TaskParameter="ConsoleOutput" ItemName="_DaemonLayoutLockState" />
+        </Exec>
+        <Warning Condition="'@(_DaemonLayoutLockState)' == 'locked'"
+            Text="The running sing-box-daemon service holds $(WinAppLooseLayoutPath)resources\daemon\sing-box-daemon.exe, so this build cannot install the daemon it just built. Stop the service first (Stop-Service sing-box-daemon, elevated) and run again; restarting it afterwards makes the service run the new daemon." />
     </Target>
+    <!-- Signing happens on the build outputs, before WinAppRun ever copies
+         them: `winapp run` (Microsoft.Windows.SDK.BuildTools.WinApp) builds its
+         loose layout at $(WinAppLooseLayoutPath) from these files, registers it
+         and launches the app itself. Copying preserves Authenticode, so the
+         running app and worker keep the certificate boxdd authenticates them
+         by without re-signing the layout at run time. -->
     <Target Name="SignOutputs" AfterTargets="CopySingboxDaemon"
         Condition="Exists('$(OutDir)sing-box.exe') and Exists('$(OutDir)resources\daemon\sing-box-daemon.exe')">
         <!-- boxdd authenticates the application, its worker, and the installed
              daemon by certificate. Sign every development layout that can be
-             launched: the regular output, dotnet-run AppX staging folder, and
-             the repo-root daemon artifact used by the Windows service. -->
+             launched: the regular output, the MSIX packaging layout when it
+             exists, and the repo-root daemon artifact used by the Windows
+             service. -->
         <!-- WinAppRun's appxrecipe copies the app host directly from
              $(IntermediateOutputPath)apphost.exe, not $(OutDir)sing-box.exe.
              Sign that source too so the final loose-layout app binary retains

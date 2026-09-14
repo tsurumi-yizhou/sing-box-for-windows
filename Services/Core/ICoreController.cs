@@ -23,7 +23,6 @@ public interface ICoreController : IAsyncDisposable
     IReadOnlyList<CoreConnection> Connections { get; }
     IReadOnlyList<CoreProxyGroupItem> Outbounds { get; }
     CoreSystemProxy SystemProxy { get; }
-    bool IsAvailable { get; }
 
     Task StartAsync(string configContent, CancellationToken cancellationToken = default);
     Task StopAsync(CancellationToken cancellationToken = default);
@@ -43,9 +42,6 @@ public interface ICoreController : IAsyncDisposable
     Task ClearLogsAsync(CancellationToken cancellationToken = default);
     Task RefreshSystemProxyAsync(CancellationToken cancellationToken = default);
     Task SetSystemProxyEnabledAsync(bool enabled, CancellationToken cancellationToken = default);
-
-    /// <summary>libbox core version (daemon GetVersion). Requires a running service.</summary>
-    Task<string> GetCoreVersionAsync(CancellationToken cancellationToken = default);
 
     /// <summary>libbox StartNetworkQualityTest stream. Requires a running service.</summary>
     IAsyncEnumerable<CoreNetworkQualityProgress> StartNetworkQualityTestAsync(
