@@ -46,9 +46,7 @@
                         <FontIcon Glyph="&#xE946;" />
                     </toolkit:SettingsCard.HeaderIcon>
                 </toolkit:SettingsCard>
-                <toolkit:SettingsCard x:Name="ServiceRepairCard" Header="Service" Description="Install or repair the bundled service.">
-                    <Button x:Name="RepairServiceButton" Content="Repair service" Click="RepairService_Click" />
-                </toolkit:SettingsCard>
+
                 <toolkit:SettingsCard x:Uid="DataFolderCard" x:Name="DataFolderCard" Header="Data folder" IsClickEnabled="True" Click="OpenDataFolder_Click">
                     <toolkit:SettingsCard.HeaderIcon>
                         <FontIcon Glyph="&#xE8B7;" />

@@ -29,8 +29,8 @@ public sealed partial class BoxddCoreController
         if (bundled is not null && info.Version != bundled)
         {
             var message = Loc.Get(
-                $"The running core is {info.Version}, but this app includes {bundled}. Repair the service in Settings.",
-                $"运行中的内核为 {info.Version}，应用附带的是 {bundled}。请在设置中修复服务。");
+                $"The running core is {info.Version}, but this app includes {bundled}. Upgrade the service to continue.",
+                $"运行中的内核为 {info.Version}，应用附带的是 {bundled}。请升级服务以继续。");
             SetConnection(new(DaemonConnectionPhase.VersionMismatch, message, info.Version, bundled));
             throw new InvalidOperationException(message);
         }

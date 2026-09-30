@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Page x:Class="SFW.Pages.ConnectionsPage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<Page x:Class="SFW.Pages.ConnectionsPage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:models="using:SFW.Models">
     <Grid Padding="40,28,40,40" RowSpacing="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -60,20 +60,20 @@
 
         <ListView x:Name="ConnectionsList" Grid.Row="4" SelectionMode="None" ItemClick="Connection_Click" IsItemClickEnabled="True">
             <ListView.ItemTemplate>
-                <DataTemplate>
+                <DataTemplate x:DataType="models:ConnectionRow">
                     <Border Padding="14" Style="{StaticResource CardBorderStyle}" RightTapped="Connection_RightTapped">
                         <StackPanel Spacing="4">
                             <Grid>
-                                <TextBlock Text="{Binding Title}" Style="{StaticResource MonoTextStyle}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
-                                <TextBlock Text="{Binding StateText}" Foreground="{Binding StateBrush}" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Right" />
+                                <TextBlock Text="{x:Bind Title, Mode=OneWay}" Style="{StaticResource MonoTextStyle}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Text="{x:Bind StateText, Mode=OneWay}" Foreground="{x:Bind StateBrush, Mode=OneWay}" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Right" />
                             </Grid>
                             <Grid>
-                                <TextBlock Text="{Binding UpText}" Style="{StaticResource MonoCaptionTextStyle}" />
-                                <TextBlock Text="{Binding InboundText}" Style="{StaticResource MonoCaptionTextStyle}" HorizontalAlignment="Right" />
+                                <TextBlock Text="{x:Bind UpText, Mode=OneWay}" Style="{StaticResource MonoCaptionTextStyle}" />
+                                <TextBlock Text="{x:Bind InboundText, Mode=OneWay}" Style="{StaticResource MonoCaptionTextStyle}" HorizontalAlignment="Right" />
                             </Grid>
                             <Grid>
-                                <TextBlock Text="{Binding DownText}" Style="{StaticResource MonoCaptionTextStyle}" />
-                                <TextBlock Text="{Binding ChainText}" Style="{StaticResource MonoCaptionTextStyle}" HorizontalAlignment="Right" />
+                                <TextBlock Text="{x:Bind DownText, Mode=OneWay}" Style="{StaticResource MonoCaptionTextStyle}" />
+                                <TextBlock Text="{x:Bind ChainText, Mode=OneWay}" Style="{StaticResource MonoCaptionTextStyle}" HorizontalAlignment="Right" />
                             </Grid>
                         </StackPanel>
                     </Border>

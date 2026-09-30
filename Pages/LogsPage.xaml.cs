@@ -1,4 +1,5 @@
 using System.Text;
+using SFW.Models;
 using System.Text.RegularExpressions;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -263,5 +264,4 @@ public sealed partial class LogsPage : Page
         return (Brush)Application.Current.Resources[key];
     }
 
-    private sealed record LogRow(string Text, Brush Brush);
 }

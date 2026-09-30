@@ -18,7 +18,11 @@
                 </Button>
             </StackPanel>
 
-            <InfoBar x:Name="ConnectionInfo" IsOpen="False" IsClosable="False" Severity="Warning" />
+            <InfoBar x:Name="ConnectionInfo" IsOpen="False" IsClosable="False" Severity="Warning">
+                <InfoBar.ActionButton>
+                    <Button x:Name="ServiceSetupButton" Visibility="Collapsed" Click="ServiceSetupButton_Click" />
+                </InfoBar.ActionButton>
+            </InfoBar>
 
             <Grid ColumnSpacing="16" RowSpacing="16">
                 <Grid.ColumnDefinitions>

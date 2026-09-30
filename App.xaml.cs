@@ -89,6 +89,12 @@ public partial class App : Application
             window.Activate();
         }
 
+        if (Environment.GetCommandLineArgs().Contains("--ui-smoke-test"))
+        {
+            _ = Tests.UiSmokeTest.RunAsync(window);
+            return;
+        }
+
         // Lifecycle binding, other direction: a core must not outlive the app.
         // The daemon service is resident and restores a previously running core
         // at boot (boxdd WasRunning), and a crashed/killed previous instance

@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+using SFW.Models;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -471,57 +471,4 @@ public sealed partial class ConnectionsPage : Page
         _ => $"{value / 1024d / 1024d / 1024d:F2} GB",
     };
 
-    /// <summary>
-    /// Mutable row: per-second stream updates only refresh the rate/state
-    /// fields in place so existing item containers are reused.
-    /// </summary>
-    /// <summary>
-    /// Mutable row: per-second stream updates only refresh the rate/state
-    /// fields in place so existing item containers are reused.
-    /// </summary>
-    private sealed partial class ConnectionRow : ObservableObject
-    {
-        [ObservableProperty]
-        public partial string StateText { get; set; } = string.Empty;
-
-        [ObservableProperty]
-        public partial Brush StateBrush { get; set; } = (Brush)Application.Current.Resources["TextFillColorPrimaryBrush"];
-
-        [ObservableProperty]
-        public partial string UpText { get; set; } = string.Empty;
-
-        [ObservableProperty]
-        public partial string DownText { get; set; } = string.Empty;
-
-        public ConnectionRow(CoreConnection connection)
-        {
-            Connection = connection;
-            var destination = string.IsNullOrWhiteSpace(connection.DisplayDestination)
-                ? connection.Destination
-                : connection.DisplayDestination;
-            Title = $"{connection.Network.ToUpperInvariant()} {destination}";
-            InboundText = $"{connection.InboundType}/{connection.Inbound}";
-            ChainText = connection.Chain.Count > 0 ? connection.Chain[0] : connection.Outbound;
-            Update(connection);
-        }
-
-        public CoreConnection Connection { get; private set; }
-        public string Title { get; }
-        public string InboundText { get; }
-        public string ChainText { get; }
-
-        public void Update(CoreConnection c)
-        {
-            Connection = c;
-            var active = c.ClosedAt == 0;
-            StateText = active ? Loc.Get("Active", "活动") : Loc.Get("Closed", "已关闭");
-            StateBrush = (Brush)Application.Current.Resources[active ? "SystemFillColorSuccessBrush" : "SystemFillColorCriticalBrush"];
-            UpText = active
-                ? $"↑ {FormatBytes(c.Uplink)}/s | {FormatBytes(c.UplinkTotal)}"
-                : $"↑ {FormatBytes(c.UplinkTotal)}";
-            DownText = active
-                ? $"↓ {FormatBytes(c.Downlink)}/s | {FormatBytes(c.DownlinkTotal)}"
-                : $"↓ {FormatBytes(c.DownlinkTotal)}";
-        }
-    }
 }

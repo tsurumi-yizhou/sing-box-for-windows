@@ -119,7 +119,7 @@ public static class DaemonServiceManager
         _ => DaemonConnectionPhase.NotRunning,
     };
 
-    public static async Task RepairAsync(Action<string> log, CancellationToken token = default)
+    public static async Task InstallBundledServiceAsync(Action<string> log, CancellationToken token = default)
     {
         var executable = FindDaemonExecutable()
             ?? throw new InvalidOperationException("The bundled daemon was not found.");

@@ -14,6 +14,10 @@ jobs:
   app:
     name: Build WinUI app (x64)
     runs-on: windows-latest
+    env:
+      GOCACHE: ${{ github.workspace }}\.cache\gocache
+      GOMODCACHE: ${{ github.workspace }}\.cache\gomod
+      GOPATH: ${{ github.workspace }}\.cache\gopath
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -40,8 +44,13 @@ jobs:
         uses: actions/setup-go@v6
         with:
           go-version: ${{ steps.pins.outputs.go }}
-          # build-daemon.ps1 uses repository-local Go caches.
-          cache: false
+          # Match build-daemon.ps1 so the restored compiler cache is actually used.
+          cache: true
+          cache-dependency-path: |
+            .cache/upstream/sing-box/go.sum
+            Scripts/sources.lock.json
+            Scripts/build-daemon.ps1
+            Scripts/daemon-patches/*.patch
 
       - name: Build boxdd daemon
         shell: pwsh
@@ -70,5 +79,18 @@ jobs:
           ./Tests/bin/Release/net10.0/sing-box.exe --integration
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-      - name: Build
-        run: dotnet build SFW.csproj -c Release -p:Platform=x64 -r win-x64 --no-restore
+      - name: Publish ReadyToRun release
+        run: dotnet publish SFW.csproj -c Release -p:Platform=x64 -r win-x64 --no-restore --output artifacts/release
+
+      - name: Verify published native code and resources
+        shell: pwsh
+        run: |
+          $stream = [IO.File]::OpenRead((Join-Path $PWD 'artifacts/release/sing-box.dll'))
+          try {
+            $pe = [System.Reflection.PortableExecutable.PEReader]::new($stream)
+            if ($pe.PEHeaders.CorHeader.ManagedNativeHeaderDirectory.Size -eq 0) { throw 'ReadyToRun code is missing.' }
+            $pe.Dispose()
+          } finally { $stream.Dispose() }
+          foreach ($path in @('Assets/AppIcon.ico', 'resources/daemon/sing-box-daemon.exe', 'resources/daemon/WinDivert64.sys')) {
+            if (-not (Test-Path (Join-Path 'artifacts/release' $path))) { throw "Missing publish resource: $path" }
+          }

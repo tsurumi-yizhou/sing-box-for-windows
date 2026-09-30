@@ -7,6 +7,7 @@
         <!-- boxdd layout contract: the application executable must be named sing-box.exe -->
         <AssemblyName>sing-box</AssemblyName>
         <ApplicationManifest>app.manifest</ApplicationManifest>
+        <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
         <Platforms>x64</Platforms>
         <RuntimeIdentifier>win-x64</RuntimeIdentifier>
         <PublishProfile>win-x64.pubxml</PublishProfile>
@@ -29,6 +30,7 @@
 
     <ItemGroup>
         <Compile Remove="Tests\**\*.cs" />
+        <Compile Include="Tests\UiSmokeTest.cs" />
         <EmbeddedResource Remove="Tests\**\*" />
         <None Remove="Tests\**\*" />
     </ItemGroup>
@@ -48,6 +50,7 @@
 
     <ItemGroup>
         <Manifest Include="$(ApplicationManifest)" />
+        <Content Update="Assets\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     </ItemGroup>
 
     <!-- boxdd is required, not optional: the app cannot run without the daemon.
@@ -168,7 +171,8 @@
     <PropertyGroup>
         <PublishReadyToRun Condition="'$(Configuration)' == 'Debug'">False</PublishReadyToRun>
         <PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">True</PublishReadyToRun>
-        <PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
-        <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">True</PublishTrimmed>
+        <!-- WinRT collection projections and remaining runtime bindings require metadata.
+             Keep R2R, but do not trim until every projection/binding is trim-safe. -->
+        <PublishTrimmed>false</PublishTrimmed>
     </PropertyGroup>
 </Project>

@@ -4,6 +4,7 @@
 param(
     [ValidateSet('Debug', 'Release')] [string] $Configuration = 'Debug',
     [switch] $ElevatedCopy,
+    [switch] $SmokeTest,
     [string] $ResultPath
 )
 
@@ -62,20 +63,42 @@ if ($ElevatedCopy) {
 
 Push-Location $repoRoot
 try {
-    dotnet build SFW.csproj -c $Configuration -p:Platform=x64 -r win-x64
+    $published = Join-Path $cache 'release-publish'
+    if ($Configuration -eq 'Release') {
+        dotnet publish SFW.csproj -c Release -p:Platform=x64 -r win-x64 --output $published
+    } else {
+        dotnet build SFW.csproj -c Debug -p:Platform=x64 -r win-x64
+    }
     if ($LASTEXITCODE -ne 0) { throw 'Build failed; the running layout was not touched.' }
     $appPath = Join-Path $layout 'sing-box.exe'
     Get-Process sing-box -ErrorAction SilentlyContinue |
         Where-Object { $_.Path -eq $appPath } | Stop-Process
     New-Item -ItemType Directory -Force $cache | Out-Null
-    $result = Join-Path $cache ('daemon-update-' + [Guid]::NewGuid().ToString('N') + '.txt')
-    $arguments = '-NoProfile -ExecutionPolicy Bypass -File "{0}" -ElevatedCopy -ResultPath "{1}"' -f $PSCommandPath, $result
-    Start-Process -FilePath "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe" `
-        -ArgumentList $arguments -Verb RunAs -WindowStyle Hidden -Wait
-    if (-not (Test-Path -LiteralPath $result)) { throw 'The elevated update did not report a result.' }
-    $outcome = [IO.File]::ReadAllText($result)
-    if ($outcome -ne 'SUCCESS') { throw $outcome }
-    dotnet run --project SFW.csproj -c $Configuration --no-build -p:Platform=x64 -r win-x64
+    $changed = @(Get-ChildItem -LiteralPath $source -File | Where-Object {
+        $target = Join-Path $destination $_.Name
+        -not (Test-Path -LiteralPath $target) -or
+            (Get-FileHash -LiteralPath $_.FullName).Hash -ne (Get-FileHash -LiteralPath $target).Hash
+    })
+    if ($changed.Count -gt 0) {
+        $result = Join-Path $cache ('daemon-update-' + [Guid]::NewGuid().ToString('N') + '.txt')
+        $arguments = '-NoProfile -ExecutionPolicy Bypass -File "{0}" -ElevatedCopy -ResultPath "{1}"' -f $PSCommandPath, $result
+        Start-Process -FilePath "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe" `
+            -ArgumentList $arguments -Verb RunAs -WindowStyle Hidden -Wait
+        if (-not (Test-Path -LiteralPath $result)) { throw 'The elevated update did not report a result.' }
+        $outcome = [IO.File]::ReadAllText($result)
+        if ($outcome -ne 'SUCCESS') { throw $outcome }
+    }
+    if ($Configuration -eq 'Release') {
+        # dotnet run stages Build output, which does not contain R2R native code.
+        $properties = dotnet msbuild SFW.csproj -p:Configuration=Release -p:Platform=x64 `
+            -getProperty:WinAppCliPath,WinAppManifestPath | ConvertFrom-Json
+        $launchArgs = if ($SmokeTest) { @('--', '--ui-smoke-test') } else { @() }
+        & $properties.Properties.WinAppCliPath run $published --manifest $properties.Properties.WinAppManifestPath `
+            --output-appx-directory $layout --executable sing-box.exe --detach @launchArgs
+    } else {
+        $launchArgs = if ($SmokeTest) { @('--', '--', '--ui-smoke-test') } else { @() }
+        dotnet run --project SFW.csproj -c Debug --no-build -p:Platform=x64 -r win-x64 @launchArgs
+    }
     if ($LASTEXITCODE -ne 0) { throw 'The application launch failed.' }
 } finally {
     Pop-Location

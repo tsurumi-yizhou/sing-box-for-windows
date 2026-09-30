@@ -20,9 +20,6 @@ public sealed partial class SettingsPage : Page
     private async void SettingsPage_Loaded(object sender, RoutedEventArgs e)
     {
         LoadSettings();
-        ServiceRepairCard.Header = Loc.Get("Service", "服务");
-        ServiceRepairCard.Description = Loc.Get("Install or repair the bundled service.", "安装或修复应用附带的服务。");
-        RepairServiceButton.Content = Loc.Get("Repair service", "修复服务");
         await LoadCoreVersionAsync();
         await LoadStartupStateAsync();
     }
@@ -35,25 +32,6 @@ public sealed partial class SettingsPage : Page
     {
         var version = await DaemonServiceManager.QueryVersionAsync();
         CoreVersionCard.Description = version ?? Loc.Get("Unavailable", "不可用");
-    }
-
-    private async void RepairService_Click(object sender, RoutedEventArgs e)
-    {
-        RepairServiceButton.IsEnabled = false;
-        var wasRunning = App.State.Core.State.IsRunning;
-        try
-        {
-            await App.State.StopAsync();
-            await DaemonServiceManager.RepairAsync(App.State.AppendLog);
-            if (wasRunning) await App.State.StartAsync();
-            await LoadCoreVersionAsync();
-            ServiceRepairCard.Description = Loc.Get("Service repaired.", "服务已修复。");
-        }
-        catch (Exception error)
-        {
-            ServiceRepairCard.Description = error.Message;
-        }
-        finally { RepairServiceButton.IsEnabled = true; }
     }
 
     private void LoadSettings()

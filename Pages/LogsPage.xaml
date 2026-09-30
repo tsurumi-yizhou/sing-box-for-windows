@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Page x:Class="SFW.Pages.LogsPage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<Page x:Class="SFW.Pages.LogsPage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:models="using:SFW.Models">
     <Grid Padding="40,28,40,40" RowSpacing="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -76,8 +76,8 @@
         <Border Grid.Row="4" Padding="8" Style="{StaticResource CardBorderStyle}">
             <ListView x:Name="LogList" SelectionMode="None">
                 <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding Text}" Foreground="{Binding Brush}" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
+                    <DataTemplate x:DataType="models:LogRow">
+                        <TextBlock Text="{x:Bind Text, Mode=OneTime}" Foreground="{x:Bind Brush, Mode=OneTime}" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
                     </DataTemplate>
                 </ListView.ItemTemplate>
                 <ListView.ItemContainerStyle>

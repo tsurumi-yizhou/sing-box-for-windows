@@ -473,7 +473,6 @@ public sealed partial class HomePage : Page
 
     private void ViewConnectionsButton_Click(object sender, RoutedEventArgs e)
     {
-        if (!App.State.Core.State.IsRunning) return;
         MainWindow.Instance?.NavigateTo("connections");
     }
 
@@ -484,15 +483,45 @@ public sealed partial class HomePage : Page
 
     private void UpdateConnection(DaemonConnectionState state)
     {
+        ServiceSetupButton.Visibility = state.Phase is DaemonConnectionPhase.NotInstalled or
+            DaemonConnectionPhase.NotRunning or DaemonConnectionPhase.VersionMismatch ? Visibility.Visible : Visibility.Collapsed;
+        ServiceSetupButton.Content = state.Phase switch
+        {
+            DaemonConnectionPhase.NotInstalled => Loc.Get("Install", "安装"),
+            DaemonConnectionPhase.VersionMismatch => Loc.Get("Upgrade", "升级"),
+            _ => Loc.Get("Start", "启动"),
+        };
         ConnectionInfo.IsOpen = state.Phase is not (DaemonConnectionPhase.Connected or DaemonConnectionPhase.Disconnected);
         ConnectionInfo.Message = state.Error ?? state.Phase switch
         {
             DaemonConnectionPhase.Connecting => Loc.Get("Connecting to the service…", "正在连接服务…"),
             DaemonConnectionPhase.Reconnecting => Loc.Get("Connection lost. Reconnecting…", "连接已断开，正在重连…"),
-            DaemonConnectionPhase.NotInstalled => Loc.Get("Service not installed. Repair it in Settings.", "服务尚未安装，请在设置中修复。"),
-            DaemonConnectionPhase.NotRunning => Loc.Get("Service is stopped. Start or repair it in Settings.", "服务已停止，请在设置中启动或修复。"),
+            DaemonConnectionPhase.NotInstalled => Loc.Get("Service is not installed.", "服务尚未安装。"),
+            DaemonConnectionPhase.NotRunning => Loc.Get("Service is stopped.", "服务已停止。"),
             _ => Loc.Get("The service is unavailable.", "服务不可用。"),
         };
+    }
+
+    private async void ServiceSetupButton_Click(object sender, RoutedEventArgs e)
+    {
+        var phase = App.State.Core.Connection.Phase;
+        await BusyButton.RunAsync(ServiceSetupButton, async () =>
+        {
+            try
+            {
+                if (phase == DaemonConnectionPhase.NotRunning)
+                    await DaemonServiceManager.EnsureRunningAsync(App.State.AppendLog);
+                else
+                    await DaemonServiceManager.InstallBundledServiceAsync(App.State.AppendLog);
+                // A reconnecting session will discover the service automatically.
+                if (!App.State.Core.State.IsActive)
+                {
+                    ConnectionInfo.IsOpen = false;
+                    ServiceSetupButton.Visibility = Visibility.Collapsed;
+                }
+            }
+            catch (Exception error) { ConnectionInfo.Message = error.Message; }
+        });
     }
 
     private void Core_StateChanged(object? sender, RuntimeState state) =>
