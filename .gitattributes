@@ -1,0 +1,2 @@
+# Unified diff context lines intentionally prefix Go tabs with a space.
+Scripts/daemon-patches/*.patch text eol=lf whitespace=-space-before-tab

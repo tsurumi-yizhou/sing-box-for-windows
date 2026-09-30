@@ -10,8 +10,8 @@
   },
   "singbox": {
     "Name": "sing-box",
-    "Ref": "5ee65a5ca9e6a448a5fa2f47b55b51fe2fcf578d",
-    "Commit": "5ee65a5ca9e6a448a5fa2f47b55b51fe2fcf578d"
+    "Ref": "v1.14.2",
+    "Commit": "af6e64c3b69e6132ebaee0e1a3d24e93903f6709"
   },
   "android": {
     "Name": "sing-box-for-android",

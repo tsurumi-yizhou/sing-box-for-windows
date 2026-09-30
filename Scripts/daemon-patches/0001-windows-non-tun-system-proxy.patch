@@ -1,0 +1,277 @@
+diff --git a/common/listener/listener.go b/common/listener/listener.go
+index 7a58015c8..9e6a02588 100644
+--- a/common/listener/listener.go
++++ b/common/listener/listener.go
+@@ -104,9 +104,19 @@ func (l *Listener) Start() error {
+ 		listenAddr := l.listenOptions.Listen.Build(netip.IPv4Unspecified())
+ 		if listenAddr.IsUnspecified() {
+ 			listenAddrString = "127.0.0.1"
++			if listenAddr.Is6() {
++				listenAddrString = "::1"
++			}
+ 		} else {
+ 			listenAddrString = listenAddr.String()
+ 		}
++		// A service must set the authenticated desktop user's proxy, not the
++		// service account's. Let the platform own toggling and cleanup as well.
++		if platform, ok := service.FromContext[adapter.PlatformInterface](l.ctx).(interface {
++			SetSystemProxyFromListener(M.Socksaddr) error
++		}); ok {
++			return platform.SetSystemProxyFromListener(M.ParseSocksaddrHostPort(listenAddrString, listenPort))
++		}
+ 		systemProxy, err := settings.NewSystemProxy(l.ctx, M.ParseSocksaddrHostPort(listenAddrString, listenPort), l.systemProxySOCKS, nil)
+ 		if err != nil {
+ 			return E.Cause(err, "initialize system proxy")
+diff --git a/daemon/instance.go b/daemon/instance.go
+index 19f286ce3..b44d3896d 100644
+--- a/daemon/instance.go
++++ b/daemon/instance.go
+@@ -89,6 +89,16 @@ func (s *StartedService) newInstance(ctx context.Context, profileContent string,
+ 		cancel()
+ 		return nil, err
+ 	}
++	// Desktop platforms may attach eligible non-TUN listeners to their
++	// user-scoped system proxy lifecycle before constructing the core.
++	if platform, ok := service.FromContext[adapter.PlatformInterface](ctx).(interface {
++		ConfigureSystemProxyInbounds([]option.Inbound) error
++	}); ok {
++		if err = platform.ConfigureSystemProxyInbounds(options.Inbounds); err != nil {
++			cancel()
++			return nil, err
++		}
++	}
+ 	if overrideOptions != nil {
+ 		for _, inbound := range options.Inbounds {
+ 			if tunInboundOptions, isTUN := inbound.Options.(*option.TunInboundOptions); isTUN {
+diff --git a/experimental/boxdd/platform_windows.go b/experimental/boxdd/platform_windows.go
+index 714903f91..5fbef46f1 100644
+--- a/experimental/boxdd/platform_windows.go
++++ b/experimental/boxdd/platform_windows.go
+@@ -90,7 +90,7 @@ func (p *windowsPlatformInterface) ProcessPlatformOptions(options option.TunPlat
+ 	p.access.Lock()
+ 	if p.systemProxy != nil {
+ 		p.access.Unlock()
+-		return E.New("only one enabled `tun.platform.http_proxy` is supported")
++		return E.New("only one system proxy is supported (HTTP/mixed listener or tun.platform.http_proxy)")
+ 	}
+ 	p.systemProxy = systemProxy
+ 	err = p.applySystemProxyLocked()
+diff --git a/common/listener/system_proxy_test.go b/common/listener/system_proxy_test.go
+new file mode 100644
+--- /dev/null
++++ b/common/listener/system_proxy_test.go
+@@ -0,0 +1,53 @@
++package listener
++
++import (
++	"context"
++	"errors"
++	"testing"
++
++	"github.com/sagernet/sing-box/adapter"
++	"github.com/sagernet/sing-box/log"
++	"github.com/sagernet/sing-box/option"
++	"github.com/sagernet/sing/common/json"
++	M "github.com/sagernet/sing/common/metadata"
++	"github.com/sagernet/sing/service"
++)
++
++type proxyTestPlatform struct {
++	adapter.PlatformInterface
++	address M.Socksaddr
++	err     error
++}
++
++func (p *proxyTestPlatform) SetSystemProxyFromListener(address M.Socksaddr) error {
++	p.address = address
++	return p.err
++}
++
++func TestSFWSystemProxyDelegatesToPlatform(t *testing.T) {
++	for _, fail := range []bool{false, true} {
++		p := &proxyTestPlatform{}
++		if fail {
++			p.err = errors.New("proxy setup failed")
++		}
++		ctx := service.ContextWith[adapter.PlatformInterface](context.Background(), p)
++		var opts option.ListenOptions
++		if err := json.Unmarshal([]byte(`{"listen":"127.0.0.1","listen_port":0}`), &opts); err != nil {
++			t.Fatal(err)
++		}
++		l := New(Options{Context: ctx, Logger: log.StdLogger(), Network: []string{"tcp"}, Listen: opts, SetSystemProxy: true})
++		err := l.Start()
++		if !errors.Is(err, p.err) {
++			t.Fatalf("error=%v want=%v", err, p.err)
++		}
++		if p.address.Port == 0 || p.address.AddrString() != "127.0.0.1" {
++			t.Fatalf("wrong endpoint: %v", p.address)
++		}
++		if l.systemProxy != nil {
++			t.Fatal("listener must not own a service-account proxy")
++		}
++		if err := l.Close(); err != nil {
++			t.Fatal(err)
++		}
++	}
++}
+
+diff --git a/experimental/boxdd/system_proxy_windows.go b/experimental/boxdd/system_proxy_windows.go
+new file mode 100644
+--- /dev/null
++++ b/experimental/boxdd/system_proxy_windows.go
+@@ -0,0 +1,62 @@
++package main
++
++import (
++	"net/netip"
++
++	C "github.com/sagernet/sing-box/constant"
++	"github.com/sagernet/sing-box/option"
++	E "github.com/sagernet/sing/common/exceptions"
++	M "github.com/sagernet/sing/common/metadata"
++)
++
++// ConfigureSystemProxyInbounds only changes the parsed runtime configuration.
++// The saved profile remains intact; the existing persisted proxy preference
++// decides whether the registered proxy is enabled on each start.
++func (p *windowsPlatformInterface) ConfigureSystemProxyInbounds(inbounds []option.Inbound) error {
++	hasTUN := false
++	for _, inbound := range inbounds {
++		if inbound.Type == C.TypeTun {
++			hasTUN = true
++		}
++	}
++	var selected *option.HTTPMixedInboundOptions
++	var explicit *option.HTTPMixedInboundOptions
++	for _, inbound := range inbounds {
++		if inbound.Type != C.TypeHTTP && inbound.Type != C.TypeMixed {
++			continue
++		}
++		opts, ok := inbound.Options.(*option.HTTPMixedInboundOptions)
++		if !ok {
++			continue
++		}
++		addr := opts.Listen.Build(netip.IPv4Unspecified())
++		eligible := len(opts.Users) == 0 && (opts.TLS == nil || !opts.TLS.Enabled) &&
++			opts.Detour == "" && opts.NetNs == "" && (addr.IsLoopback() || addr.IsUnspecified())
++		if opts.SetSystemProxy {
++			if !eligible {
++				return E.New("system proxy requires a local HTTP/mixed listener without authentication, TLS, detour or network namespace")
++			}
++			if explicit != nil {
++				return E.New("only one HTTP/mixed listener may set the system proxy")
++			}
++			explicit = opts
++		}
++		if selected == nil && eligible {
++			selected = opts
++		}
++	}
++	if !hasTUN && explicit == nil && selected != nil {
++		selected.SetSystemProxy = true
++	}
++	return nil
++}
++
++// Called after ListenTCP succeeds, so port zero resolves to the actual port.
++func (p *windowsPlatformInterface) SetSystemProxyFromListener(address M.Socksaddr) error {
++	return p.ProcessPlatformOptions(option.TunPlatformOptions{
++		HTTPProxy: &option.HTTPProxyOptions{
++			Enabled:       true,
++			ServerOptions: option.ServerOptions{Server: address.AddrString(), ServerPort: address.Port},
++		},
++	})
++}
+
+diff --git a/experimental/boxdd/system_proxy_windows_test.go b/experimental/boxdd/system_proxy_windows_test.go
+new file mode 100644
+--- /dev/null
++++ b/experimental/boxdd/system_proxy_windows_test.go
+@@ -0,0 +1,87 @@
++package main
++
++import (
++	"context"
++	"testing"
++
++	"github.com/sagernet/sing-box/include"
++	"github.com/sagernet/sing-box/option"
++	"github.com/sagernet/sing/common/json"
++	M "github.com/sagernet/sing/common/metadata"
++)
++
++func TestSFWSystemProxySelection(t *testing.T) {
++	for _, test := range []struct {
++		name, inbounds string
++		selected       int
++		wantError      bool
++	}{
++		{"mixed", `[{"type":"mixed","listen":"127.0.0.1","listen_port":2080}]`, 0, false},
++		{"http wildcard dynamic port", `[{"type":"http"}]`, 0, false},
++		{"ipv6", `[{"type":"mixed","listen":"::1"}]`, 0, false},
++		{"first eligible", `[{"type":"http","users":[{"username":"a","password":"b"}]},{"type":"mixed"},{"type":"http"}]`, 1, false},
++		{"explicit wins", `[{"type":"mixed"},{"type":"http","set_system_proxy":true}]`, 1, false},
++		{"socks only", `[{"type":"socks"}]`, -1, false},
++		{"tun", `[{"type":"mixed"},{"type":"tun"}]`, -1, false},
++		{"tls", `[{"type":"http","tls":{"enabled":true}}]`, -1, false},
++		{"lan binding", `[{"type":"mixed","listen":"192.0.2.1"}]`, -1, false},
++		{"detour", `[{"type":"http","detour":"another"}]`, -1, false},
++		{"explicit invalid", `[{"type":"http","set_system_proxy":true,"users":[{"username":"a","password":"b"}]}]`, -1, true},
++		{"ambiguous explicit", `[{"type":"http","set_system_proxy":true},{"type":"mixed","set_system_proxy":true}]`, -1, true},
++	} {
++		t.Run(test.name, func(t *testing.T) {
++			ctx := include.Context(context.Background())
++			options, err := json.UnmarshalExtendedContext[option.Options](ctx, []byte(`{"inbounds":`+test.inbounds+`}`))
++			if err != nil {
++				t.Fatal(err)
++			}
++			p := &windowsPlatformInterface{}
++			err = p.ConfigureSystemProxyInbounds(options.Inbounds)
++			if (err != nil) != test.wantError {
++				t.Fatalf("error = %v", err)
++			}
++			if test.wantError {
++				return
++			}
++			for i, inbound := range options.Inbounds {
++				if opts, ok := inbound.Options.(*option.HTTPMixedInboundOptions); ok {
++					if opts.SetSystemProxy != (i == test.selected) {
++						t.Fatalf("inbound %d: enabled=%v", i, opts.SetSystemProxy)
++					}
++				}
++			}
++		})
++	}
++}
++
++func TestSFWSystemProxyLifecycleDisabledPreference(t *testing.T) {
++	// Keep preference off so this regression test never changes host settings.
++	p := &windowsPlatformInterface{systemProxyEnabled: false}
++	if err := p.SetSystemProxyFromListener(M.ParseSocksaddr("127.0.0.1:2080")); err != nil {
++		t.Fatal(err)
++	}
++	status, err := p.SystemProxyStatus()
++	if err != nil || !status.Available || status.Enabled {
++		t.Fatalf("status=%v error=%v", status, err)
++	}
++	if err := p.SetSystemProxyFromListener(M.ParseSocksaddr("127.0.0.1:2081")); err == nil {
++		t.Fatal("accepted duplicate system proxy")
++	}
++	if err := p.ResetPlatformOptions(); err != nil {
++		t.Fatal(err)
++	}
++	status, _ = p.SystemProxyStatus()
++	if status.Available || status.Enabled {
++		t.Fatalf("stale proxy after stop: %v", status)
++	}
++	if err := p.SetSystemProxyFromListener(M.ParseSocksaddr("[::1]:2082")); err != nil {
++		t.Fatal(err)
++	}
++	status, _ = p.SystemProxyStatus()
++	if !status.Available || status.Enabled {
++		t.Fatalf("preference lost on restart: %v", status)
++	}
++	if err := p.ResetPlatformOptions(); err != nil {
++		t.Fatal(err)
++	}
++}

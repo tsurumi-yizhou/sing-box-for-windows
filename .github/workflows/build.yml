@@ -26,6 +26,7 @@ jobs:
         run: |
           $lock = Get-Content Scripts/sources.lock.json -Raw | ConvertFrom-Json
           "singbox=$($lock.singbox.Commit)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "go=$($lock.toolchain.go -replace '^go', '')" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
       - name: Checkout sing-box (pinned)
         uses: actions/checkout@v6
@@ -33,15 +34,24 @@ jobs:
           repository: SagerNet/sing-box
           ref: ${{ steps.pins.outputs.singbox }}
           path: .cache/upstream/sing-box
+          fetch-depth: 0
 
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
-          go-version: "stable"
+          go-version: ${{ steps.pins.outputs.go }}
+          # build-daemon.ps1 uses repository-local Go caches.
+          cache: false
 
       - name: Build boxdd daemon
         shell: pwsh
-        run: ./Scripts/build-daemon.ps1 -SingBoxSource ./.cache/upstream/sing-box
+        run: |
+          ./Scripts/build-daemon.ps1 -SingBoxSource ./.cache/upstream/sing-box
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $tags = ((Get-Content .cache/upstream/sing-box/release/DEFAULT_BUILD_TAGS_WINDOWS -Raw).Trim() -split ',' | Where-Object { $_ -ne 'tfogo_checklinkname0' }) -join ','
+          $linkFlags = (Get-Content .cache/upstream/sing-box/release/LDFLAGS -Raw).Trim()
+          go -C .cache/upstream/sing-box test -tags $tags -ldflags $linkFlags ./experimental/clashmode ./common/listener ./experimental/boxdd
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
@@ -49,7 +59,7 @@ jobs:
           dotnet-version: "10.0.x"
 
       - name: Restore
-        run: dotnet restore SFW.csproj
+        run: dotnet restore SFW.csproj -p:Configuration=Release -p:Platform=x64 -r win-x64
 
       - name: Build
-        run: dotnet build SFW.csproj -c Release -p:Platform=x64 --no-restore
+        run: dotnet build SFW.csproj -c Release -p:Platform=x64 -r win-x64 --no-restore

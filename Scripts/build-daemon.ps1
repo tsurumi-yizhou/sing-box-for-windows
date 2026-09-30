@@ -24,6 +24,8 @@ if (-not (Test-Path (Join-Path $source "go.mod"))) {
     throw "SingBoxSource must point to a checked-out sing-box source tree."
 }
 
+& (Join-Path $PSScriptRoot 'Apply-DaemonPatches.ps1') -SingBoxSource $source
+
 # The daemon is built from a pinned upstream revision; the pinned toolchain
 # keeps builds reproducible across machines (mirrors the official desktop
 # client's version.json, which tracks sing-box version + Go version).
@@ -62,6 +64,11 @@ $tags = if (Test-Path $tagsFile) {
 } else { "" }
 $tagsArg = if ($tags) { @('-tags', $tags) } else { @() }
 
+# Keep upstream runtime defaults and linkname support paired with its build
+# tags (v1.14.2's badlinkname runtime diagnostics require -checklinkname=0).
+$linkerFlagsFile = Join-Path $source "release\LDFLAGS"
+$sharedLinkerFlags = if (Test-Path $linkerFlagsFile) { (Get-Content $linkerFlagsFile -Raw).Trim() } else { "" }
+
 New-Item -ItemType Directory -Force $OutputDirectory | Out-Null
 $cacheRoot = Join-Path $PSScriptRoot "..\.cache"
 $env:CGO_ENABLED = '0'
@@ -74,7 +81,7 @@ $env:GOPATH = Join-Path $cacheRoot 'gopath'
 $daemonExe = Join-Path $OutputDirectory 'sing-box-daemon.exe'
 Push-Location $source
 try {
-    & $goExe build -ldflags "-H windowsgui -X github.com/sagernet/sing-box/constant.Version=$singBoxVersion" @tagsArg -o $daemonExe ./experimental/boxdd
+    & $goExe build -ldflags "-H windowsgui -X github.com/sagernet/sing-box/constant.Version=$singBoxVersion $sharedLinkerFlags" @tagsArg -o $daemonExe ./experimental/boxdd
 }
 finally {
     Pop-Location

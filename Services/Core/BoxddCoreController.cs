@@ -132,7 +132,6 @@ public sealed class BoxddCoreController : ICoreController
             _ = Task.Run(() => StreamStatusAsync(token), CancellationToken.None);
             _ = Task.Run(() => StreamGroupsAsync(token), CancellationToken.None);
             _ = Task.Run(() => StreamConnectionsAsync(token), CancellationToken.None);
-            _ = Task.Run(() => StreamClashModeAsync(token), CancellationToken.None);
             _ = Task.Run(() => StreamOutboundsAsync(token), CancellationToken.None);
 
             // A failed status stream completes this task with its real relay
@@ -146,6 +145,9 @@ public sealed class BoxddCoreController : ICoreController
 
             StartupDiag.Log("Core.StartAsync: service started, state=Running");
             SetState(new RuntimeState(true, "Running"));
+            // Unlike streaming RPCs, GetClashModeStatus requires STARTED and
+            // fails immediately while the daemon is still starting.
+            _ = Task.Run(() => StreamClashModeAsync(token), CancellationToken.None);
             _ = RefreshSystemProxySafeAsync();
         }
         catch (Exception ex)
@@ -941,4 +943,3 @@ public sealed class BoxddCoreController : ICoreController
             LogReceived?.Invoke(this, line);
     }
 }
-
