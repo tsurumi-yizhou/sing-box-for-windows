@@ -4,16 +4,6 @@
 building. Application is idempotent and stops on conflicting upstream changes.
 Keep patches in filename order and review them when updating `sources.lock.json`.
 
-## Single Clash mode
-
-`0002-clash-single-mode-rule.patch` adds Rule to a manager reporting a single
-non-Rule mode, preserving the initial selection and allowing both modes through
-the existing SetClashMode RPC. A sole Rule is not duplicated; multiple modes
-remain unchanged. Lowercase mode names use `rule`.
-
-Regression coverage: `go test ./experimental/clashmode -run TestDesktopSingleMode`.
-Both patches are compatible with the pinned sing-box v1.14.2 release.
-
 ## Non-TUN Windows system proxy
 
 For a profile without a TUN inbound, the Windows daemon automatically selects

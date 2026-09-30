@@ -153,7 +153,7 @@ public sealed partial class HomePage : Page
     {
         var disabled = App.State.Settings.DisabledDashboardCards;
         var running = App.State.Core.State.IsRunning;
-        var hasModes = App.State.Core.ClashMode.Modes.Count > 0;
+        var hasModes = App.State.Core.ClashMode.Modes.Count > 1;
         var proxyAvailable = App.State.Core.SystemProxy.Available;
 
         // SFA parity: dashboard cards stay visible when stopped (with idle
@@ -535,7 +535,7 @@ public sealed partial class HomePage : Page
             var modes = mode.Modes;
             ModeCard.Visibility = Visibility.Collapsed; // re-evaluated by ApplyCardVisibility
 
-            if (modes.Count is >= 1 and <= 4)
+            if (modes.Count is >= 2 and <= 4)
             {
                 BuildModeSegments(modes, mode.CurrentMode);
                 ModeSegmented.Visibility = Visibility.Visible;
