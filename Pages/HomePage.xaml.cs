@@ -3,15 +3,16 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Windows.UI;
-using sing_box_for_windows.Models;
-using sing_box_for_windows.Services;
-using sing_box_for_windows.Services.Core;
+using SFW.Models;
+using SFW.Services;
+using SFW.Services.Core;
 
-namespace sing_box_for_windows.Pages;
+namespace SFW.Pages;
 
 public sealed partial class HomePage : Page
 {
     private bool _applyingMode;
+    private bool _modeChangePending;
     private bool _applyingSystemProxy;
     private string _selectedSegmentedMode = string.Empty;
 
@@ -29,6 +30,7 @@ public sealed partial class HomePage : Page
     private void HomePage_Loaded(object sender, RoutedEventArgs e)
     {
         App.State.Core.StateChanged += Core_StateChanged;
+        App.State.Core.ConnectionChanged += Core_ConnectionChanged;
         App.State.Core.StatusChanged += Core_StatusChanged;
         App.State.Core.ClashModeChanged += Core_ClashModeChanged;
         App.State.Core.SystemProxyChanged += Core_SystemProxyChanged;
@@ -46,6 +48,7 @@ public sealed partial class HomePage : Page
 
         UpdateStatus(App.State.Core.Status);
         UpdateRuntime(App.State.Core.State);
+        UpdateConnection(App.State.Core.Connection);
         UpdateClashMode(App.State.Core.ClashMode);
         UpdateSystemProxy(App.State.Core.SystemProxy);
         ApplyCardVisibility();
@@ -57,6 +60,7 @@ public sealed partial class HomePage : Page
     {
         _relativeTimeTimer.Stop();
         App.State.Core.StateChanged -= Core_StateChanged;
+        App.State.Core.ConnectionChanged -= Core_ConnectionChanged;
         App.State.Core.StatusChanged -= Core_StatusChanged;
         App.State.Core.ClashModeChanged -= Core_ClashModeChanged;
         App.State.Core.SystemProxyChanged -= Core_SystemProxyChanged;
@@ -398,7 +402,7 @@ public sealed partial class HomePage : Page
     {
         if (!File.Exists(path))
             throw new FileNotFoundException(Loc.Get("Configuration file was not found.", "未找到配置文件。"), path);
-        AppState.ValidateJsonContent(await File.ReadAllTextAsync(path));
+        await ConfigurationValidator.CheckAsync(await File.ReadAllTextAsync(path));
         var profileName = string.IsNullOrWhiteSpace(name) ? Path.GetFileNameWithoutExtension(path) : name;
         return App.State.AddProfile(profileName, path);
     }
@@ -475,6 +479,22 @@ public sealed partial class HomePage : Page
 
     // ----- Core event handling -----
 
+    private void Core_ConnectionChanged(object? sender, DaemonConnectionState state) =>
+        DispatcherQueue.TryEnqueue(() => UpdateConnection(state));
+
+    private void UpdateConnection(DaemonConnectionState state)
+    {
+        ConnectionInfo.IsOpen = state.Phase is not (DaemonConnectionPhase.Connected or DaemonConnectionPhase.Disconnected);
+        ConnectionInfo.Message = state.Error ?? state.Phase switch
+        {
+            DaemonConnectionPhase.Connecting => Loc.Get("Connecting to the service…", "正在连接服务…"),
+            DaemonConnectionPhase.Reconnecting => Loc.Get("Connection lost. Reconnecting…", "连接已断开，正在重连…"),
+            DaemonConnectionPhase.NotInstalled => Loc.Get("Service not installed. Repair it in Settings.", "服务尚未安装，请在设置中修复。"),
+            DaemonConnectionPhase.NotRunning => Loc.Get("Service is stopped. Start or repair it in Settings.", "服务已停止，请在设置中启动或修复。"),
+            _ => Loc.Get("The service is unavailable.", "服务不可用。"),
+        };
+    }
+
     private void Core_StateChanged(object? sender, RuntimeState state) =>
         DispatcherQueue.TryEnqueue(() => UpdateRuntime(state));
 
@@ -545,7 +565,7 @@ public sealed partial class HomePage : Page
             {
                 ModeBox.ItemsSource = modes;
                 ModeBox.SelectedItem = string.IsNullOrWhiteSpace(mode.CurrentMode) ? null : mode.CurrentMode;
-                ModeBox.IsEnabled = true;
+                ModeBox.IsEnabled = !_modeChangePending;
                 ModeSegmented.Visibility = Visibility.Collapsed;
                 ModeBox.Visibility = Visibility.Visible;
             }
@@ -582,6 +602,7 @@ public sealed partial class HomePage : Page
                         : Application.Current.Resources["TextFillColorSecondaryBrush"] as Brush,
                 },
                 Tag = mode,
+                IsEnabled = !_modeChangePending,
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 HorizontalContentAlignment = HorizontalAlignment.Center,
                 Padding = new Thickness(12, 6, 12, 6),
@@ -600,7 +621,7 @@ public sealed partial class HomePage : Page
 
     private async void ModeSegment_Click(object sender, RoutedEventArgs e)
     {
-        if (_applyingMode || sender is not Button { Tag: string mode }) return;
+        if (_applyingMode || _modeChangePending || sender is not Button { Tag: string mode }) return;
         if (string.Equals(mode, _selectedSegmentedMode, StringComparison.Ordinal)) return;
         _selectedSegmentedMode = mode;
         BuildModeSegments(App.State.Core.ClashMode.Modes, mode);
@@ -609,7 +630,7 @@ public sealed partial class HomePage : Page
 
     private async void ModeBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (_applyingMode || ModeBox.SelectedItem is not string mode || string.IsNullOrWhiteSpace(mode))
+        if (_applyingMode || _modeChangePending || ModeBox.SelectedItem is not string mode || string.IsNullOrWhiteSpace(mode))
         {
             return;
         }
@@ -627,12 +648,17 @@ public sealed partial class HomePage : Page
 
     private async Task SetModeAsync(string mode)
     {
+        _modeChangePending = true;
+        foreach (var button in ModeSegmentedPanel.Children.OfType<Button>()) button.IsEnabled = false;
+        ModeBox.IsEnabled = false;
         try
         {
             await App.State.Core.SetClashModeAsync(mode);
         }
         catch (Exception exception)
         {
+            // Revert the optimistic selection to the last daemon-confirmed mode.
+            UpdateClashMode(App.State.Core.ClashMode);
             var dialog = new ContentDialog
             {
                 Title = Loc.Get("Unable to change mode", "无法更改模式"),
@@ -641,6 +667,12 @@ public sealed partial class HomePage : Page
                 XamlRoot = XamlRoot,
             };
             await dialog.ShowAsync();
+        }
+        finally
+        {
+            _modeChangePending = false;
+            foreach (var button in ModeSegmentedPanel.Children.OfType<Button>()) button.IsEnabled = true;
+            ModeBox.IsEnabled = true;
         }
     }
 

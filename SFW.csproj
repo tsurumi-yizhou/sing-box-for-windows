@@ -3,7 +3,7 @@
         <OutputType>WinExe</OutputType>
         <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
         <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
-        <RootNamespace>sing_box_for_windows</RootNamespace>
+        <RootNamespace>SFW</RootNamespace>
         <!-- boxdd layout contract: the application executable must be named sing-box.exe -->
         <AssemblyName>sing-box</AssemblyName>
         <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -26,6 +26,12 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Remove="Tests\**\*.cs" />
+        <EmbeddedResource Remove="Tests\**\*" />
+        <None Remove="Tests\**\*" />
+    </ItemGroup>
 
     <ItemGroup>
         <Content Include="Assets\SplashScreen.scale-200.png" />
@@ -54,8 +60,8 @@
 
     <ItemGroup>
         <!-- boxdd layout contract: daemon lives at resources\daemon\sing-box-daemon.exe -->
-        <Content Include="daemon\sing-box-daemon.exe"
-            Link="resources\daemon\sing-box-daemon.exe"
+        <Content Include="daemon\**\*"
+            Link="resources\daemon\%(RecursiveDir)%(Filename)%(Extension)"
             CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
 
@@ -112,8 +118,11 @@
     <Target Name="RunProtobufCompile" BeforeTargets="PrepareForBuild"
         DependsOnTargets="Protobuf_Compile" />
     <Target Name="CopySingboxDaemon" AfterTargets="Build">
-        <Copy SourceFiles="daemon\sing-box-daemon.exe"
-            DestinationFolder="$(OutDir)resources\daemon" SkipUnchangedFiles="true" />
+        <ItemGroup>
+            <_DaemonResources Include="daemon\**\*" />
+        </ItemGroup>
+        <Copy SourceFiles="@(_DaemonResources)"
+            DestinationFiles="@(_DaemonResources->'$(OutDir)resources\daemon\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
     </Target>
     <!-- The installed daemon service runs resources\daemon\sing-box-daemon.exe straight
          out of the loose layout and locks its own binary for writing on purpose, so a

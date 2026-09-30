@@ -1,7 +1,7 @@
 using System.IO.Pipes;
 using Grpc.Net.Client;
 
-namespace sing_box_for_windows.Services.Core;
+namespace SFW.Services.Core;
 
 /// <summary>gRPC channel over a Windows named pipe (boxdd worker relay).</summary>
 public static class NamedPipeChannel

@@ -1,4 +1,4 @@
-namespace sing_box_for_windows.Services;
+namespace SFW.Services;
 
 /// <summary>
 /// Append-only startup trace used to diagnose hangs in the connect path.

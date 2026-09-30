@@ -1,9 +1,9 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using sing_box_for_windows.Models;
-using sing_box_for_windows.Services.Core;
+using SFW.Models;
+using SFW.Services.Core;
 
-namespace sing_box_for_windows.Services;
+namespace SFW.Services;
 
 public sealed class AppState : IAsyncDisposable
 {
@@ -32,7 +32,9 @@ public sealed class AppState : IAsyncDisposable
     public ICoreController Core { get; }
     public List<string> Logs { get; } = [];
     public event EventHandler<string>? LogAdded;
+    public event EventHandler? LogsCleared;
     private readonly object _logLock = new();
+    private readonly object _settingsWriteLock = new();
 
     /// <summary>Directory holding settings.json and downloaded subscriptions.</summary>
     public string DataDirectory => _dataDirectory;
@@ -77,6 +79,7 @@ public sealed class AppState : IAsyncDisposable
 
         Core = new BoxddCoreController();
         Core.LogReceived += (_, line) => AddLog(line);
+        Core.LogsReset += (_, _) => ClearLogs();
 
         try
         {
@@ -103,6 +106,7 @@ public sealed class AppState : IAsyncDisposable
         {
             Logs.Clear();
         }
+        LogsCleared?.Invoke(this, EventArgs.Empty);
     }
 
     /// <summary>Thread-safe copy of the log buffer for UI rendering.</summary>
@@ -144,7 +148,8 @@ public sealed class AppState : IAsyncDisposable
 
     public void Save()
     {
-        File.WriteAllText(_settingsPath, JsonSerializer.Serialize(Settings, AppJsonContext.Default.AppSettings));
+        lock (_settingsWriteLock)
+            AtomicFile.WriteAllText(_settingsPath, JsonSerializer.Serialize(Settings, AppJsonContext.Default.AppSettings));
     }
 
     public async Task StartAsync()
@@ -315,7 +320,7 @@ public sealed class AppState : IAsyncDisposable
         await _subscriptionLock.WaitAsync();
         try
         {
-            await File.WriteAllTextAsync(profile.Path, content);
+            await AtomicFile.WriteAllTextAsync(profile.Path, content);
             Settings.Profiles.Add(profile);
             Settings.SelectedProfileId = profile.Id;
             Save();
@@ -343,17 +348,20 @@ public sealed class AppState : IAsyncDisposable
         bool changed;
         try
         {
-            var content = await DownloadSubscriptionAsync(profile.RemoteUrl);
+            var requestedUrl = profile.RemoteUrl;
+            var content = await DownloadSubscriptionAsync(requestedUrl);
 
             await _subscriptionLock.WaitAsync();
             try
             {
+                // Discard a response if the profile was edited or removed during download.
+                if (!Settings.Profiles.Contains(profile) || profile.RemoteUrl != requestedUrl) return false;
                 // SFA/SFM: skip the write entirely when nothing changed.
                 var existing = File.Exists(profile.Path) ? await File.ReadAllTextAsync(profile.Path) : null;
                 changed = existing != content;
                 if (changed)
                 {
-                    await File.WriteAllTextAsync(profile.Path, content);
+                    await AtomicFile.WriteAllTextAsync(profile.Path, content);
                 }
                 profile.LastUpdated = DateTimeOffset.Now;
                 profile.LastUpdateError = null;
@@ -399,54 +407,14 @@ public sealed class AppState : IAsyncDisposable
         return true;
     }
 
-    /// <summary>Downloads and validates subscription content (SFA isJsonConfiguration parity).</summary>
+    /// <summary>Downloads subscription content and checks it with the bundled core.</summary>
     private static async Task<string> DownloadSubscriptionAsync(string url)
     {
         var content = await SubscriptionHttpClient.GetStringAsync(url);
         if (string.IsNullOrWhiteSpace(content))
             throw new InvalidOperationException(Loc.Get("The subscription returned an empty configuration.", "订阅返回了空配置。"));
-        ValidateSubscriptionContent(content);
+        await ConfigurationValidator.CheckAsync(content);
         return content;
-    }
-
-    /// <summary>Validates that content is syntactically valid JSON.</summary>
-    public static void ValidateJsonContent(string content)
-    {
-        try
-        {
-            using var document = JsonDocument.Parse(content);
-        }
-        catch (JsonException)
-        {
-            throw new InvalidOperationException(Loc.Get("The content is not valid JSON.", "内容不是有效的 JSON。"));
-        }
-    }
-
-    /// <summary>
-    /// SFA isJsonConfiguration: the content must be a JSON object carrying at
-    /// least one well-known SingBox section. Invalid downloads never touch disk.
-    /// </summary>
-    private static void ValidateSubscriptionContent(string content)
-    {
-        try
-        {
-            using var document = JsonDocument.Parse(content);
-            if (document.RootElement.ValueKind != JsonValueKind.Object)
-            {
-                throw new InvalidOperationException();
-            }
-            foreach (var section in new[] { "inbounds", "outbounds", "endpoints", "route", "dns", "experimental" })
-            {
-                if (document.RootElement.TryGetProperty(section, out _)) return;
-            }
-        }
-        catch (JsonException)
-        {
-            // Fall through to the error below.
-        }
-        throw new InvalidOperationException(Loc.Get(
-            "The subscription did not return a valid SingBox configuration.",
-            "订阅返回的内容不是有效的 SingBox 配置。"));
     }
 
     /// <summary>SFM uniqueName: append " (n)" until the name is unique.</summary>
@@ -480,48 +448,52 @@ public sealed class AppState : IAsyncDisposable
             throw new ArgumentException(Loc.Get("Profile source cannot be empty.", "配置来源不能为空。"), nameof(source));
 
         var sourceChanged = false;
+        string? remoteContent = null;
         if (profile.IsRemote)
         {
             if (!Uri.TryCreate(trimmedSource, UriKind.Absolute, out var uri) ||
                 (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
                 throw new ArgumentException(Loc.Get("Enter a valid HTTP or HTTPS subscription URL.", "请输入有效的 HTTP 或 HTTPS 订阅 URL。"), nameof(source));
             sourceChanged = !string.Equals(profile.RemoteUrl, trimmedSource, StringComparison.Ordinal);
-            profile.RemoteUrl = trimmedSource;
+            if (sourceChanged) remoteContent = await DownloadSubscriptionAsync(trimmedSource);
         }
         else
         {
             if (!File.Exists(trimmedSource))
                 throw new FileNotFoundException(Loc.Get("Configuration file was not found.", "未找到配置文件。"), trimmedSource);
             sourceChanged = !string.Equals(profile.Path, trimmedSource, StringComparison.OrdinalIgnoreCase);
-            profile.Path = trimmedSource;
+            if (sourceChanged) await ConfigurationValidator.CheckAsync(await File.ReadAllTextAsync(trimmedSource));
         }
 
-        profile.Name = trimmedName;
-        if (autoUpdateIntervalMinutes is { } interval && profile.IsRemote)
+        await _subscriptionLock.WaitAsync();
+        try
         {
-            profile.AutoUpdateInterval = ProfileDialogs.ClampAutoUpdateInterval(interval);
+            if (!Settings.Profiles.Contains(profile))
+                throw new InvalidOperationException(Loc.Get("Profile not found.", "未找到配置。"));
+            if (remoteContent is not null)
+            {
+                await AtomicFile.WriteAllTextAsync(profile.Path, remoteContent);
+                profile.LastUpdated = DateTimeOffset.Now;
+                profile.LastUpdateError = null;
+            }
+            if (profile.IsRemote) profile.RemoteUrl = trimmedSource;
+            else profile.Path = trimmedSource;
+            profile.Name = trimmedName;
+            if (autoUpdateIntervalMinutes is { } interval && profile.IsRemote)
+                profile.AutoUpdateInterval = ProfileDialogs.ClampAutoUpdateInterval(interval);
+            Save();
         }
-        Save();
+        finally { _subscriptionLock.Release(); }
 
-        if (!sourceChanged) return;
-
-        if (profile.IsRemote)
-        {
-            // The URL changed: fetch the new subscription right away instead of
-            // serving the stale cached content until the next update cycle.
-            // UpdateSubscriptionAsync restarts the service when content changed.
-            await UpdateSubscriptionAsync(id);
-        }
-        else
-        {
-            // Local path changed: restart so the new file is picked up.
-            await RestartServiceIfRunningAsync(id);
-        }
+        if (sourceChanged) await RestartServiceIfRunningAsync(id);
     }
 
     public async Task SelectProfileAsync(long id)
     {
         if (Settings.SelectedProfileId == id) return;
+        var profile = Settings.Profiles.FirstOrDefault(item => item.Id == id)
+            ?? throw new InvalidOperationException(Loc.Get("Profile not found.", "未找到配置。"));
+        await ConfigurationValidator.CheckAsync(await File.ReadAllTextAsync(profile.Path));
         Settings.SelectedProfileId = id;
         Save();
 
@@ -646,4 +618,3 @@ public sealed class AppState : IAsyncDisposable
 internal partial class AppJsonContext : JsonSerializerContext
 {
 }
-

@@ -4,11 +4,11 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
-using sing_box_for_windows.Pages;
-using sing_box_for_windows.Services;
-using sing_box_for_windows.Services.Core;
+using SFW.Pages;
+using SFW.Services;
+using SFW.Services.Core;
 
-namespace sing_box_for_windows;
+namespace SFW;
 
 public sealed partial class MainWindow : Window
 {
@@ -47,7 +47,7 @@ public sealed partial class MainWindow : Window
         TrayToggleItem.Command = new AsyncRelayCommand(async () =>
         {
             ShowWindow();
-            await ToggleServiceAsync(App.State.Core.State.IsRunning);
+            await ToggleServiceAsync(App.State.Core.State.IsActive);
             UpdateStartStop(App.State.Core.State);
         });
         TrayQuitItem.Command = new AsyncRelayCommand(QuitAsync);
@@ -69,7 +69,7 @@ public sealed partial class MainWindow : Window
 
     private async void StartStopButton_Click(object sender, RoutedEventArgs e)
     {
-        var wasRunning = App.State.Core.State.IsRunning;
+        var wasRunning = App.State.Core.State.IsActive;
         await Services.BusyButton.RunAsync(StartStopButton, () => ToggleServiceAsync(wasRunning), wasRunning
             ? Services.Loc.Get("Stopping…", "正在停止…")
             : Services.Loc.Get("Starting…", "正在启动…"));
@@ -162,7 +162,7 @@ public sealed partial class MainWindow : Window
 
     private void UpdateTrayToggle()
     {
-        var running = App.State.Core.State.IsRunning;
+        var running = App.State.Core.State.IsActive;
         TrayToggleItem.Text = running
             ? Services.Loc.Get("Stop", "停止")
             : Services.Loc.Get("Start", "启动");
@@ -214,7 +214,7 @@ public sealed partial class MainWindow : Window
 
     private void UpdateStartStop(RuntimeState state)
     {
-        var running = state.IsRunning;
+        var running = state.IsActive;
         StartStopIcon.Glyph = running ? "\uE71A" : "\uE768"; // Stop / Play
         StartStopText.Text = running
             ? Services.Loc.Get("Stop", "停止")
@@ -224,7 +224,7 @@ public sealed partial class MainWindow : Window
             : (Style)Application.Current.Resources["AccentButtonStyle"];
         UpdateTrayToggle();
 
-        if (running)
+        if (state.IsRunning)
         {
             _connectedAt ??= DateTimeOffset.Now;
             UpdateDuration();

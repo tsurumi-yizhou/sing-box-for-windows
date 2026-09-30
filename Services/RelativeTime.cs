@@ -1,4 +1,4 @@
-namespace sing_box_for_windows.Services;
+namespace SFW.Services;
 
 /// <summary>
 /// SFA/SFM RelativeDateTimeFormatter parity, shared by the profiles list and the

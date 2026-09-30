@@ -2,9 +2,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
-using sing_box_for_windows.Services;
+using SFW.Services;
 
-namespace sing_box_for_windows.Pages;
+namespace SFW.Pages;
 
 public sealed partial class ProfilesPage : Page
 {
@@ -95,7 +95,7 @@ public sealed partial class ProfilesPage : Page
             {
                 if (!File.Exists(source))
                     throw new FileNotFoundException(Loc.Get("Configuration file was not found.", "未找到配置文件。"), source);
-                AppState.ValidateJsonContent(await File.ReadAllTextAsync(source));
+                await Services.Core.ConfigurationValidator.CheckAsync(await File.ReadAllTextAsync(source));
                 var name = string.IsNullOrWhiteSpace(NameBox.Text)
                     ? Path.GetFileNameWithoutExtension(source)
                     : NameBox.Text.Trim();
@@ -178,11 +178,11 @@ public sealed partial class ProfilesPage : Page
             }
             else if (content.StartsWith('{'))
             {
-                AppState.ValidateJsonContent(content);
+                await Services.Core.ConfigurationValidator.CheckAsync(content);
                 var directory = Path.Combine(App.State.DataDirectory, "profiles");
                 Directory.CreateDirectory(directory);
                 var path = Path.Combine(directory, $"{Guid.NewGuid():N}.json");
-                await File.WriteAllTextAsync(path, content);
+                await AtomicFile.WriteAllTextAsync(path, content);
                 App.State.AddProfile(Loc.Get("Imported profile", "导入的配置"), path);
             }
             else

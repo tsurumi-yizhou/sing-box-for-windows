@@ -6,14 +6,14 @@ using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Grpc.Net.Client;
 
-namespace sing_box_for_windows.Services.Core;
+namespace SFW.Services.Core;
 
 /// <summary>
 /// Production controller: talks to the upstream SingBox desktop daemon
 /// (boxdd, a Windows service) through its worker relay named pipe. The daemon
 /// runs privileged and resident, so TUN needs no per-start elevation.
 /// </summary>
-public sealed class BoxddCoreController : ICoreController
+public sealed partial class BoxddCoreController : ICoreController
 {
     private static readonly TimeSpan WorkerReadyTimeout = TimeSpan.FromSeconds(15);
 
@@ -44,11 +44,13 @@ public sealed class BoxddCoreController : ICoreController
     private Daemon.ManagedService.ManagedServiceClient? _managedClient;
     private Desktop.DesktopService.DesktopServiceClient? _desktopClient;
     private CancellationTokenSource? _streamCts;
-    private TaskCompletionSource<string?>? _firstServiceStatus;
     private long _startGeneration;
 
+    public event EventHandler<DaemonConnectionState>? ConnectionChanged;
+    public DaemonConnectionState Connection { get; private set; } = new(DaemonConnectionPhase.Disconnected);
     public event EventHandler<RuntimeState>? StateChanged;
     public event EventHandler<string>? LogReceived;
+    public event EventHandler? LogsReset;
     public event EventHandler<CoreStatus>? StatusChanged;
     public event EventHandler<IReadOnlyList<CoreProxyGroup>>? GroupsChanged;
     public event EventHandler<IReadOnlyList<CoreConnection>>? ConnectionsChanged;
@@ -81,39 +83,42 @@ public sealed class BoxddCoreController : ICoreController
     {
         cancellationToken.ThrowIfCancellationRequested();
         StartupDiag.Log("Core.StartAsync: enter");
+        await ConfigurationValidator.CheckAsync(configContent, cancellationToken);
         await StopCoreAsync(cancellationToken);
         StartupDiag.Log("Core.StartAsync: StopAsync done");
+        SetConnection(new(DaemonConnectionPhase.Connecting));
         // One-time, elevated; afterwards the service starts with Windows.
-        await DaemonServiceManager.EnsureRunningAsync(RaiseLog, cancellationToken);
-        StartupDiag.Log("Core.StartAsync: EnsureRunningAsync done");
         try
         {
-        // Spawned inside the try so a worker that never became ready is still
-        // reaped by the catch below instead of outliving the failed start.
-        await StartWorkerAsync(cancellationToken);
-        StartupDiag.Log("Core.StartAsync: StartWorkerAsync done (worker READY)");
+            await DaemonServiceManager.EnsureRunningAsync(RaiseLog, cancellationToken);
+            StartupDiag.Log("Core.StartAsync: EnsureRunningAsync done");
+            // Spawned inside the try so a worker that never became ready is still
+            // reaped by the catch below instead of outliving the failed start.
+            await StartWorkerAsync(cancellationToken);
+            StartupDiag.Log("Core.StartAsync: StartWorkerAsync done (worker READY)");
 
-        _channel = NamedPipeChannel.Create(_relayPipeName!);
-        _client = new Daemon.StartedService.StartedServiceClient(_channel);
-        _managedClient = new Daemon.ManagedService.ManagedServiceClient(_channel);
-        _desktopClient = new Desktop.DesktopService.DesktopServiceClient(_channel);
+            _channel = NamedPipeChannel.Create(_relayPipeName!);
+            _client = new Daemon.StartedService.StartedServiceClient(_channel);
+            _managedClient = new Daemon.ManagedService.ManagedServiceClient(_channel);
+            _desktopClient = new Desktop.DesktopService.DesktopServiceClient(_channel);
 
-        var generation = Interlocked.Increment(ref _startGeneration);
-        var firstStatus = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var startupStatus = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
-        _firstServiceStatus = startupStatus;
-        _streamCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        var token = _streamCts.Token;
+            var generation = Interlocked.Increment(ref _startGeneration);
+            var firstStatus = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var startupStatus = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
+            _connectionCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            _streamCts = CancellationTokenSource.CreateLinkedTokenSource(_connectionCts.Token);
+            var token = _streamCts.Token;
             using var rpcTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             rpcTimeout.CancelAfter(TimeSpan.FromSeconds(30));
             StartupDiag.Log("Core.StartAsync: ClaimServiceAsync...");
-            await _desktopClient.ClaimServiceAsync(new Empty(), cancellationToken: rpcTimeout.Token);
+            await HandshakeAsync(rpcTimeout.Token);
             StartupDiag.Log("Core.StartAsync: ClaimServiceAsync done");
 
             // Establish the stream before starting the core and wait for its
             // immediate upstream snapshot. This prevents us from waiting for a
             // status transition on a relay that was never successfully opened.
-            _ = Task.Run(() => StreamServiceStatusAsync(token, firstStatus, startupStatus, generation), CancellationToken.None);
+            _serviceStatusTask = Task.Run(() => StreamServiceStatusAsync(token, firstStatus, startupStatus, generation), CancellationToken.None);
+            Track(_serviceStatusTask);
             StartupDiag.Log("Core.StartAsync: waiting for first service status...");
             await firstStatus.Task.WaitAsync(rpcTimeout.Token);
             StartupDiag.Log("Core.StartAsync: first status received");
@@ -128,11 +133,11 @@ public sealed class BoxddCoreController : ICoreController
             // Subscribe to buffered daemon logs immediately after the start RPC,
             // before waiting for the terminal status. This exposes config and
             // provider diagnostics while startup is still in progress.
-            _ = Task.Run(() => StreamLogsAsync(token), CancellationToken.None);
-            _ = Task.Run(() => StreamStatusAsync(token), CancellationToken.None);
-            _ = Task.Run(() => StreamGroupsAsync(token), CancellationToken.None);
-            _ = Task.Run(() => StreamConnectionsAsync(token), CancellationToken.None);
-            _ = Task.Run(() => StreamOutboundsAsync(token), CancellationToken.None);
+            Track(Task.Run(() => StreamLogsAsync(token), CancellationToken.None));
+            Track(Task.Run(() => StreamStatusAsync(token), CancellationToken.None));
+            Track(Task.Run(() => StreamGroupsAsync(token), CancellationToken.None));
+            Track(Task.Run(() => StreamConnectionsAsync(token), CancellationToken.None));
+            Track(Task.Run(() => StreamOutboundsAsync(token), CancellationToken.None));
 
             // A failed status stream completes this task with its real relay
             // error. Keep the user-facing wait bounded even for a stuck core.
@@ -147,13 +152,18 @@ public sealed class BoxddCoreController : ICoreController
             SetState(new RuntimeState(true, "Running"));
             // Unlike streaming RPCs, GetClashModeStatus requires STARTED and
             // fails immediately while the daemon is still starting.
-            _ = Task.Run(() => StreamClashModeAsync(token), CancellationToken.None);
-            _ = RefreshSystemProxySafeAsync();
+            Track(Task.Run(() => StreamClashModeAsync(token), CancellationToken.None));
+            _ = RefreshSystemProxySafeAsync(token);
+            SetConnection(new(DaemonConnectionPhase.Connected, DaemonVersion: Connection.DaemonVersion, BundledVersion: Connection.BundledVersion));
+            _ = MonitorConnectionAsync(_connectionCts);
         }
         catch (Exception ex)
         {
             StartupDiag.Log($"Core.StartAsync: FAILED: {ex.GetType().Name}: {ex.Message}");
+            var failure = Connection;
             await StopCoreAsync(CancellationToken.None);
+            SetConnection(failure.Phase is DaemonConnectionPhase.VersionMismatch or DaemonConnectionPhase.OwnedByOtherUser
+                ? failure : new(DaemonConnectionPhase.Unavailable, ex.Message));
             throw;
         }
     }
@@ -257,6 +267,8 @@ public sealed class BoxddCoreController : ICoreController
 
     public async Task StopAsync(CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+        _connectionCts?.Cancel();
         await _lifecycleGate.WaitAsync(cancellationToken);
         try
         {
@@ -271,6 +283,8 @@ public sealed class BoxddCoreController : ICoreController
     private async Task StopCoreAsync(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        _connectionCts?.Cancel();
+        _streamCts?.Cancel();
         // Graceful stop first: the daemon restores the system proxy and flushes
         // state. The daemon service itself stays resident. Bound this RPC so a
         // dead relay (e.g. the worker already exited) can never hang StopAsync,
@@ -278,7 +292,7 @@ public sealed class BoxddCoreController : ICoreController
         // UI stuck on its busy state forever.
         try
         {
-            if (_managedClient is not null)
+            if (_managedClient is not null && _ownsService)
             {
                 using var stopTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
                 stopTimeout.CancelAfter(TimeSpan.FromSeconds(5));
@@ -292,6 +306,9 @@ public sealed class BoxddCoreController : ICoreController
 
         await TeardownConnectionAsync(cancellationToken);
         ResetRuntimeState();
+        _connectionCts?.Dispose();
+        _connectionCts = null;
+        SetConnection(new(DaemonConnectionPhase.Disconnected));
     }
 
     /// <summary>
@@ -300,13 +317,18 @@ public sealed class BoxddCoreController : ICoreController
     /// </summary>
     private async Task TeardownConnectionAsync(CancellationToken cancellationToken)
     {
+        Interlocked.Increment(ref _startGeneration);
+        _streamCts?.Cancel();
+        try { await Task.WhenAll(_sessionTasks); } catch { /* failures were reported by their subscriptions */ }
+        _sessionTasks.Clear();
         lock (_gate)
         {
-            _streamCts?.Cancel();
+            _streamCts?.Dispose();
             _streamCts = null;
             _client = null;
             _managedClient = null;
             _desktopClient = null;
+            _ownsService = false;
         }
         _channel?.Dispose();
         _channel = null;
@@ -314,7 +336,6 @@ public sealed class BoxddCoreController : ICoreController
         // The worker is our non-elevated child; it also exits on its own when
         // this app exits (its --parent-pid watch).
         await KillWorkerProcessAsync(cancellationToken);
-        _firstServiceStatus = null;
     }
 
     /// <summary>
@@ -375,11 +396,12 @@ public sealed class BoxddCoreController : ICoreController
     /// </summary>
     public async Task StopOrphanedServiceAsync(CancellationToken cancellationToken = default)
     {
-        if (State.IsRunning) return; // This process owns a running core.
+        if (_connectionCts is not null) return; // Includes reconnecting sessions owned by this process.
         if (!await DaemonServiceManager.IsDaemonReachableAsync(cancellationToken)) return;
         // A start/stop in progress owns the lifecycle; reconciling on top of
         // it could tear down a brand-new connection, so just skip this pass.
         if (!await _lifecycleGate.WaitAsync(TimeSpan.FromSeconds(2), cancellationToken)) return;
+        if (_connectionCts is not null) { _lifecycleGate.Release(); return; }
         try
         {
             StartupDiag.Log("StopOrphanedServiceAsync: daemon running, checking for an orphaned core");
@@ -391,7 +413,11 @@ public sealed class BoxddCoreController : ICoreController
 
             using var rpcTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             rpcTimeout.CancelAfter(TimeSpan.FromSeconds(15));
-            await _desktopClient.ClaimServiceAsync(new Empty(), cancellationToken: rpcTimeout.Token);
+            var info = await _desktopClient.GetDaemonInfoAsync(new Empty(), cancellationToken: rpcTimeout.Token);
+            if (info.Ownership == DaemonOwnership.Other) return;
+            if (info.Ownership == DaemonOwnership.Available)
+                await _desktopClient.ClaimServiceAsync(new Empty(), cancellationToken: rpcTimeout.Token);
+            else if (info.Ownership != DaemonOwnership.Caller) return;
 
             if (await IsServiceStartedAsync(rpcTimeout.Token))
             {
@@ -483,6 +509,7 @@ public sealed class BoxddCoreController : ICoreController
     {
         var client = GetManagedClient();
         var status = await client.GetSystemProxyStatusAsync(new Empty(), cancellationToken: cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
         SystemProxy = new CoreSystemProxy(status.Available, status.Enabled);
         SystemProxyChanged?.Invoke(this, SystemProxy);
     }
@@ -539,11 +566,11 @@ public sealed class BoxddCoreController : ICoreController
         }
     }
 
-    private async Task RefreshSystemProxySafeAsync()
+    private async Task RefreshSystemProxySafeAsync(CancellationToken token)
     {
         try
         {
-            await RefreshSystemProxyAsync(CancellationToken.None);
+            await RefreshSystemProxyAsync(token);
         }
         catch (Exception ex)
         {
@@ -576,6 +603,7 @@ public sealed class BoxddCoreController : ICoreController
             using var call = GetClient().SubscribeServiceStatus(new Empty(), cancellationToken: token);
             while (await call.ResponseStream.MoveNext(token))
             {
+                token.ThrowIfCancellationRequested();
                 if (generation != Volatile.Read(ref _startGeneration)) return;
                 var status = call.ResponseStream.Current;
                 firstStatus.TrySetResult();
@@ -587,7 +615,7 @@ public sealed class BoxddCoreController : ICoreController
                     case ServiceStatus.Types.Type.Started:
                         SetState(new RuntimeState(true, "Running"));
                         startupStatus.TrySetResult(null);
-                        _ = RefreshSystemProxySafeAsync();
+                        _ = RefreshSystemProxySafeAsync(token);
                         break;
                     case ServiceStatus.Types.Type.Fatal:
                         SetState(new RuntimeState(false, "Stopped"));
@@ -609,6 +637,7 @@ public sealed class BoxddCoreController : ICoreController
                 RaiseLog(message);
                 firstStatus.TrySetException(new IOException(message));
                 startupStatus.TrySetResult(message);
+                throw new IOException(message);
             }
         }
         catch (RpcException ex) when (ex.StatusCode == StatusCode.Cancelled && token.IsCancellationRequested)
@@ -624,18 +653,19 @@ public sealed class BoxddCoreController : ICoreController
             RaiseLog(message);
             firstStatus.TrySetException(ex);
             startupStatus.TrySetResult(message);
+            throw;
         }
     }
 
-    private async Task StreamStatusAsync(CancellationToken token)
-    {
-        try
+    private Task StreamStatusAsync(CancellationToken token) =>
+        RpcSubscription.RunAsync(async (received, token) =>
         {
             using var call = GetClient().SubscribeStatus(
                 new SubscribeStatusRequest { Interval = 1_000_000_000 },
                 cancellationToken: token);
             while (await call.ResponseStream.MoveNext(token))
             {
+                received();
                 var s = call.ResponseStream.Current;
                 Status = new CoreStatus(
                     (long)s.Memory,
@@ -649,80 +679,48 @@ public sealed class BoxddCoreController : ICoreController
                     s.DownlinkTotal);
                 StatusChanged?.Invoke(this, Status);
             }
-        }
-        catch (RpcException ex) when (ex.StatusCode == StatusCode.Cancelled)
-        {
-        }
-        catch (OperationCanceledException)
-        {
-        }
-        catch (Exception ex)
-        {
-            RaiseLog($"status stream error: {ex.Message}");
-        }
-    }
+        }, ex => RaiseLog($"status stream error: {ex.Message}"), token);
 
-    private async Task StreamGroupsAsync(CancellationToken token)
-    {
-        try
+    private Task StreamGroupsAsync(CancellationToken token) =>
+        RpcSubscription.RunAsync(async (received, token) =>
         {
             using var call = GetClient().SubscribeGroups(new Empty(), cancellationToken: token);
             while (await call.ResponseStream.MoveNext(token))
             {
+                received();
                 var groups = call.ResponseStream.Current.Group
                     .Select(ToCoreProxyGroup)
                     .ToList();
                 Groups = groups;
                 GroupsChanged?.Invoke(this, Groups);
             }
-        }
-        catch (RpcException ex) when (ex.StatusCode == StatusCode.Cancelled)
-        {
-        }
-        catch (OperationCanceledException)
-        {
-        }
-        catch (Exception ex)
-        {
-            RaiseLog($"groups stream error: {ex.Message}");
-        }
-    }
+        }, ex => RaiseLog($"groups stream error: {ex.Message}"), token);
 
-    private async Task StreamLogsAsync(CancellationToken token)
-    {
-        try
+    private Task StreamLogsAsync(CancellationToken token) =>
+        RpcSubscription.RunAsync(async (received, token) =>
         {
             using var call = GetClient().SubscribeLog(new Empty(), cancellationToken: token);
             while (await call.ResponseStream.MoveNext(token))
             {
+                received();
                 var log = call.ResponseStream.Current;
+                if (log.Reset) LogsReset?.Invoke(this, EventArgs.Empty);
                 foreach (var entry in log.Messages)
                 {
                     RaiseLog(entry.Message_);
                 }
             }
-        }
-        catch (RpcException ex) when (ex.StatusCode == StatusCode.Cancelled)
-        {
-        }
-        catch (OperationCanceledException)
-        {
-        }
-        catch (Exception ex)
-        {
-            RaiseLog($"log stream error: {ex.Message}");
-        }
-    }
+        }, ex => RaiseLog($"log stream error: {ex.Message}"), token);
 
-    private async Task StreamConnectionsAsync(CancellationToken token)
-    {
-        try
+    private Task StreamConnectionsAsync(CancellationToken token) =>
+        RpcSubscription.RunAsync(async (received, token) =>
         {
             using var call = GetClient().SubscribeConnections(
                 new SubscribeConnectionsRequest { Interval = 1_000_000_000 },
                 cancellationToken: token);
             while (await call.ResponseStream.MoveNext(token))
             {
+                received();
                 var events = call.ResponseStream.Current;
                 // The daemon ticks once per interval even when nothing happened.
                 if (!events.Reset && events.Events.Count == 0) continue;
@@ -732,70 +730,39 @@ public sealed class BoxddCoreController : ICoreController
                     .ToList();
                 ConnectionsChanged?.Invoke(this, Connections);
             }
-        }
-        catch (RpcException ex) when (ex.StatusCode == StatusCode.Cancelled)
-        {
-        }
-        catch (OperationCanceledException)
-        {
-        }
-        catch (Exception ex)
-        {
-            RaiseLog($"connections stream error: {ex.Message}");
-        }
-    }
+        }, ex => RaiseLog($"connections stream error: {ex.Message}"), token);
 
-    private async Task StreamClashModeAsync(CancellationToken token)
-    {
-        try
+    private Task StreamClashModeAsync(CancellationToken token) =>
+        RpcSubscription.RunAsync(async (received, token) =>
         {
+            await WaitForStartedAsync(token);
             var status = await GetClient().GetClashModeStatusAsync(new Empty(), cancellationToken: token);
+            received();
             ClashMode = new CoreClashMode(status.ModeList.ToList(), status.CurrentMode);
             ClashModeChanged?.Invoke(this, ClashMode);
 
             using var call = GetClient().SubscribeClashMode(new Empty(), cancellationToken: token);
             while (await call.ResponseStream.MoveNext(token))
             {
+                received();
                 ClashMode = new CoreClashMode(ClashMode.Modes, call.ResponseStream.Current.Mode);
                 ClashModeChanged?.Invoke(this, ClashMode);
             }
-        }
-        catch (RpcException ex) when (ex.StatusCode == StatusCode.Cancelled)
-        {
-        }
-        catch (OperationCanceledException)
-        {
-        }
-        catch (Exception ex)
-        {
-            RaiseLog($"clash-mode stream error: {ex.Message}");
-        }
-    }
+        }, ex => RaiseLog($"clash-mode stream error: {ex.Message}"), token);
 
-    private async Task StreamOutboundsAsync(CancellationToken token)
-    {
-        try
+    private Task StreamOutboundsAsync(CancellationToken token) =>
+        RpcSubscription.RunAsync(async (received, token) =>
         {
             using var call = GetClient().SubscribeOutbounds(new Empty(), cancellationToken: token);
             while (await call.ResponseStream.MoveNext(token))
             {
+                received();
                 Outbounds = call.ResponseStream.Current.Outbounds
                     .Select(ToCoreProxyGroupItem)
                     .ToList();
                 OutboundsChanged?.Invoke(this, Outbounds);
             }
-        }
-        catch (RpcException ex) when (ex.StatusCode == StatusCode.Cancelled)
-        {
-        }
-        catch (OperationCanceledException)
-        {
-        }
-        catch (Exception ex)
-        {
-            RaiseLog($"outbounds stream error: {ex.Message}");
-        }
-    }
+        }, ex => RaiseLog($"outbounds stream error: {ex.Message}"), token);
 
     private void ApplyConnectionEvents(Daemon.ConnectionEvents events)
     {

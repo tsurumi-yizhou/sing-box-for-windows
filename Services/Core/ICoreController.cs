@@ -1,4 +1,4 @@
-namespace sing_box_for_windows.Services.Core;
+namespace SFW.Services.Core;
 
 /// <summary>
 /// Command/control surface modelled on the libbox command client used by
@@ -8,7 +8,9 @@ namespace sing_box_for_windows.Services.Core;
 public interface ICoreController : IAsyncDisposable
 {
     event EventHandler<RuntimeState>? StateChanged;
+    event EventHandler<DaemonConnectionState>? ConnectionChanged;
     event EventHandler<string>? LogReceived;
+    event EventHandler? LogsReset;
     event EventHandler<CoreStatus>? StatusChanged;
     event EventHandler<IReadOnlyList<CoreProxyGroup>>? GroupsChanged;
     event EventHandler<IReadOnlyList<CoreConnection>>? ConnectionsChanged;
@@ -17,6 +19,7 @@ public interface ICoreController : IAsyncDisposable
     event EventHandler<CoreSystemProxy>? SystemProxyChanged;
 
     RuntimeState State { get; }
+    DaemonConnectionState Connection { get; }
     CoreStatus Status { get; }
     CoreClashMode ClashMode { get; }
     IReadOnlyList<CoreProxyGroup> Groups { get; }
@@ -51,4 +54,3 @@ public interface ICoreController : IAsyncDisposable
     IAsyncEnumerable<CoreStunProgress> StartStunTestAsync(
         string server, string? outboundTag, CancellationToken cancellationToken = default);
 }
-

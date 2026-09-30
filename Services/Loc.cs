@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace sing_box_for_windows.Services;
+namespace SFW.Services;
 
 public static class Loc
 {

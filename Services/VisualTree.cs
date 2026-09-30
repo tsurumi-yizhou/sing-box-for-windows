@@ -2,7 +2,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 
-namespace sing_box_for_windows.Services;
+namespace SFW.Services;
 
 public static class VisualTree
 {

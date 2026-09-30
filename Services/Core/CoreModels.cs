@@ -1,9 +1,20 @@
-namespace sing_box_for_windows.Services.Core;
+namespace SFW.Services.Core;
 
 public sealed record RuntimeState(bool IsRunning, string Status)
 {
     public static RuntimeState Stopped { get; } = new(false, "Stopped");
+    public bool IsActive => IsRunning || Status is "Starting" or "Reconnecting";
 }
+
+public enum DaemonConnectionPhase
+{
+    Disconnected, Connecting, Connected, Reconnecting, NotInstalled, NotRunning,
+    VersionMismatch, OwnedByOtherUser, Unavailable
+}
+
+public sealed record DaemonConnectionState(
+    DaemonConnectionPhase Phase, string? Error = null,
+    string? DaemonVersion = null, string? BundledVersion = null);
 
 /// <summary>
 /// Mirrors libbox StatusMessage. Uplink/downlink are bytes per second;
@@ -104,4 +115,3 @@ public sealed record CoreStunProgress(
     bool IsFinal,
     string? Error,
     bool NatTypeSupported);
-

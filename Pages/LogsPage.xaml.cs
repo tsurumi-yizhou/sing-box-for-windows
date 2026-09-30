@@ -5,9 +5,9 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage.Pickers;
-using sing_box_for_windows.Services;
+using SFW.Services;
 
-namespace sing_box_for_windows.Pages;
+namespace SFW.Pages;
 
 public sealed partial class LogsPage : Page
 {
@@ -25,6 +25,7 @@ public sealed partial class LogsPage : Page
     private readonly System.Collections.ObjectModel.ObservableCollection<LogRow> _rows = new();
     private readonly List<string> _pending = new();
     private bool _flushScheduled;
+    private bool _resetPending;
 
     public LogsPage()
     {
@@ -37,18 +38,38 @@ public sealed partial class LogsPage : Page
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         App.State.LogAdded += OnLogAdded;
+        App.State.LogsCleared += OnLogsCleared;
         RebuildAll();
     }
 
-    private void OnUnloaded(object sender, RoutedEventArgs e) =>
+    private void OnUnloaded(object sender, RoutedEventArgs e)
+    {
         App.State.LogAdded -= OnLogAdded;
+        App.State.LogsCleared -= OnLogsCleared;
+    }
+
+    private void OnLogsCleared(object? sender, EventArgs e)
+    {
+        lock (_pending)
+        {
+            _pending.Clear();
+            _resetPending = true;
+        }
+        ScheduleFlush();
+    }
 
     private void OnLogAdded(object? sender, string line)
     {
         lock (_pending)
         {
             _pending.Add(line);
+            if (_pending.Count > 3000) _pending.RemoveRange(0, _pending.Count - 3000);
         }
+        ScheduleFlush();
+    }
+
+    private void ScheduleFlush()
+    {
         if (_paused) return;
         lock (_pending)
         {
@@ -61,14 +82,18 @@ public sealed partial class LogsPage : Page
     private void FlushPending()
     {
         string[] lines;
+        bool reset;
         lock (_pending)
         {
             _flushScheduled = false;
-            if (_pending.Count == 0) return;
+            if (_paused || (_pending.Count == 0 && !_resetPending)) return;
+            reset = _resetPending;
+            _resetPending = false;
             lines = _pending.ToArray();
             _pending.Clear();
         }
         if (_paused) return;
+        if (reset) _rows.Clear();
 
         var scrollViewer = VisualTree.FindScrollViewer(LogList);
         var wasAtBottom = scrollViewer is null || scrollViewer.VerticalOffset >= scrollViewer.ScrollableHeight - 4;

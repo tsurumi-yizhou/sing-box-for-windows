@@ -3,7 +3,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Windows.Foundation;
 
-namespace sing_box_for_windows.Controls;
+namespace SFW.Controls;
 
 /// <summary>
 /// Rolling traffic line chart in the spirit of the SFA/SFM dashboard charts:

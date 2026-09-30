@@ -2,7 +2,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation;
 
-namespace sing_box_for_windows.Controls;
+namespace SFW.Controls;
 
 /// <summary>
 /// Lays out fixed-size dot tiles row by row, fitting as many columns as the

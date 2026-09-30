@@ -48,7 +48,7 @@ jobs:
         run: |
           ./Scripts/build-daemon.ps1 -SingBoxSource ./.cache/upstream/sing-box
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          $tags = ((Get-Content .cache/upstream/sing-box/release/DEFAULT_BUILD_TAGS_WINDOWS -Raw).Trim() -split ',' | Where-Object { $_ -ne 'tfogo_checklinkname0' }) -join ','
+          $tags = (Get-Content .cache/upstream/sing-box/release/DEFAULT_BUILD_TAGS_WINDOWS -Raw).Trim()
           $linkFlags = (Get-Content .cache/upstream/sing-box/release/LDFLAGS -Raw).Trim()
           go -C .cache/upstream/sing-box test -tags $tags -ldflags $linkFlags ./experimental/clashmode ./common/listener ./experimental/boxdd
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -60,6 +60,15 @@ jobs:
 
       - name: Restore
         run: dotnet restore SFW.csproj -p:Configuration=Release -p:Platform=x64 -r win-x64
+
+      - name: Test subscription recovery and atomic writes
+        shell: pwsh
+        run: |
+          dotnet build Tests/SFW.Tests.csproj -c Release
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          ./Scripts/Sign-Outputs.ps1 -Paths Tests/bin/Release/net10.0/sing-box.exe
+          ./Tests/bin/Release/net10.0/sing-box.exe --integration
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Build
         run: dotnet build SFW.csproj -c Release -p:Platform=x64 -r win-x64 --no-restore

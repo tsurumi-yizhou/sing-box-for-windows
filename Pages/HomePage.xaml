@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Page x:Class="sing_box_for_windows.Pages.HomePage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:controls="using:sing_box_for_windows.Controls">
+<Page x:Class="SFW.Pages.HomePage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:controls="using:SFW.Controls">
     <ScrollViewer>
         <StackPanel Padding="40,28,40,40" Spacing="24">
 
@@ -17,6 +17,8 @@
                     </StackPanel>
                 </Button>
             </StackPanel>
+
+            <InfoBar x:Name="ConnectionInfo" IsOpen="False" IsClosable="False" Severity="Warning" />
 
             <Grid ColumnSpacing="16" RowSpacing="16">
                 <Grid.ColumnDefinitions>

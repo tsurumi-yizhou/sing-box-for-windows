@@ -2,9 +2,9 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using Windows.ApplicationModel;
-using sing_box_for_windows.Services;
+using SFW.Services;
 
-namespace sing_box_for_windows.Services.Core;
+namespace SFW.Services.Core;
 
 /// <summary>
 /// Ensures the boxdd Windows service ("sing-box-daemon") is installed and running.
@@ -98,6 +98,37 @@ public static class DaemonServiceManager
 
     private static readonly SemaphoreSlim VersionQueryLock = new(1, 1);
     private static string? _cachedVersion;
+    private static string? _bundledVersion;
+
+    public static async Task<string?> QueryBundledVersionAsync(CancellationToken token = default)
+    {
+        if (_bundledVersion is not null) return _bundledVersion;
+        var executable = FindDaemonExecutable();
+        if (executable is null) return null;
+        var output = await Task.Run(() => RunCaptured(executable, ["version"]), token);
+        const string prefix = "sing-box-daemon version ";
+        _bundledVersion = output.Split('\n', StringSplitOptions.TrimEntries)
+            .FirstOrDefault(line => line.StartsWith(prefix, StringComparison.Ordinal))?[prefix.Length..];
+        return _bundledVersion;
+    }
+
+    public static DaemonConnectionPhase ProbeService() => QueryServiceStatus() switch
+    {
+        null => DaemonConnectionPhase.NotInstalled,
+        ServiceStatus.Running => DaemonConnectionPhase.Connected,
+        _ => DaemonConnectionPhase.NotRunning,
+    };
+
+    public static async Task RepairAsync(Action<string> log, CancellationToken token = default)
+    {
+        var executable = FindDaemonExecutable()
+            ?? throw new InvalidOperationException("The bundled daemon was not found.");
+        // The daemon installer handles stopping/replacing its service registration.
+        // Preserve the existing working directory, including on path/version repair.
+        await RunElevatedAsync(executable, InstallArguments(executable, log), token);
+        _cachedVersion = null;
+        await EnsureRunningAsync(log, token);
+    }
 
     /// <summary>
     /// The daemon's own version report, e.g. "1.14.0" (`sing-box-daemon version`).
@@ -455,9 +486,15 @@ public static class DaemonServiceManager
 
             using var process = Process.Start(startInfo);
             if (process is null) return string.Empty;
-            var error = process.StandardError.ReadToEnd();
-            var output = process.StandardOutput.ReadToEnd();
-            process.WaitForExit();
+            var errorTask = process.StandardError.ReadToEndAsync();
+            var outputTask = process.StandardOutput.ReadToEndAsync();
+            if (!process.WaitForExit(10000))
+            {
+                process.Kill(entireProcessTree: true);
+                return "The daemon command timed out.";
+            }
+            var error = errorTask.GetAwaiter().GetResult();
+            var output = outputTask.GetAwaiter().GetResult();
             return (string.IsNullOrWhiteSpace(error) ? output : error).Trim();
         }
         catch

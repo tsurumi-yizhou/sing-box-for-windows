@@ -1,7 +1,7 @@
 using Microsoft.UI.Xaml;
-using sing_box_for_windows.Services;
+using SFW.Services;
 
-namespace sing_box_for_windows;
+namespace SFW;
 
 public partial class App : Application
 {

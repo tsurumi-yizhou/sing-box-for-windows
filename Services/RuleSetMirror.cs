@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
-namespace sing_box_for_windows.Services;
+namespace SFW.Services;
 
 /// <summary>
 /// Remote rule-sets are downloaded by the core over a direct connection at

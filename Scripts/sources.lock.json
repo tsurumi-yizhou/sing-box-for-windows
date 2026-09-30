@@ -1,7 +1,7 @@
 {
   "generatedAt": "2026-09-02T14:50:12.9797335+00:00",
   "toolchain": {
-    "go": "go1.27.0"
+    "go": "go1.26.8"
   },
   "apple": {
     "Name": "sing-box-for-apple",
@@ -20,7 +20,7 @@
   },
   "desktop": {
     "Name": "sing-box-for-desktop",
-    "Ref": "699fcaf3502c0ce5679d2aeeca4ec2ea665000a0",
-    "Commit": "699fcaf3502c0ce5679d2aeeca4ec2ea665000a0"
+    "Ref": "d9bc9073fdd91d4343242bcff3790555cf9dff9f",
+    "Commit": "d9bc9073fdd91d4343242bcff3790555cf9dff9f"
   }
 }

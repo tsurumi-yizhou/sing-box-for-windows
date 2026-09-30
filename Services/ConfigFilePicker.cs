@@ -1,6 +1,6 @@
 using Windows.Storage.Pickers;
 
-namespace sing_box_for_windows.Services;
+namespace SFW.Services;
 
 /// <summary>
 /// Shared .json source picker for the profile forms (SFA "Import File" parity).

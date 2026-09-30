@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Window x:Class="sing_box_for_windows.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:tb="using:H.NotifyIcon" Title="Sing-Box">
+<Window x:Class="SFW.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:tb="using:H.NotifyIcon" Title="Sing-Box">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="48" />

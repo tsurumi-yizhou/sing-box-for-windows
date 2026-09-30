@@ -1,9 +1,9 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using sing_box_for_windows.Services;
-using sing_box_for_windows.Services.Core;
+using SFW.Services;
+using SFW.Services.Core;
 
-namespace sing_box_for_windows.Pages;
+namespace SFW.Pages;
 
 public sealed partial class ToolsPage : Page
 {

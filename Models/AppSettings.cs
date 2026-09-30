@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace sing_box_for_windows.Models;
+namespace SFW.Models;
 
 public enum ProfileType
 {

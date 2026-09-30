@@ -26,48 +26,15 @@ if (-not (Test-Path (Join-Path $source "go.mod"))) {
 
 & (Join-Path $PSScriptRoot 'Apply-DaemonPatches.ps1') -SingBoxSource $source
 
-# The daemon is built from a pinned upstream revision; the pinned toolchain
-# keeps builds reproducible across machines (mirrors the official desktop
-# client's version.json, which tracks sing-box version + Go version).
-$lockPath = Join-Path $PSScriptRoot "sources.lock.json"
-if (Test-Path $lockPath) {
-    $lockedGo = (Get-Content $lockPath -Raw | ConvertFrom-Json).toolchain.go
-    $actualGo = (& $goExe version) -replace '^go version (\S+) .*$', '$1'
-    if ($lockedGo -and $actualGo -ne $lockedGo) {
-        Write-Warning ("Go toolchain mismatch: lock file pins $lockedGo, found $actualGo. " +
-            "Update the pin in Scripts\sources.lock.json if the upgrade is intentional.")
-    }
-}
-
-$commit = (git -C $source rev-parse --short HEAD 2>$null)
-
-# The version the built daemon reports. Show the release version users expect
-# ("1.14.0" — the same value the official desktop client pins in its version.json)
-# rather than this repository's internal `sing-box@<commit>` build tag, so take it
-# from the release tag of the pinned checkout. Falls back to the build tag when the
-# checkout carries no tags (for example an exported source archive).
-$releaseTag = (git -C $source describe --tags --abbrev=0 2>$null)
-$singBoxVersion = if ($releaseTag) {
-    $releaseTag.Trim() -replace '^v', ''
-} elseif ($commit) {
-    "sing-box@$commit"
-} else {
-    "sing-box (pinned revision)"
-}
-
-# Official Windows release tags, minus `tfogo_checklinkname0` (tfo-go's
-# //go:linkname tricks break on newer Go toolchains; the official stub fallback
-# is used instead, disabling TCP Fast Open on Windows only).
-$tagsFile = Join-Path $source "release\DEFAULT_BUILD_TAGS_WINDOWS"
-$tags = if (Test-Path $tagsFile) {
-    ((Get-Content $tagsFile -Raw).Trim() -split ',' | Where-Object { $_ -ne 'tfogo_checklinkname0' }) -join ','
-} else { "" }
-$tagsArg = if ($tags) { @('-tags', $tags) } else { @() }
-
-# Keep upstream runtime defaults and linkname support paired with its build
-# tags (v1.14.2's badlinkname runtime diagnostics require -checklinkname=0).
-$linkerFlagsFile = Join-Path $source "release\LDFLAGS"
-$sharedLinkerFlags = if (Test-Path $linkerFlagsFile) { (Get-Content $linkerFlagsFile -Raw).Trim() } else { "" }
+# Use the same Go toolchain and build entry point as the pinned official client.
+$lock = Get-Content (Join-Path $PSScriptRoot 'sources.lock.json') -Raw | ConvertFrom-Json
+$env:GOTOOLCHAIN = $lock.toolchain.go
+$toolchainRoot = (& $goExe env GOROOT).Trim()
+if ($LASTEXITCODE -ne 0) { throw 'Unable to provision the pinned Go toolchain.' }
+$goExe = Join-Path $toolchainRoot 'bin\go.exe'
+$env:PATH = "$(Split-Path $goExe -Parent);$env:PATH"
+$actualGo = (& $goExe env GOVERSION).Trim()
+if ($actualGo -ne $lock.toolchain.go) { throw "Expected $($lock.toolchain.go), found $actualGo." }
 
 New-Item -ItemType Directory -Force $OutputDirectory | Out-Null
 $cacheRoot = Join-Path $PSScriptRoot "..\.cache"
@@ -78,10 +45,10 @@ $env:GOCACHE = Join-Path $cacheRoot 'gocache'
 $env:GOMODCACHE = Join-Path $cacheRoot 'gomod'
 $env:GOPATH = Join-Path $cacheRoot 'gopath'
 
-$daemonExe = Join-Path $OutputDirectory 'sing-box-daemon.exe'
+$daemonExe = [IO.Path]::GetFullPath((Join-Path $OutputDirectory 'sing-box-daemon.exe'))
 Push-Location $source
 try {
-    & $goExe build -ldflags "-H windowsgui -X github.com/sagernet/sing-box/constant.Version=$singBoxVersion $sharedLinkerFlags" @tagsArg -o $daemonExe ./experimental/boxdd
+    & $goExe run ./cmd/internal/build_boxdd "-target=windows/$($env:GOARCH)" "-output=$daemonExe"
 }
 finally {
     Pop-Location

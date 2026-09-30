@@ -2,7 +2,7 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.Windows.AppLifecycle;
 
-namespace sing_box_for_windows;
+namespace SFW;
 
 /// <summary>
 /// Entry point. The app is single-instanced per user session: Windows starts the

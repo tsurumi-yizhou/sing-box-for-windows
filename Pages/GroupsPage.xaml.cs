@@ -6,11 +6,11 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Shapes;
 using Windows.UI;
-using sing_box_for_windows.Controls;
-using sing_box_for_windows.Services;
-using sing_box_for_windows.Services.Core;
+using SFW.Controls;
+using SFW.Services;
+using SFW.Services.Core;
 
-namespace sing_box_for_windows.Pages;
+namespace SFW.Pages;
 
 public sealed partial class GroupsPage : Page
 {

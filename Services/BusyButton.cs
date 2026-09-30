@@ -1,7 +1,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-namespace sing_box_for_windows.Services;
+namespace SFW.Services;
 
 /// <summary>
 /// Gives immediate visual feedback for long-running button actions: the button

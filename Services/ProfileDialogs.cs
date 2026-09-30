@@ -1,8 +1,8 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using sing_box_for_windows.Models;
+using SFW.Models;
 
-namespace sing_box_for_windows.Services;
+namespace SFW.Services;
 
 /// <summary>
 /// Shared profile dialogs used by both HomePage and ProfilesPage, so the two

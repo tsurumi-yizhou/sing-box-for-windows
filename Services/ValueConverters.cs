@@ -2,7 +2,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Media;
 
-namespace sing_box_for_windows.Services;
+namespace SFW.Services;
 
 /// <summary>Visibility.Visible when the bound value is true.</summary>
 public sealed class BoolToVisibilityConverter : IValueConverter
