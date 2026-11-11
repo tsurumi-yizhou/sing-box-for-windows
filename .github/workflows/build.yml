@@ -70,13 +70,16 @@ jobs:
       - name: Restore
         run: dotnet restore SFW.csproj -p:Configuration=Release -p:Platform=x64 -r win-x64
 
-      - name: Test subscription recovery and atomic writes
+      - name: Run xUnit unit and signed-worker integration tests
         shell: pwsh
         run: |
           dotnet build Tests/SFW.Tests.csproj -c Release
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          # boxdd authenticates the test host by executable name and signer, so the
+          # signed-worker test only runs when the host has the app certificate.
           ./Scripts/Sign-Outputs.ps1 -Paths Tests/bin/Release/net10.0/sing-box.exe
-          ./Tests/bin/Release/net10.0/sing-box.exe --integration
+          $env:SFW_INTEGRATION = "1"
+          ./Tests/bin/Release/net10.0/sing-box.exe
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Publish ReadyToRun release

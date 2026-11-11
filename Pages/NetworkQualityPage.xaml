@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page x:Class="SFW.Pages.NetworkQualityPage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer>
+        <StackPanel Padding="40,28,40,40" Spacing="20">
+
+            <StackPanel Spacing="6">
+                <TextBlock x:Uid="NetworkQualityTitle" Style="{StaticResource PageTitleTextStyle}" Text="Network Quality" />
+                <TextBlock x:Uid="NetworkQualityDescription" Style="{StaticResource PageSubtitleTextStyle}" TextWrapping="Wrap" Text="Measure download/upload capacity, responsiveness (RPM) and idle latency through the current outbound." />
+            </StackPanel>
+
+            <InfoBar x:Name="StatusBar" IsClosable="False" IsOpen="False" Severity="Informational" Title="Network Quality" />
+
+            <Border Style="{StaticResource CardBorderStyle}">
+                <StackPanel Spacing="12">
+                    <TextBox x:Uid="NqConfigUrlBox" x:Name="NqConfigUrlBox" Header="Config URL (optional)" PlaceholderText="https://mensura.cdn-apple.com/api/v1/gm/config" />
+                    <CheckBox x:Uid="NqHttp3Box" x:Name="NqHttp3Box" Content="Use HTTP/3" />
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <Button x:Uid="NqStartButton" x:Name="NqStartButton" Style="{StaticResource AccentButtonStyle}" Content="Start" Click="NqStartButton_Click" />
+                        <ProgressRing x:Name="NqProgress" IsActive="False" Visibility="Collapsed" Width="24" Height="24" VerticalAlignment="Center" />
+                        <TextBlock x:Name="NqPhaseText" Style="{StaticResource CardCaptionTextStyle}" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <StackPanel x:Name="NqResults" Spacing="4" Visibility="Collapsed">
+                        <Grid>
+                            <TextBlock x:Uid="NqDownloadLabel" Style="{StaticResource CardLineLabelTextStyle}" Text="Download" />
+                            <TextBlock x:Name="NqDownloadText" Style="{StaticResource CardLineValueTextStyle}" />
+                        </Grid>
+                        <Grid>
+                            <TextBlock x:Uid="NqUploadLabel" Style="{StaticResource CardLineLabelTextStyle}" Text="Upload" />
+                            <TextBlock x:Name="NqUploadText" Style="{StaticResource CardLineValueTextStyle}" />
+                        </Grid>
+                        <Grid>
+                            <TextBlock x:Uid="NqRpmLabel" Style="{StaticResource CardLineLabelTextStyle}" Text="Responsiveness (RPM)" />
+                            <TextBlock x:Name="NqRpmText" Style="{StaticResource CardLineValueTextStyle}" />
+                        </Grid>
+                        <Grid>
+                            <TextBlock x:Uid="NqIdleLatencyLabel" Style="{StaticResource CardLineLabelTextStyle}" Text="Idle latency" />
+                            <TextBlock x:Name="NqIdleLatencyText" Style="{StaticResource CardLineValueTextStyle}" />
+                        </Grid>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

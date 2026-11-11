@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-02T14:50:12.9797335+00:00",
+  "generatedAt": "2026-11-11T14:35:23.2135034+00:00",
   "toolchain": {
     "go": "go1.26.8"
   },
@@ -10,8 +10,8 @@
   },
   "singbox": {
     "Name": "sing-box",
-    "Ref": "v1.14.2",
-    "Commit": "af6e64c3b69e6132ebaee0e1a3d24e93903f6709"
+    "Ref": "v1.14.4",
+    "Commit": "c005f35300ce76427dc285481ec5695f5b179cd2"
   },
   "android": {
     "Name": "sing-box-for-android",
@@ -20,7 +20,8 @@
   },
   "desktop": {
     "Name": "sing-box-for-desktop",
-    "Ref": "d9bc9073fdd91d4343242bcff3790555cf9dff9f",
-    "Commit": "d9bc9073fdd91d4343242bcff3790555cf9dff9f"
+    "Ref": "8aab8eab022366e1032e952d499c9252b833e6c3",
+    "Commit": "8aab8eab022366e1032e952d499c9252b833e6c3",
+    "CommitDate": "2026-10-23T22:39:01+08:00"
   }
 }

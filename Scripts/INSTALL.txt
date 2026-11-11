@@ -1,0 +1,25 @@
+SFW — Windows 11 x64 安装说明
+
+1. 将整个 ZIP 解压到一个文件夹；不要在压缩包内直接运行。
+2. 双击 Install-SFW.cmd。请以日常使用的 Windows 账户运行，
+   不要主动选择“以管理员身份运行”；安装器需要时会申请管理员授权。
+3. 按提示确认安装发布者证书和应用。安装器会安装附带的运行依赖。
+4. 从开始菜单打开 SFW。首次启动代理核心时，需要授权安装后台服务。
+
+不需要安装 Visual Studio、.NET SDK、Go 或其他开发工具。
+Dependencies 和 Add-AppDevPackage.resources 文件夹请保留完整。
+此版本用于 x64（Intel/AMD）电脑，未验证 ARM64。
+
+这是自签名测试发行版。安装器将公钥证书加入本机 TrustedPeople；
+不包含签名私钥。请只安装从可信来源取得的完整发行包。
+若组织策略或 Smart App Control 阻止安装，请保留错误信息交给维护者，
+不要通过关闭系统安全功能来安装。
+
+升级前请在 SFW 中停止连接并退出应用。若提示后台服务占用文件，
+请由管理员停止 sing-box-daemon 服务后重试安装。
+
+卸载注意：后台服务由应用另行安装。卸载应用前，管理员应先停止并
+删除 sing-box-daemon 服务，再到“设置 > 应用 > 已安装的应用”卸载 SFW。
+管理员终端命令：
+  sc.exe stop sing-box-daemon
+  sc.exe delete sing-box-daemon

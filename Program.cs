@@ -21,6 +21,10 @@ public static class Program
     {
         WinRT.ComWrappersSupport.InitializeComWrappers();
 
+        // Must run before WinUI loads the resource system: x:Uid text is resolved
+        // against the language list the app starts with, not a later override.
+        Services.AppState.ApplySavedLanguageOverrideBeforeXaml();
+
         if (!BecomePrimaryInstance()) return;
 
         Application.Start(_ =>
@@ -39,7 +43,9 @@ public static class Program
     private static bool BecomePrimaryInstance()
     {
         var activation = AppInstance.GetCurrent().GetActivatedEventArgs();
-        var primary = AppInstance.FindOrRegisterForKey(InstanceKey);
+        var instanceKey = Environment.GetCommandLineArgs().Contains("--ui-smoke-test")
+            ? InstanceKey + ".ui-smoke-test" : InstanceKey;
+        var primary = AppInstance.FindOrRegisterForKey(instanceKey);
         if (primary.IsCurrent)
         {
             primary.Activated += OnActivated;

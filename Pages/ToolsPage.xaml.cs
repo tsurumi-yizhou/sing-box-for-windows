@@ -1,3 +1,4 @@
+using CommunityToolkit.WinUI.Controls;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using SFW.Services;
@@ -5,14 +6,27 @@ using SFW.Services.Core;
 
 namespace SFW.Pages;
 
+/// <summary>
+/// SFA/SFM tools hub: endpoint rows (Tailscale), network tools and the debug
+/// report tools. Every tool lives on its own page; this page only decides which
+/// sections exist and navigates to them. The sections are native
+/// <see cref="SettingsExpander"/> groups of <see cref="SettingsCard"/> items, so
+/// the visuals, keyboard handling and accessibility come from the Windows
+/// settings controls instead of a hand-drawn list.
+/// </summary>
 public sealed partial class ToolsPage : Page
 {
-    private CancellationTokenSource? _nqCts;
-    private CancellationTokenSource? _stunCts;
+    private CancellationTokenSource? _endpointCts;
+    private CancellationTokenSource? _reportsCts;
+    private bool _endpointStreamStarted;
+    private readonly Dictionary<CoreReportKind, InfoBadge> _reportBadges = new();
 
     public ToolsPage()
     {
         InitializeComponent();
+        _reportBadges[CoreReportKind.Crash] = CrashReportBadge;
+        _reportBadges[CoreReportKind.OutOfMemory] = OomReportBadge;
+        _reportBadges[CoreReportKind.Power] = PowerReportBadge;
         Loaded += OnLoaded;
         Unloaded += OnUnloaded;
     }
@@ -21,16 +35,19 @@ public sealed partial class ToolsPage : Page
     {
         App.State.Core.StateChanged += Core_StateChanged;
         UpdateAvailability();
+        _ = RefreshReportBadgesAsync();
     }
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
     {
         App.State.Core.StateChanged -= Core_StateChanged;
-        _nqCts?.Cancel();
-        _stunCts?.Cancel();
+        StopEndpointSubscription();
+        _reportsCts?.Cancel();
+        _reportsCts = null;
     }
 
-    private void Core_StateChanged(object? sender, RuntimeState state) => UpdateAvailability();
+    private void Core_StateChanged(object? sender, RuntimeState state)
+        => DispatcherQueue.TryEnqueue(UpdateAvailability);
 
     private void UpdateAvailability()
     {
@@ -40,177 +57,158 @@ public sealed partial class ToolsPage : Page
 
         StatusBar.IsOpen = !(libboxAvailable && running);
         StatusBar.Severity = InfoBarSeverity.Informational;
-        StatusBar.Title = Loc.Get("Tools", "工具");
         StatusBar.Message = !libboxAvailable
-            ? Loc.Get("These tools require the libbox core; the app is currently using the development fallback process.",
-                      "这些工具需要 libbox 核心；当前正在使用开发后备进程。")
-            : Loc.Get("Start the service to use the network quality and STUN tests.",
-                      "启动服务后即可使用网络质量和 STUN 测试。");
+            ? Loc.Get("Tools.TheseToolsRequireTheLibboxCoreTheAppIsCurrentlyUsing")
+            : Loc.Get("Tools.StartTheServiceToUseTheNetworkQualitySTUNAndTailscal");
 
-        NqStartButton.IsEnabled = libboxAvailable && running && _nqCts is null;
-        StunStartButton.IsEnabled = libboxAvailable && running && _stunCts is null;
-
-        _ = RefreshVersionAsync();
+        // The endpoint section only exists while a libbox service is running and
+        // the Tailscale status stream reports endpoints.
+        if (libboxAvailable && running) EnsureEndpointSubscription();
+        else StopEndpointSubscription();
     }
 
-    private async Task RefreshVersionAsync()
+    // ----- Navigation -----
+
+    private void NetworkQualityCard_Click(object sender, RoutedEventArgs e) => Navigate(typeof(NetworkQualityPage));
+
+    private void StunTestCard_Click(object sender, RoutedEventArgs e) => Navigate(typeof(StunTestPage));
+
+    private void CrashReportCard_Click(object sender, RoutedEventArgs e) => Navigate(typeof(CrashReportsPage));
+
+    private void OomReportCard_Click(object sender, RoutedEventArgs e) => Navigate(typeof(OomReportsPage));
+
+    private void PowerReportCard_Click(object sender, RoutedEventArgs e) => Navigate(typeof(PowerReportsPage));
+
+    private void Navigate(Type pageType, object? parameter = null)
     {
-        // SFA/SFM parity: report the core this app ships. The daemon answers its own
-        // version without elevation and without a running service, so the card is
-        // never blank.
-        CoreVersionText.Text = await DaemonServiceManager.QueryVersionAsync()
-            ?? Loc.Get("Unavailable", "不可用");
+        if (Frame is null) return;
+        if (parameter is null) Frame.Navigate(pageType);
+        else Frame.Navigate(pageType, parameter);
     }
 
-    // ----- Network quality -----
+    // ----- Endpoint section (Tailscale status stream) -----
 
-    private async void NqStartButton_Click(object sender, RoutedEventArgs e)
+    private void EnsureEndpointSubscription()
     {
-        _nqCts?.Cancel();
-        _nqCts = new CancellationTokenSource();
-        var token = _nqCts.Token;
+        if (_endpointStreamStarted) return;
+        _endpointStreamStarted = true;
+        _endpointCts = new CancellationTokenSource();
+        _ = RunEndpointStatusLoopAsync(_endpointCts.Token);
+    }
 
-        NqStartButton.IsEnabled = false;
-        NqProgress.Visibility = Visibility.Visible;
-        NqProgress.IsActive = true;
-        NqResults.Visibility = Visibility.Collapsed;
-        NqPhaseText.Text = string.Empty;
+    private void StopEndpointSubscription()
+    {
+        _endpointStreamStarted = false;
+        _endpointCts?.Cancel();
+        _endpointCts = null;
+        EndpointsExpander.Items = new List<object>();
+        EndpointsExpander.Visibility = Visibility.Collapsed;
+    }
 
+    private async Task RunEndpointStatusLoopAsync(CancellationToken token)
+    {
         try
         {
-            var options = new CoreNetworkQualityTestOptions(
-                string.IsNullOrWhiteSpace(NqConfigUrlBox.Text) ? null : NqConfigUrlBox.Text.Trim(),
-                null, Serial: false, MaxRuntimeSeconds: 0, NqHttp3Box.IsChecked == true);
-
-            CoreNetworkQualityProgress? last = null;
-            await foreach (var progress in App.State.Core.StartNetworkQualityTestAsync(options, token))
+            await foreach (var endpoints in App.State.Core.SubscribeTailscaleStatusAsync(token))
             {
-                last = progress;
-                NqPhaseText.Text = NqPhaseName(progress.Phase, progress.ElapsedMs);
-                UpdateNqResults(progress);
-            }
-            if (last is { Error: { } error })
-            {
-                ShowError(error);
-            }
-            else
-            {
-                NqPhaseText.Text = Loc.Get("Done", "完成");
+                if (token.IsCancellationRequested) break;
+                var snapshot = endpoints;
+                if (!DispatcherQueue.TryEnqueue(() => RenderEndpoints(snapshot))) break;
             }
         }
         catch (OperationCanceledException) { }
         catch (Exception error)
         {
-            ShowError(error.Message);
+            // The hub only uses the stream for the endpoint rows; surface the
+            // failure once here and retry on the next stopped -> running change.
+            var message = error.Message;
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                if (token.IsCancellationRequested) return;
+                RenderEndpoints([]);
+                StatusBar.IsOpen = true;
+                StatusBar.Severity = InfoBarSeverity.Error;
+                StatusBar.Title = Loc.Get("Tools.ToolError");
+                StatusBar.Message = message;
+            });
         }
-        finally
+    }
+
+    private void RenderEndpoints(IReadOnlyList<CoreTailscaleEndpoint> endpoints)
+    {
+        // Snapshots queued before the page stopped subscribing must not
+        // repopulate a torn-down section.
+        if (!_endpointStreamStarted) return;
+
+        var multiple = endpoints.Count > 1;
+        var items = new List<object>(endpoints.Count);
+        foreach (var endpoint in endpoints)
         {
-            NqProgress.IsActive = false;
-            NqProgress.Visibility = Visibility.Collapsed;
-            _nqCts = null;
-            NqStartButton.IsEnabled = true;
+            var tag = endpoint.EndpointTag;
+            var title = multiple && !string.IsNullOrEmpty(tag)
+                ? $"{Loc.Get("Tools.Tailscale")}: {tag}"
+                : Loc.Get("Tools.Tailscale");
+            items.Add(CreateEndpointCard(title, tag));
         }
+
+        // Replacing the list updates the expander's ItemsRepeater, which is not
+        // watching the collection itself.
+        EndpointsExpander.Items = items;
+        EndpointsExpander.Visibility = endpoints.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
     }
 
-    private void UpdateNqResults(CoreNetworkQualityProgress p)
+    private SettingsCard CreateEndpointCard(string title, string? endpointTag)
     {
-        if (p.DownloadCapacity <= 0 && p.UploadCapacity <= 0 && p.IdleLatencyMs <= 0) return;
-        NqResults.Visibility = Visibility.Visible;
-        NqDownloadText.Text = p.DownloadCapacity > 0 ? $"{p.DownloadCapacity * 8.0 / 1_000_000:F1} Mbps" : "…";
-        NqUploadText.Text = p.UploadCapacity > 0 ? $"{p.UploadCapacity * 8.0 / 1_000_000:F1} Mbps" : "…";
-        var rpm = new List<string>();
-        if (p.DownloadRpm > 0) rpm.Add($"↓ {p.DownloadRpm}");
-        if (p.UploadRpm > 0) rpm.Add($"↑ {p.UploadRpm}");
-        NqRpmText.Text = rpm.Count > 0 ? string.Join("  ", rpm) : "…";
-        NqIdleLatencyText.Text = p.IdleLatencyMs > 0 ? $"{p.IdleLatencyMs} ms" : "…";
+        var card = new SettingsCard
+        {
+            Header = title,
+            IsClickEnabled = true,
+            // The expander's default item style indents rows to the header text;
+            // keep the row flush with the expander header instead.
+            Padding = new Thickness(16, 8, 16, 8),
+        };
+        card.Click += (_, _) => Navigate(typeof(TailscalePage), endpointTag);
+        return card;
     }
 
-    private static string NqPhaseName(int phase, long elapsedMs) => phase switch
+    // ----- Debug badges -----
+
+    private async Task RefreshReportBadgesAsync()
     {
-        0 => Loc.Get("Measuring idle latency…", "正在测量空闲延迟…"),
-        1 => string.Format(Loc.Get("Download test… ({0:F0}s)", "下载测试…（{0:F0} 秒）"), elapsedMs / 1000.0),
-        2 => string.Format(Loc.Get("Upload test… ({0:F0}s)", "上传测试…（{0:F0} 秒）"), elapsedMs / 1000.0),
-        _ => Loc.Get("Done", "完成"),
-    };
-
-    // ----- STUN -----
-
-    private async void StunStartButton_Click(object sender, RoutedEventArgs e)
-    {
-        _stunCts?.Cancel();
-        _stunCts = new CancellationTokenSource();
-        var token = _stunCts.Token;
-
-        StunStartButton.IsEnabled = false;
-        StunProgress.Visibility = Visibility.Visible;
-        StunProgress.IsActive = true;
-        StunResults.Visibility = Visibility.Collapsed;
-        StunPhaseText.Text = string.Empty;
-
+        _reportsCts?.Cancel();
+        _reportsCts = new CancellationTokenSource();
+        var token = _reportsCts.Token;
         try
         {
-            var server = string.IsNullOrWhiteSpace(StunServerBox.Text) ? string.Empty : StunServerBox.Text.Trim();
-            CoreStunProgress? last = null;
-            await foreach (var progress in App.State.Core.StartStunTestAsync(server, null, token))
-            {
-                last = progress;
-                StunPhaseText.Text = StunPhaseName(progress.Phase);
-                UpdateStunResults(progress);
-            }
-            if (last is { Error: { } error })
-            {
-                ShowError(error);
-            }
-            else
-            {
-                StunPhaseText.Text = Loc.Get("Done", "完成");
-            }
+            var counts = await DaemonReportService.GetUnreadCountsAsync(token);
+            if (token.IsCancellationRequested) return;
+            SetBadge(CoreReportKind.Crash, counts.Crash);
+            SetBadge(CoreReportKind.OutOfMemory, counts.OutOfMemory);
+            SetBadge(CoreReportKind.Power, counts.Power);
+            DebugCaption.Visibility = Visibility.Collapsed;
         }
         catch (OperationCanceledException) { }
-        catch (Exception error)
+        catch (Exception)
         {
-            ShowError(error.Message);
-        }
-        finally
-        {
-            StunProgress.IsActive = false;
-            StunProgress.Visibility = Visibility.Collapsed;
-            _stunCts = null;
-            StunStartButton.IsEnabled = true;
+            // The report stores are daemon-owned; without the daemon the tools
+            // stay reachable but carry no counts. A caption is enough here.
+            if (token.IsCancellationRequested) return;
+            SetBadge(CoreReportKind.Crash, 0);
+            SetBadge(CoreReportKind.OutOfMemory, 0);
+            SetBadge(CoreReportKind.Power, 0);
+            DebugCaption.Visibility = Visibility.Visible;
         }
     }
 
-    private void UpdateStunResults(CoreStunProgress p)
+    private void SetBadge(CoreReportKind kind, int count)
     {
-        if (string.IsNullOrEmpty(p.ExternalAddr) && p.LatencyMs <= 0 && p.NatMapping <= 0 && p.NatFiltering <= 0) return;
-        StunResults.Visibility = Visibility.Visible;
-        if (!string.IsNullOrEmpty(p.ExternalAddr)) StunExternalText.Text = p.ExternalAddr;
-        if (p.LatencyMs > 0) StunLatencyText.Text = $"{p.LatencyMs} ms";
-        if (p.NatMapping > 0) StunMappingText.Text = NatBehaviorName(p.NatMapping);
-        if (p.NatFiltering > 0) StunFilteringText.Text = NatBehaviorName(p.NatFiltering);
-    }
-
-    private static string StunPhaseName(int phase) => phase switch
-    {
-        0 => Loc.Get("Binding…", "正在绑定…"),
-        1 => Loc.Get("Probing NAT mapping…", "正在探测 NAT 映射行为…"),
-        2 => Loc.Get("Probing NAT filtering…", "正在探测 NAT 过滤行为…"),
-        _ => Loc.Get("Done", "完成"),
-    };
-
-    private static string NatBehaviorName(int value) => value switch
-    {
-        1 => Loc.Get("Endpoint Independent", "端点无关"),
-        2 => Loc.Get("Address Dependent", "地址相关"),
-        3 => Loc.Get("Address and Port Dependent", "地址和端口相关"),
-        _ => Loc.Get("Unknown", "未知"),
-    };
-
-    private void ShowError(string message)
-    {
-        StatusBar.IsOpen = true;
-        StatusBar.Severity = InfoBarSeverity.Error;
-        StatusBar.Title = Loc.Get("Tool error", "工具错误");
-        StatusBar.Message = message;
+        if (!_reportBadges.TryGetValue(kind, out var badge)) return;
+        if (count <= 0)
+        {
+            badge.Visibility = Visibility.Collapsed;
+            return;
+        }
+        badge.Value = count;
+        badge.Visibility = Visibility.Visible;
     }
 }

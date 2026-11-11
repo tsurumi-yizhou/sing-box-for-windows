@@ -30,14 +30,16 @@ if ($PSVersionTable.PSEdition -eq 'Desktop') {
 # powershell -File (used by the MSBuild Exec task) does not parse
 # comma-separated arguments as arrays, so accept ';'-joined lists too.
 $Paths = $Paths | ForEach-Object { $_ -split ';' } | Where-Object { $_ }
+. (Join-Path $PSScriptRoot 'SigningCertificate.ps1')
 
 # Avoid the -CodeSigningCert dynamic parameter: its availability depends on
 # the Certificate provider being usable in the caller's environment (it is
 # not, for example, under some MSBuild/sandboxed Exec hosts). Filter by EKU.
 $cert = Get-ChildItem Cert:\CurrentUser\My |
     Where-Object {
-        $_.Subject -eq $CertificateSubject -and $_.HasPrivateKey -and
-        ($_.EnhancedKeyUsageList | Where-Object ObjectId -eq '1.3.6.1.5.5.7.3.3')
+        if ($_.Subject -eq $CertificateSubject -and $_.HasPrivateKey) {
+            try { Assert-SfwSigningCertificate -Certificate $_; $true } catch { $false }
+        } else { $false }
     } |
     Sort-Object NotAfter -Descending |
     Select-Object -First 1
@@ -46,12 +48,13 @@ if (-not $cert) {
     Write-Host "Creating self-signed code-signing certificate '$CertificateSubject'..."
     $cert = New-SelfSignedCertificate `
         -Subject $CertificateSubject `
-        -Type CodeSigningCert `
+        -Type Custom -KeyUsage DigitalSignature `
         -KeyAlgorithm RSA -KeyLength 2048 `
         -CertStoreLocation Cert:\CurrentUser\My `
         -NotAfter ([datetime]::Now.AddYears(10)) `
-        -TextExtension @('2.5.29.37={text}1.3.6.1.5.5.7.3.3')
+        -TextExtension @('2.5.29.37={text}1.3.6.1.5.5.7.3.3', '2.5.29.19={text}')
 }
+Assert-SfwSigningCertificate -Certificate $cert
 
 if ($ExportCertificatePath) {
     $exportDirectory = Split-Path -Parent $ExportCertificatePath
@@ -70,7 +73,8 @@ foreach ($path in $Paths) {
     # open, and MSBuild can then safely skip an unchanged PreserveNewest copy.
     $signature = Get-AuthenticodeSignature -FilePath $path
     if ($signature.SignerCertificate -and
-        $signature.SignerCertificate.Thumbprint -eq $cert.Thumbprint) {
+        $signature.SignerCertificate.Thumbprint -eq $cert.Thumbprint -and
+        $signature.Status -in @('Valid', 'UnknownError', 'NotTrusted')) {
         Write-Host "Already signed: $path"
         continue
     }

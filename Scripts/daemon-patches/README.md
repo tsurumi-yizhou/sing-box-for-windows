@@ -24,11 +24,21 @@ automatic listener selection.
 The change reuses upstream cleanup semantics: disabling clears the proxy; it
 does not snapshot and restore a pre-existing third-party proxy configuration.
 
+Rebase note (sing-box v1.14.4): upstream changed the sibling error paths in
+`common/listener/listener.go` `Start` to close the listener
+(`return E.Errors(..., l.Close())`). The listener hunk context was refreshed and
+the platform early return now also runs `l.Close()` on error, so the non-TUN
+listener path keeps that cleanup. No selection behavior changed.
+
 Validation (run in the patched sing-box checkout with the build script's Go
-cache environment and Windows release tags minus `tfogo_checklinkname0`):
+cache environment, Windows release tags minus `tfogo_checklinkname0`, and the
+release linker flags; `-checklinkname=0` is required by the `badlinkname` tag):
 
 ```powershell
-go test ./experimental/boxdd ./common/listener -run TestSFW -count=1
+$tags = (Get-Content release/DEFAULT_BUILD_TAGS_WINDOWS -Raw).Trim()
+$tags = (($tags -split ',') | Where-Object { $_ -ne 'tfogo_checklinkname0' }) -join ','
+$linkFlags = (Get-Content release/LDFLAGS -Raw).Trim()
+go test -tags $tags -ldflags $linkFlags ./experimental/boxdd ./common/listener -run TestSFW -count=1
 ```
 
 These tests never enable the host's system proxy. A live acceptance check should

@@ -47,9 +47,7 @@ public static class RuleSetMirror
         }
         if (rewritten == 0) return configContent;
 
-        log(string.Format(Loc.Get(
-            "{0} rule-set URL(s) rewritten to the jsDelivr mirror for this start.",
-            "本次启动已将 {0} 个规则集 URL 改写至 jsDelivr 镜像。"), rewritten));
+        log(string.Format(Loc.Get("RuleSetMirror.RuleSetURLSRewrittenToTheJsDelivrMirrorForThisStart"), rewritten));
         return root!.ToJsonString();
 
         static string? Rewrite(string? url)

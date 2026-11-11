@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="SFW.Controls.SectionStack"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Dialog body holding one card per detail section. Callers add DetailSection
+         controls; the spacing and the minimum width that keeps the dialog from
+         collapsing are owned here. -->
+    <StackPanel x:Name="Sections" Spacing="16" MinWidth="420" />
+</UserControl>

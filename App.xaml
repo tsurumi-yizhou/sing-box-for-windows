@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Application x:Class="SFW.App" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="using:SFW" xmlns:services="using:SFW.Services">
+<Application x:Class="SFW.App" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="using:SFW" xmlns:services="using:SFW.Services" xmlns:converters="using:CommunityToolkit.WinUI.Converters">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -19,8 +19,7 @@
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
 
-            <services:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
-            <services:EmptyStringToBoolConverter x:Key="EmptyStringToBoolConverter" />
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
             <services:DelayToBrushConverter x:Key="DelayToBrushConverter" />
 
             <Style x:Key="PageTitleTextStyle" TargetType="TextBlock">
@@ -80,16 +79,19 @@
                 <Setter Property="FontSize" Value="12" />
                 <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
             </Style>
+            <!-- Icon-only row action: transparent at rest; the default Button
+                 template supplies the Fluent PointerOver/Pressed fills. -->
+            <Style x:Key="IconActionButtonStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="Padding" Value="8" />
+                <Setter Property="MinWidth" Value="0" />
+                <Setter Property="CornerRadius" Value="6" />
+            </Style>
             <!-- Small icon-only action button used in card headers and list rows -->
             <Style x:Key="ToolbarButtonStyle" TargetType="Button">
                 <Setter Property="Padding" Value="12,8,12,8" />
                 <Setter Property="CornerRadius" Value="8" />
-            </Style>
-            <!-- Segmented selector (Clash mode): container + item, Fluent segmented look -->
-            <Style x:Key="SegmentedContainerStyle" TargetType="Border">
-                <Setter Property="Background" Value="{ThemeResource ControlFillColorSecondaryBrush}" />
-                <Setter Property="CornerRadius" Value="8" />
-                <Setter Property="Padding" Value="4" />
             </Style>
         </ResourceDictionary>
     </Application.Resources>

@@ -1,8 +1,8 @@
 diff --git a/common/listener/listener.go b/common/listener/listener.go
-index 7a58015c8..9e6a02588 100644
+index 2cbbbab51..ec7948ec0 100644
 --- a/common/listener/listener.go
 +++ b/common/listener/listener.go
-@@ -104,9 +104,19 @@ func (l *Listener) Start() error {
+@@ -104,9 +104,23 @@ func (l *Listener) Start() error {
  		listenAddr := l.listenOptions.Listen.Build(netip.IPv4Unspecified())
  		if listenAddr.IsUnspecified() {
  			listenAddrString = "127.0.0.1"
@@ -17,13 +17,17 @@ index 7a58015c8..9e6a02588 100644
 +		if platform, ok := service.FromContext[adapter.PlatformInterface](l.ctx).(interface {
 +			SetSystemProxyFromListener(M.Socksaddr) error
 +		}); ok {
-+			return platform.SetSystemProxyFromListener(M.ParseSocksaddrHostPort(listenAddrString, listenPort))
++			err := platform.SetSystemProxyFromListener(M.ParseSocksaddrHostPort(listenAddrString, listenPort))
++			if err != nil {
++				return E.Errors(err, l.Close())
++			}
++			return nil
 +		}
  		systemProxy, err := settings.NewSystemProxy(l.ctx, M.ParseSocksaddrHostPort(listenAddrString, listenPort), l.systemProxySOCKS, nil)
  		if err != nil {
- 			return E.Cause(err, "initialize system proxy")
+ 			return E.Errors(E.Cause(err, "initialize system proxy"), l.Close())
 diff --git a/daemon/instance.go b/daemon/instance.go
-index 19f286ce3..b44d3896d 100644
+index bb6a34034..243758085 100644
 --- a/daemon/instance.go
 +++ b/daemon/instance.go
 @@ -89,6 +89,16 @@ func (s *StartedService) newInstance(ctx context.Context, profileContent string,
@@ -58,9 +62,10 @@ index 714903f91..5fbef46f1 100644
  	err = p.applySystemProxyLocked()
 diff --git a/common/listener/system_proxy_test.go b/common/listener/system_proxy_test.go
 new file mode 100644
+index 000000000..7fb75611e
 --- /dev/null
 +++ b/common/listener/system_proxy_test.go
-@@ -0,0 +1,53 @@
+@@ -0,0 +1,57 @@
 +package listener
 +
 +import (
@@ -109,12 +114,15 @@ new file mode 100644
 +		if l.systemProxy != nil {
 +			t.Fatal("listener must not own a service-account proxy")
 +		}
-+		if err := l.Close(); err != nil {
-+			t.Fatal(err)
++		if !fail {
++			// On the failure path Start already closed the listener, matching
++			// the cleanup upstream added to Listener.Start in v1.14.4.
++			if err := l.Close(); err != nil {
++				t.Fatal(err)
++			}
 +		}
 +	}
 +}
-
 diff --git a/experimental/boxdd/system_proxy_windows.go b/experimental/boxdd/system_proxy_windows.go
 new file mode 100644
 --- /dev/null

@@ -28,15 +28,13 @@ public sealed partial class BoxddCoreController
         var info = await client.GetDaemonInfoAsync(new Empty(), cancellationToken: timeout.Token);
         if (bundled is not null && info.Version != bundled)
         {
-            var message = Loc.Get(
-                $"The running core is {info.Version}, but this app includes {bundled}. Upgrade the service to continue.",
-                $"运行中的内核为 {info.Version}，应用附带的是 {bundled}。请升级服务以继续。");
+            var message = string.Format(Loc.Get("Core.RunningCoreVersionMismatch"), info.Version, bundled);
             SetConnection(new(DaemonConnectionPhase.VersionMismatch, message, info.Version, bundled));
             throw new InvalidOperationException(message);
         }
         if (info.Ownership == DaemonOwnership.Other)
         {
-            var message = Loc.Get("The service is owned by another Windows user.", "服务正由其他 Windows 用户占用。");
+            var message = Loc.Get("Core.TheServiceIsOwnedByAnotherWindowsUser");
             SetConnection(new(DaemonConnectionPhase.OwnedByOtherUser, message, info.Version, bundled));
             throw new InvalidOperationException(message);
         }
@@ -93,9 +91,10 @@ public sealed partial class BoxddCoreController
                         {
                             await StartWorkerAsync(token);
                             _channel = NamedPipeChannel.Create(_relayPipeName!);
-                            _client = new StartedService.StartedServiceClient(_channel);
-                            _managedClient = new ManagedService.ManagedServiceClient(_channel);
-                            _desktopClient = new DesktopService.DesktopServiceClient(_channel);
+                            var invoker = new LocaleCallInvoker(_channel.CreateCallInvoker());
+                            _client = new StartedService.StartedServiceClient(invoker);
+                            _managedClient = new ManagedService.ManagedServiceClient(invoker);
+                            _desktopClient = new DesktopService.DesktopServiceClient(invoker);
                             await HandshakeAsync(token);
 
                             _streamCts = CancellationTokenSource.CreateLinkedTokenSource(token);

@@ -1,6 +1,7 @@
+using System.ComponentModel;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using System.Security.Principal;
+using System.ServiceProcess;
 using Windows.ApplicationModel;
 using SFW.Services;
 
@@ -63,6 +64,13 @@ public static class DaemonServiceManager
         QueryServiceCommandLine() is { } commandLine
             ? SplitCommandLine(commandLine).FirstOrDefault()
             : null;
+
+    /// <summary>
+    /// The working directory the registered service was started with, so the
+    /// Service settings page can show it even while the daemon is stopped.
+    /// </summary>
+    public static string? QueryServiceWorkingDirectoryPath() =>
+        QueryServiceWorkingDirectory() ?? DefaultServiceWorkingDirectory;
 
     /// <summary>
     /// The daemon's working directory as recorded by the installed service, so
@@ -189,9 +197,7 @@ public static class DaemonServiceManager
         };
         if (IsAdministratorOnlyLocation(daemonExecutable)) return arguments;
 
-        log(Loc.Get(
-            "The daemon installation directory is not administrator-only; boxdd will be told to allow it.",
-            "守护进程安装目录并非仅管理员可写；将按 boxdd 要求显式允许。"));
+        log(Loc.Get("Core.TheDaemonInstallationDirectoryIsNotAdministratorOnly"));
         arguments.Add("--allow-unsafe-installation-directory-permissions");
         return arguments;
     }
@@ -312,81 +318,28 @@ public static class DaemonServiceManager
 
     private enum ServiceStatus { Stopped, Running, Other }
 
-    private const int ScManagerConnect = 0x0001;
-    private const int ServiceQueryStatus = 0x0004;
-    private const int ServiceStoppedState = 0x00000001;
-    private const int ServiceRunningState = 0x00000004;
-    private const int ScStatusProcessInfo = 0;
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct ServiceStatusProcess
-    {
-        public int ServiceType;
-        public int CurrentState;
-        public int ControlsAccepted;
-        public int Win32ExitCode;
-        public int ServiceSpecificExitCode;
-        public int CheckPoint;
-        public int WaitHint;
-        public int ProcessId;
-        public int ServiceFlags;
-    }
-
-    [DllImport("advapi32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-    private static extern IntPtr OpenSCManager(string? machineName, string? databaseName, int desiredAccess);
-
-    [DllImport("advapi32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-    private static extern IntPtr OpenService(IntPtr serviceManager, string serviceName, int desiredAccess);
-
-    [DllImport("advapi32.dll", SetLastError = true)]
-    private static extern bool QueryServiceStatusEx(
-        IntPtr service,
-        int infoLevel,
-        ref ServiceStatusProcess buffer,
-        int bufferSize,
-        out int bytesNeeded);
-
-    [DllImport("advapi32.dll", SetLastError = true)]
-    private static extern bool CloseServiceHandle(IntPtr handle);
-
     /// <summary>
-    /// Queries the service manager directly instead of running `sc.exe`: this is
-    /// called on every health check and EnsureRunningAsync polls it while the
-    /// service comes up, so spawning a process per poll is pure churn. Returns
-    /// null when the service is not installed (or the manager cannot be opened),
-    /// which is what the caller treats as "not installed".
+    /// Queries the installed service through the managed service controller: this
+    /// is called on every health check, and EnsureRunningAsync polls it while the
+    /// service comes up, so spawning sc.exe per poll would be pure churn. Returns
+    /// null when the service is not installed (or cannot be queried), which is
+    /// what the callers treat as "not installed".
     /// </summary>
     private static ServiceStatus? QueryServiceStatus()
     {
-        var manager = OpenSCManager(null, null, ScManagerConnect);
-        if (manager == IntPtr.Zero) return null;
         try
         {
-            var service = OpenService(manager, ServiceName, ServiceQueryStatus);
-            if (service == IntPtr.Zero) return null; // not installed, or not queryable
-            try
+            using var controller = new ServiceController(ServiceName);
+            return controller.Status switch
             {
-                var status = default(ServiceStatusProcess);
-                if (!QueryServiceStatusEx(service, ScStatusProcessInfo, ref status,
-                        Marshal.SizeOf<ServiceStatusProcess>(), out _))
-                {
-                    return null;
-                }
-                return status.CurrentState switch
-                {
-                    ServiceRunningState => ServiceStatus.Running,
-                    ServiceStoppedState => ServiceStatus.Stopped,
-                    _ => ServiceStatus.Other,
-                };
-            }
-            finally
-            {
-                CloseServiceHandle(service);
-            }
+                ServiceControllerStatus.Running => ServiceStatus.Running,
+                ServiceControllerStatus.Stopped => ServiceStatus.Stopped,
+                _ => ServiceStatus.Other,
+            };
         }
-        finally
+        catch (Exception exception) when (exception is InvalidOperationException or Win32Exception or UnauthorizedAccessException)
         {
-            CloseServiceHandle(manager);
+            return null;
         }
     }
 

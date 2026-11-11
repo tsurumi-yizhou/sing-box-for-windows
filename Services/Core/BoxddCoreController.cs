@@ -66,12 +66,13 @@ public sealed partial class BoxddCoreController : ICoreController
     public IReadOnlyList<CoreProxyGroupItem> Outbounds { get; private set; } = [];
     public CoreSystemProxy SystemProxy { get; private set; } = CoreSystemProxy.Empty;
 
-    public async Task StartAsync(string configContent, CancellationToken cancellationToken = default)
+    public async Task StartAsync(
+        string configContent, CoreStartOptions? options = null, CancellationToken cancellationToken = default)
     {
         await _lifecycleGate.WaitAsync(cancellationToken);
         try
         {
-            await StartCoreAsync(configContent, cancellationToken);
+            await StartCoreAsync(configContent, options, cancellationToken);
         }
         finally
         {
@@ -79,7 +80,8 @@ public sealed partial class BoxddCoreController : ICoreController
         }
     }
 
-    private async Task StartCoreAsync(string configContent, CancellationToken cancellationToken)
+    private async Task StartCoreAsync(
+        string configContent, CoreStartOptions? options, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         StartupDiag.Log("Core.StartAsync: enter");
@@ -98,9 +100,10 @@ public sealed partial class BoxddCoreController : ICoreController
             StartupDiag.Log("Core.StartAsync: StartWorkerAsync done (worker READY)");
 
             _channel = NamedPipeChannel.Create(_relayPipeName!);
-            _client = new Daemon.StartedService.StartedServiceClient(_channel);
-            _managedClient = new Daemon.ManagedService.ManagedServiceClient(_channel);
-            _desktopClient = new Desktop.DesktopService.DesktopServiceClient(_channel);
+            var invoker = new LocaleCallInvoker(_channel.CreateCallInvoker());
+            _client = new Daemon.StartedService.StartedServiceClient(invoker);
+            _managedClient = new Daemon.ManagedService.ManagedServiceClient(invoker);
+            _desktopClient = new Desktop.DesktopService.DesktopServiceClient(invoker);
 
             var generation = Interlocked.Increment(ref _startGeneration);
             var firstStatus = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -126,7 +129,18 @@ public sealed partial class BoxddCoreController : ICoreController
             SetState(new RuntimeState(false, "Starting"));
             StartupDiag.Log("Core.StartAsync: StartServiceAsync...");
             await _desktopClient.StartServiceAsync(
-                new StartServiceRequest { ConfigContent = configContent },
+                new StartServiceRequest
+                {
+                    ConfigContent = configContent,
+                    Options = options is null ? null : new StartOptions
+                    {
+                        OomKillerEnabled = options.OomKillerEnabled,
+                        // The daemon's flag is inverted: true means "do not kill connections".
+                        OomKillerDisabled = !options.OomKillerKillConnections,
+                        OomMemoryLimit = options.OomMemoryLimitBytes,
+                        PowerReportEnabled = options.PowerReportEnabled,
+                    },
+                },
                 cancellationToken: rpcTimeout.Token);
             StartupDiag.Log("Core.StartAsync: StartServiceAsync done");
 
@@ -407,9 +421,10 @@ public sealed partial class BoxddCoreController : ICoreController
             StartupDiag.Log("StopOrphanedServiceAsync: daemon running, checking for an orphaned core");
             await StartWorkerAsync(cancellationToken);
             _channel = NamedPipeChannel.Create(_relayPipeName!);
-            _client = new Daemon.StartedService.StartedServiceClient(_channel);
-            _managedClient = new Daemon.ManagedService.ManagedServiceClient(_channel);
-            _desktopClient = new Desktop.DesktopService.DesktopServiceClient(_channel);
+            var invoker = new LocaleCallInvoker(_channel.CreateCallInvoker());
+            _client = new Daemon.StartedService.StartedServiceClient(invoker);
+            _managedClient = new Daemon.ManagedService.ManagedServiceClient(invoker);
+            _desktopClient = new Desktop.DesktopService.DesktopServiceClient(invoker);
 
             using var rpcTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             rpcTimeout.CancelAfter(TimeSpan.FromSeconds(15));
@@ -421,9 +436,7 @@ public sealed partial class BoxddCoreController : ICoreController
 
             if (await IsServiceStartedAsync(rpcTimeout.Token))
             {
-                RaiseLog(Loc.Get(
-                    "Stopping the SingBox core left running without the app.",
-                    "正在停止上次遗留运行的 SingBox 核心。"));
+                RaiseLog(Loc.Get("Core.StoppingTheSingBoxCoreLeftRunningWithoutTheApp"));
                 await _managedClient.StopServiceAsync(new Empty(), cancellationToken: rpcTimeout.Token);
             }
         }

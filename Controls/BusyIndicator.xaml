@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="SFW.Controls.BusyIndicator"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- What a button shows while its action runs: a spinner and, for actions that
+         need explaining, the busy label next to it. -->
+    <StackPanel Orientation="Horizontal" Spacing="8">
+        <ProgressRing IsActive="True" Width="16" Height="16" />
+        <TextBlock x:Name="BusyText" VerticalAlignment="Center" Visibility="Collapsed" />
+    </StackPanel>
+</UserControl>

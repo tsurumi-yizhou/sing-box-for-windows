@@ -29,6 +29,9 @@ public sealed partial class MainWindow : Window
         Instance = this;
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(AppTitleBar);
+        // Frame.CanGoBack raises no change notification, so the x:Bind on the
+        // title bar never updates on its own; tools subpages need the back button.
+        NavFrame.Navigated += (_, _) => AppTitleBar.IsBackButtonVisible = NavFrame.CanGoBack;
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
         AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets", "AppIcon.ico"));
         ApplyTheme();
@@ -55,6 +58,22 @@ public sealed partial class MainWindow : Window
         // Closing the window hides to the tray; the core keeps running.
         AppWindow.Closing += AppWindow_Closing;
 
+        // Every informational TextBlock becomes copyable through a right-click
+        // menu. Handling it at the shell root also covers text created later by
+        // lists and cards, and leaves left-click/selection behavior untouched.
+        if (Content is FrameworkElement shell)
+        {
+            shell.RightTapped += Shell_RightTapped;
+        }
+
+        // Static page text becomes selectable; text added later still gets the
+        // root right-click copy menu.
+        NavFrame.Navigated += (_, args) =>
+        {
+            if (args.Content is FrameworkElement page)
+                page.Loaded += (_, _) => Services.TextCopy.AttachTree(page);
+        };
+
         NavFrame.Navigate(typeof(HomePage));
         if (FindItem(NavView.MenuItems, "home") is { } home)
         {
@@ -67,12 +86,21 @@ public sealed partial class MainWindow : Window
         _durationTimer.Tick += (_, _) => UpdateDuration();
     }
 
+    private void Shell_RightTapped(object sender, Microsoft.UI.Xaml.Input.RightTappedRoutedEventArgs e)
+    {
+        if (Services.TextCopy.TryShowCopyMenu(e.OriginalSource as DependencyObject, Content.XamlRoot, out var target))
+        {
+            e.Handled = true;
+            Services.TextCopy.ShowCopyMenu(target!, e.GetPosition(target!));
+        }
+    }
+
     private async void StartStopButton_Click(object sender, RoutedEventArgs e)
     {
         var wasRunning = App.State.Core.State.IsActive;
         await Services.BusyButton.RunAsync(StartStopButton, () => ToggleServiceAsync(wasRunning), wasRunning
-            ? Services.Loc.Get("Stopping…", "正在停止…")
-            : Services.Loc.Get("Starting…", "正在启动…"));
+            ? Services.Loc.Get("Tray.Stopping")
+            : Services.Loc.Get("Tray.Starting"));
         UpdateStartStop(App.State.Core.State);
     }
 
@@ -95,15 +123,10 @@ public sealed partial class MainWindow : Window
         catch (Exception exception)
         {
             StartupDiag.Log($"ToggleServiceAsync: EXCEPTION {exception.GetType().Name}: {exception.Message}");
-            var dialog = new ContentDialog
-            {
-                Title = wasRunning
-                    ? Services.Loc.Get("Unable to stop", "无法停止")
-                    : Services.Loc.Get("Unable to start", "无法启动"),
-                Content = exception.Message,
-                CloseButtonText = Services.Loc.Get("OK", "确定"),
-                XamlRoot = Content.XamlRoot,
-            };
+            var dialog = new Dialogs.MessageDialog(
+                wasRunning ? "Tray.UnableToStop" : "Tray.UnableToStart",
+                exception.Message)
+            { XamlRoot = Content.XamlRoot };
             await dialog.ShowAsync();
         }
     }
@@ -111,27 +134,46 @@ public sealed partial class MainWindow : Window
     // ----- System tray -----
 
     /// <summary>
-    /// Loads the tray icon directly into TrayIcon.Icon, bypassing
-    /// H.NotifyIcon.WinUI's IconSource pipeline: it re-encodes the ImageSource
-    /// and System.Drawing then rejects the result ("Argument 'picture' must be
-    /// a picture that can be used as a Icon"), and the exception — raised from
-    /// a fire-and-forget async void continuation — used to crash the process
-    /// before the window or tray icon ever appeared (see crash.log). The raw
-    /// ICO parses fine through the sized System.Drawing.Icon constructor.
-    /// A failure here degrades to "no tray icon" instead of killing the app.
+    /// Records the tray icon variants. The icons themselves are created per
+    /// switch: H.NotifyIcon takes ownership of an assigned Icon and disposes the
+    /// previous one, so caching System.Drawing.Icon instances and re-assigning
+    /// them later throws ObjectDisposedException (a stowed-exception fail-fast)
+    /// the first time the state toggles. Building from the ICO each time also
+    /// bypasses H.NotifyIcon.WinUI's IconSource pipeline, which rejects the
+    /// re-encoded image.
     /// </summary>
     private void LoadTrayIcon()
     {
+        _trayActiveIconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "AppIcon.ico");
+        var stoppedPath = Path.Combine(AppContext.BaseDirectory, "Assets", "TrayStopped.ico");
+        _trayStoppedIconPath = File.Exists(stoppedPath) ? stoppedPath : null;
+        _trayIconShowsRunning = null;
+    }
+
+    private string? _trayActiveIconPath;
+    private string? _trayStoppedIconPath;
+    private bool? _trayIconShowsRunning;
+
+    /// <summary>
+    /// Switches the tray glyph between the running and stopped variants. A new
+    /// Icon owns the handle each time; the control disposes it when replaced.
+    /// </summary>
+    private void UpdateTrayIcon()
+    {
+        var running = App.State.Core.State.IsActive;
+        if (_trayIconShowsRunning == running) return;
+        var path = running ? _trayActiveIconPath : (_trayStoppedIconPath ?? _trayActiveIconPath);
+        if (path is null) return;
         try
         {
-            var smallIconSize = GetSystemMetrics(SM_CXSMICON);
-            TrayIcon.Icon = new System.Drawing.Icon(
-                Path.Combine(AppContext.BaseDirectory, "Assets", "AppIcon.ico"),
-                smallIconSize, smallIconSize);
+            var size = GetSystemMetrics(SM_CXSMICON);
+            TrayIcon.Icon = new System.Drawing.Icon(path, size, size);
+            _trayIconShowsRunning = running;
         }
         catch (Exception exception)
         {
-            StartupDiag.Log($"LoadTrayIcon: failed: {exception.GetType().Name}: {exception.Message}");
+            // A tray glyph is decoration; never let it take the window down.
+            StartupDiag.Log($"UpdateTrayIcon: failed: {exception.GetType().Name}: {exception.Message}");
         }
     }
 
@@ -164,14 +206,20 @@ public sealed partial class MainWindow : Window
     {
         var running = App.State.Core.State.IsActive;
         TrayToggleItem.Text = running
-            ? Services.Loc.Get("Stop", "停止")
-            : Services.Loc.Get("Start", "启动");
-        TrayToggleItem.Icon = new FontIcon { Glyph = running ? "\uE71A" : "\uE768" };
+            ? Services.Loc.Get("Tray.Stop")
+            : Services.Loc.Get("Tray.Start");
+        TrayToggleIcon.Glyph = running ? "\uE71A" : "\uE768";
     }
 
     private async Task QuitAsync()
     {
         if (_exiting) return;
+        if (!DispatcherQueue.HasThreadAccess)
+        {
+            // H.NotifyIcon's popup menu calls back on its own Win32 thread.
+            DispatcherQueue.Post(() => _ = QuitAsync(), nameof(QuitAsync));
+            return;
+        }
         _exiting = true;
 
         // Destroy the native app window explicitly. Application.Exit only tears
@@ -217,12 +265,13 @@ public sealed partial class MainWindow : Window
         var running = state.IsActive;
         StartStopIcon.Glyph = running ? "\uE71A" : "\uE768"; // Stop / Play
         StartStopText.Text = running
-            ? Services.Loc.Get("Stop", "停止")
-            : Services.Loc.Get("Start", "启动");
+            ? Services.Loc.Get("Tray.Stop")
+            : Services.Loc.Get("Tray.Start");
         StartStopButton.Style = running
             ? (Style)Application.Current.Resources["DefaultButtonStyle"]
             : (Style)Application.Current.Resources["AccentButtonStyle"];
         UpdateTrayToggle();
+        UpdateTrayIcon();
 
         if (state.IsRunning)
         {
@@ -286,14 +335,14 @@ public sealed partial class MainWindow : Window
     }
 
     private void Core_StateChanged(object? sender, RuntimeState state) =>
-        DispatcherQueue.TryEnqueue(() =>
+        DispatcherQueue.Post(() =>
         {
             UpdateMenuVisibility();
             UpdateStartStop(state);
-        });
+        }, "MainWindow.Core_StateChanged");
 
     private void Core_GroupsChanged(object? sender, IReadOnlyList<CoreProxyGroup> groups) =>
-        DispatcherQueue.TryEnqueue(UpdateMenuVisibility);
+        DispatcherQueue.Post(UpdateMenuVisibility, nameof(UpdateMenuVisibility));
 
     private void UpdateMenuVisibility()
     {
@@ -304,6 +353,8 @@ public sealed partial class MainWindow : Window
         if (ConnectionsItem is not null) ConnectionsItem.Visibility = running ? Visibility.Visible : Visibility.Collapsed;
 
         var current = NavFrame.CurrentSourcePageType;
+        // Like SFA, the tools hub stays reachable while the service is stopped;
+        // ToolsPage itself hides the sections that need a running core.
         if ((!running && (current == typeof(ConnectionsPage) || current == typeof(GroupsPage))) ||
             (!hasGroups && current == typeof(GroupsPage)))
         {

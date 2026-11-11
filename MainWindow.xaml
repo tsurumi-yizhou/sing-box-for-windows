@@ -19,7 +19,11 @@
                             <FontIcon Glyph="&#xE8A7;" />
                         </MenuFlyoutItem.Icon>
                     </MenuFlyoutItem>
-                    <MenuFlyoutItem x:Name="TrayToggleItem" Text="Start" />
+                    <MenuFlyoutItem x:Name="TrayToggleItem" Text="Start">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon x:Name="TrayToggleIcon" Glyph="&#xE768;" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
                     <MenuFlyoutSeparator />
                     <MenuFlyoutItem x:Name="TrayQuitItem" x:Uid="TrayQuit" Text="Quit">
                         <MenuFlyoutItem.Icon>
@@ -29,7 +33,7 @@
                 </MenuFlyout>
             </tb:TaskbarIcon.ContextFlyout>
         </tb:TaskbarIcon>
-        <TitleBar x:Name="AppTitleBar" BackRequested="TitleBar_BackRequested" IsBackButtonVisible="{x:Bind NavFrame.CanGoBack, Mode=OneWay}" IsPaneToggleButtonVisible="True" PaneToggleRequested="TitleBar_PaneToggleRequested" />
+        <TitleBar x:Name="AppTitleBar" BackRequested="TitleBar_BackRequested" IsPaneToggleButtonVisible="True" PaneToggleRequested="TitleBar_PaneToggleRequested" />
 
         <!-- App name centered relative to the full title bar width -->
         <TextBlock Grid.Row="0" Text="Sing-Box" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Center" IsHitTestVisible="False" />

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentDialog
+    x:Class="SFW.Dialogs.ExportReportDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:Uid="ExportReportDialog"
+    Title="Export report"
+    PrimaryButtonText="Save"
+    CloseButtonText="Cancel"
+    DefaultButton="Primary">
+
+    <!-- SFM export sheet: which parts go into the archive and how it is protected.
+         The privacy note only matters when the selection can include
+         private content, so the caller decides whether it is shown. -->
+    <StackPanel Spacing="10">
+        <CheckBox x:Name="WithLogBox" x:Uid="ExportReportWithLog" Content="With Log" />
+        <CheckBox x:Name="WithConfigurationBox" x:Uid="ExportReportWithConfiguration"
+                  Content="With Configuration" />
+        <TextBlock x:Name="PrivacyNote" x:Uid="ExportReportPrivacyNote"
+                   Text="Logs and configuration files may contain private content and should not be made public."
+                   Style="{StaticResource CardCaptionTextStyle}"
+                   TextWrapping="Wrap" Visibility="Collapsed" />
+        <CheckBox x:Name="EncryptBox" x:Uid="ExportReportEncryptWithAge"
+                  Content="Encrypt with age" />
+        <TextBlock x:Name="AgeNote" x:Uid="ExportReportAgeNote"
+                   Text="age is a modern and secure asymmetric encryption tool. When enabled, the archive is encrypted with this project's public key so it can be posted publicly, e.g. in a GitHub issue."
+                   Style="{StaticResource CardCaptionTextStyle}"
+                   TextWrapping="Wrap" />
+    </StackPanel>
+</ContentDialog>

@@ -115,3 +115,94 @@ public sealed record CoreStunProgress(
     bool IsFinal,
     string? Error,
     bool NatTypeSupported);
+
+/// <summary>
+/// Mirrors the daemon's TailscalePeer. The daemon reports the same shape for
+/// self, peers and the selected exit node, so one record serves all three.
+/// </summary>
+public sealed record CoreTailscalePeer(
+    string HostName,
+    string DnsName,
+    string Os,
+    IReadOnlyList<string> TailscaleIPs,
+    bool Online,
+    bool ExitNode,
+    bool ExitNodeOption,
+    bool Active,
+    long RxBytes,
+    long TxBytes,
+    long KeyExpiry,
+    string StableId,
+    bool Expired,
+    IReadOnlyList<string> SshHostKeys,
+    bool ShareeNode,
+    long LastSeen,
+    bool CanReceiveFiles)
+{
+    /// <summary>
+    /// SFM/SFA show the first MagicDNS label, falling back to the host name;
+    /// the full DNS name is only used for identity and the details view.
+    /// </summary>
+    public string DisplayName
+    {
+        get
+        {
+            var segment = DnsName.Split('.')[0];
+            return string.IsNullOrEmpty(segment) ? HostName : segment;
+        }
+    }
+}
+
+/// <summary>Peers grouped by their Tailscale user, as reported by the daemon.</summary>
+public sealed record CoreTailscaleUserGroup(
+    long UserId,
+    string LoginName,
+    string DisplayName,
+    string ProfilePicUrl,
+    IReadOnlyList<CoreTailscalePeer> Peers);
+
+/// <summary>
+/// One configured <c>tailscale</c> endpoint, mirroring the daemon's
+/// TailscaleEndpointStatus. BackendState is the raw Tailscale state
+/// (Running, NeedsLogin, ...); StateText is the daemon-localized label.
+/// </summary>
+public sealed record CoreTailscaleEndpoint(
+    string EndpointTag,
+    string BackendState,
+    string StateText,
+    string AuthUrl,
+    string NetworkName,
+    string MagicDnsSuffix,
+    CoreTailscalePeer? Self,
+    IReadOnlyList<CoreTailscaleUserGroup> UserGroups,
+    CoreTailscalePeer? ExitNode,
+    bool KeyAuth,
+    bool CanShareFiles,
+    int WaitingFileCount,
+    int ReceivingFileCount,
+    int UnreadFileCount)
+{
+    /// <summary>True when the exit-node picker has anything to offer (SFM parity).</summary>
+    public bool HasExitNodeCandidates
+    {
+        get
+        {
+            if (ExitNode is not null) return true;
+            var selfStableId = Self?.StableId;
+            return UserGroups.Any(group =>
+                group.Peers.Any(peer => peer.ExitNodeOption && peer.StableId != selfStableId));
+        }
+    }
+
+    public bool IsRunning => BackendState == "Running";
+}
+
+/// <summary>tailscale.ping result. A relay/DERP path has no direct endpoint.</summary>
+public sealed record CoreTailscalePingResult(
+    double LatencyMs,
+    bool IsDirect,
+    string Endpoint,
+    int DerpRegionId,
+    string DerpRegionCode,
+    string PeerRelay,
+    string? Error);

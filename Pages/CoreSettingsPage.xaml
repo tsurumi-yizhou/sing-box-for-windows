@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page x:Class="SFW.Pages.CoreSettingsPage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:toolkit="using:CommunityToolkit.WinUI.Controls">
+    <ScrollViewer>
+        <StackPanel Padding="40,28,40,40" Spacing="8">
+
+            <StackPanel Spacing="6" Margin="0,0,0,16">
+                <TextBlock x:Uid="CoreSettingsTitle" Style="{StaticResource PageTitleTextStyle}" Text="Core" />
+                <TextBlock x:Uid="CoreSettingsSubtitle" Style="{StaticResource PageSubtitleTextStyle}" TextWrapping="Wrap" Text="Core version, working directory and data usage." />
+            </StackPanel>
+
+            <StackPanel Spacing="4">
+                <toolkit:SettingsCard x:Uid="CoreVersionCard" x:Name="CoreVersionCard" Header="Core version">
+                    <toolkit:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xE946;" />
+                    </toolkit:SettingsCard.HeaderIcon>
+                </toolkit:SettingsCard>
+
+                <!-- Data size: the daemon computes it, so it needs the service. -->
+                <toolkit:SettingsCard x:Uid="CoreDataSizeCard" x:Name="DataSizeCard" Header="Data size">
+                    <toolkit:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xE9F5;" />
+                    </toolkit:SettingsCard.HeaderIcon>
+                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <ProgressRing x:Name="DataSizeProgress" Width="16" Height="16" IsActive="False" Visibility="Collapsed" VerticalAlignment="Center" />
+                        <TextBlock x:Name="DataSizeText" Style="{StaticResource CardLineValueTextStyle}" VerticalAlignment="Center" />
+                    </StackPanel>
+                </toolkit:SettingsCard>
+                <TextBlock x:Name="DataSizeCaption" Style="{StaticResource CardCaptionTextStyle}" Margin="4,0,0,4" TextWrapping="Wrap" Visibility="Collapsed" />
+
+                <!-- Working directory: the daemon's directory when it reports one,
+                     otherwise the directory recorded on the installed service. -->
+                <toolkit:SettingsCard x:Uid="CoreWorkingDirectoryCard" x:Name="WorkingDirectoryCard" Header="Working directory" IsClickEnabled="True" Click="WorkingDirectoryCard_Click">
+                    <toolkit:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xE8B7;" />
+                    </toolkit:SettingsCard.HeaderIcon>
+                </toolkit:SettingsCard>
+
+                <toolkit:SettingsCard x:Uid="DataFolderCard" x:Name="DataFolderCard" Header="Data folder" IsClickEnabled="True" Click="DataFolderCard_Click">
+                    <toolkit:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xE8B7;" />
+                    </toolkit:SettingsCard.HeaderIcon>
+                </toolkit:SettingsCard>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

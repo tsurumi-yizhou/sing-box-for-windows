@@ -64,7 +64,6 @@
     <data name="ClearFilterButton.Content" xml:space="preserve"><value>Clear</value></data>
     <data name="ToolsTitle.Text" xml:space="preserve"><value>Tools</value></data>
     <data name="ToolsSubtitle.Text" xml:space="preserve"><value>Diagnostics backed by the libbox command server.</value></data>
-    <data name="CoreVersionTitle.Text" xml:space="preserve"><value>Core version</value></data>
     <data name="NetworkQualityTitle.Text" xml:space="preserve"><value>Network Quality</value></data>
     <data name="NetworkQualityDescription.Text" xml:space="preserve"><value>Measure download/upload capacity, responsiveness (RPM) and idle latency through the current outbound.</value></data>
     <data name="NqConfigUrlBox.Header" xml:space="preserve"><value>Config URL (optional)</value></data>
@@ -85,20 +84,16 @@
     <data name="StunMappingLabel.Text" xml:space="preserve"><value>NAT mapping</value></data>
     <data name="StunFilteringLabel.Text" xml:space="preserve"><value>NAT filtering</value></data>
     <data name="SettingsTitle.Text" xml:space="preserve"><value>Settings</value></data>
-    <data name="SettingsSubtitle.Text" xml:space="preserve"><value>Core and profile behavior.</value></data>
-    <data name="CoreTitle.Text" xml:space="preserve"><value>CORE</value></data>
+    <data name="SettingsSubtitle.Text" xml:space="preserve"><value>App, core, service and about links.</value></data>
     <data name="CoreVersionCard.Header" xml:space="preserve"><value>Core version</value></data>
-    <data name="DevelopmentFallbackTitle.Text" xml:space="preserve"><value>DEVELOPMENT FALLBACK</value></data>
-    <data name="BinaryPathBox.Header" xml:space="preserve"><value>sing-box.exe path</value></data>
-    <data name="BinaryPathBox.PlaceholderText" xml:space="preserve"><value>Auto-detect from app directory or PATH</value></data>
-    <data name="WorkingDirectoryBox.Header" xml:space="preserve"><value>Working directory (optional)</value></data>
-    <data name="WorkingDirectoryBox.PlaceholderText" xml:space="preserve"><value>Defaults to the executable folder</value></data>
     <data name="SettingsProfilesTitle.Text" xml:space="preserve"><value>PROFILES</value></data>
     <data name="AboutTitle.Text" xml:space="preserve"><value>ABOUT</value></data>
-    <data name="SaveButton.Content" xml:space="preserve"><value>Save</value></data>
-    <data name="AppSectionTitle.Text" xml:space="preserve"><value>APP</value></data>
     <data name="ThemeCard.Header" xml:space="preserve"><value>Theme</value></data>
     <data name="ThemeCard.Description" xml:space="preserve"><value>Use the system setting or force a light or dark theme.</value></data>
+    <data name="LanguageCard.Header" xml:space="preserve"><value>Language</value></data>
+    <data name="LanguageCard.Description" xml:space="preserve"><value>Use the system language or force one for the app. Restart to apply.</value></data>
+    <data name="LanguageSystem.Content" xml:space="preserve"><value>System default</value></data>
+    <data name="LanguageRestartHint.Text" xml:space="preserve"><value>Restart the app to apply the new language.</value></data>
     <data name="ThemeDefault.Content" xml:space="preserve"><value>Default</value></data>
     <data name="ThemeLight.Content" xml:space="preserve"><value>Light</value></data>
     <data name="ThemeDark.Content" xml:space="preserve"><value>Dark</value></data>
@@ -109,12 +104,8 @@
     <data name="LaunchCard.Header" xml:space="preserve"><value>Start at login</value></data>
     <data name="LaunchCard.Description" xml:space="preserve"><value>Run in the tray and start the service when you sign in, without opening a window.</value></data>
     <data name="DataFolderCard.Header" xml:space="preserve"><value>Data folder</value></data>
-    <data name="FallbackCardHeader.Text" xml:space="preserve"><value>External sing-box process</value></data>
-    <data name="FallbackCardDescription.Text" xml:space="preserve"><value>Used only when the libbox bridge executable is unavailable.</value></data>
     <data name="ProfilesCard.Header" xml:space="preserve"><value>Manage profiles</value></data>
     <data name="ProfilesCard.Description" xml:space="preserve"><value>Profiles are standard sing-box JSON configurations stored in the app data directory.</value></data>
-    <data name="SourceCard.Header" xml:space="preserve"><value>Source code</value></data>
-    <data name="SourceCard.Description" xml:space="preserve"><value>A native client built on the libbox command client and standard sing-box JSON profiles.</value></data>
     <data name="ImportClipboardText.Text" xml:space="preserve"><value>Paste</value></data>
     <data name="UpdateAllText.Text" xml:space="preserve"><value>Update all</value></data>
     <data name="DashboardItemsText.Text" xml:space="preserve"><value>Dashboard items</value></data>
@@ -127,4 +118,479 @@
     <data name="FilterClosed.Text" xml:space="preserve"><value>Closed</value></data>
     <data name="SortByDateText.Text" xml:space="preserve"><value>Date</value></data>
     <data name="PauseText.Text" xml:space="preserve"><value>Pause</value></data>
+    <data name="CrashReportsTitle.Text" xml:space="preserve"><value>Crash Report</value></data>
+    <data name="CrashReportsSubtitle.Text" xml:space="preserve"><value>Reports saved by the service when it crashes.</value></data>
+    <data name="OomReportsTitle.Text" xml:space="preserve"><value>OOM Report</value></data>
+    <data name="OomReportsSubtitle.Text" xml:space="preserve"><value>Reports saved when the service runs out of memory.</value></data>
+    <data name="OomFetchReportText.Text" xml:space="preserve"><value>Fetch Memory Report</value></data>
+    <data name="OomKillerToggle.Header" xml:space="preserve"><value>Enable Memory Limit</value></data>
+    <data name="OomKillerToggleDescription.Text" xml:space="preserve"><value>Provide a soft memory limit for the service. The service will perform additional garbage collections and listen for memory pressure to stay within the limit.</value></data>
+    <data name="OomMemoryLimitBox.Header" xml:space="preserve"><value>Memory Limit</value></data>
+    <data name="OomMemoryLimitDescription.Text" xml:space="preserve"><value>The soft memory limit. The service tries to stay within this limit and never exceeds it by much.</value></data>
+    <data name="OomKillConnectionsToggle.Header" xml:space="preserve"><value>Kill Connections</value></data>
+    <data name="OomKillConnectionsDescription.Text" xml:space="preserve"><value>Close all connections to free memory when the service memory exceeds the limit.</value></data>
+    <data name="PowerReportsTitle.Text" xml:space="preserve"><value>Power Report</value></data>
+    <data name="PowerReportsSubtitle.Text" xml:space="preserve"><value>Reports saved for each service run while the power report is enabled.</value></data>
+    <data name="PowerReportToggle.Header" xml:space="preserve"><value>Enable Power Report</value></data>
+    <data name="PowerReportToggleDescription.Text" xml:space="preserve"><value>A report is saved for each service run</value></data>
+    <data name="ReportDeleteAllText.Text" xml:space="preserve"><value>Delete all</value></data>
+    <data name="ReportEmptyText.Text" xml:space="preserve"><value>Empty</value></data>
+    <data name="ReportSectionReports.Text" xml:space="preserve"><value>Reports</value></data>
+    <data name="ReportSettingsHeader.Text" xml:space="preserve"><value>Settings</value></data>
+    <data name="ReportExportText.Text" xml:space="preserve"><value>Export</value></data>
+    <data name="ReportDeleteText.Text" xml:space="preserve"><value>Delete</value></data>
+    <data name="ReportDetailFilesHeader.Text" xml:space="preserve"><value>Files</value></data>
+    <data name="AppSettingsTitle.Text" xml:space="preserve"><value>App</value></data>
+    <data name="AppSettingsSubtitle.Text" xml:space="preserve"><value>Theme, backdrop, language, startup and profiles.</value></data>
+    <data name="CoreSettingsTitle.Text" xml:space="preserve"><value>Core</value></data>
+    <data name="CoreSettingsSubtitle.Text" xml:space="preserve"><value>Core version, working directory and data usage.</value></data>
+    <data name="CoreDataSizeCard.Header" xml:space="preserve"><value>Data size</value></data>
+    <data name="CoreWorkingDirectoryCard.Header" xml:space="preserve"><value>Working directory</value></data>
+    <data name="ServiceSettingsTitle.Text" xml:space="preserve"><value>Service</value></data>
+    <data name="ServiceSettingsSubtitle.Text" xml:space="preserve"><value>The background daemon service and the core it runs.</value></data>
+    <data name="ServiceStatusCard.Header" xml:space="preserve"><value>Service status</value></data>
+    <data name="ServiceCoresCard.Header" xml:space="preserve"><value>Core versions</value></data>
+    <data name="ServiceExecutableCard.Header" xml:space="preserve"><value>Service executable</value></data>
+    <data name="ServiceWorkingDirectoryCard.Header" xml:space="preserve"><value>Working directory</value></data>
+    <data name="RefreshButton.Content" xml:space="preserve"><value>Refresh</value></data>
+    <data name="StartServiceButton.Content" xml:space="preserve"><value>Start service</value></data>
+    <data name="RepairServiceButton.Content" xml:space="preserve"><value>Install / repair service</value></data>
+    <data name="RepairActionButton.Content" xml:space="preserve"><value>Repair service</value></data>
+    <data name="RepairBar.Title" xml:space="preserve"><value>Core version mismatch</value></data>
+    <data name="ServiceElevationCaption.Text" xml:space="preserve"><value>Installing or starting the service requires administrator approval.</value></data>
+
+    <!-- Tray -->
+    <data name="Tray.Stopping" xml:space="preserve"><value>Stopping…</value></data>
+    <data name="Tray.Starting" xml:space="preserve"><value>Starting…</value></data>
+    <data name="Tray.UnableToStop" xml:space="preserve"><value>Unable to stop</value></data>
+    <data name="Tray.UnableToStart" xml:space="preserve"><value>Unable to start</value></data>
+    <data name="Tray.Stop" xml:space="preserve"><value>Stop</value></data>
+    <data name="Tray.Start" xml:space="preserve"><value>Start</value></data>
+
+    <!-- ConnectionRow -->
+    <data name="ConnectionRow.Active" xml:space="preserve"><value>Active</value></data>
+    <data name="ConnectionRow.Closed" xml:space="preserve"><value>Closed</value></data>
+
+    <!-- AppSettings -->
+    <data name="AppSettings.AvailableWhenTheAppIsInstalledAsAPackage" xml:space="preserve"><value>Available when the app is installed as a package.</value></data>
+
+    <!-- Connections -->
+    <data name="Connections.All" xml:space="preserve"><value>All</value></data>
+    <data name="Connections.Closed" xml:space="preserve"><value>Closed</value></data>
+    <data name="Connections.Active" xml:space="preserve"><value>Active</value></data>
+    <data name="Connections.Traffic" xml:space="preserve"><value>Traffic</value></data>
+    <data name="Connections.TrafficTotal" xml:space="preserve"><value>Traffic Total</value></data>
+    <data name="Connections.Date" xml:space="preserve"><value>Date</value></data>
+    <data name="Connections.UnableToCloseConnections" xml:space="preserve"><value>Unable to close connections</value></data>
+    <data name="Connections.CoreIsStopped" xml:space="preserve"><value>Core is stopped</value></data>
+    <data name="Connections.StartAProfileToReceiveConnectionsFromTheCoreService" xml:space="preserve"><value>Start a profile to receive connections from the core service.</value></data>
+    <data name="Connections.NoConnections" xml:space="preserve"><value>No connections</value></data>
+    <data name="Connections.NoActiveConnections" xml:space="preserve"><value>No active connections</value></data>
+    <data name="Connections.NoClosedConnections" xml:space="preserve"><value>No closed connections</value></data>
+    <data name="Connections.NoMatchingConnections" xml:space="preserve"><value>No matching connections</value></data>
+    <data name="Connections.Close" xml:space="preserve"><value>Close</value></data>
+    <data name="Connections.UnableToCloseConnection" xml:space="preserve"><value>Unable to close connection</value></data>
+    <data name="Connections.State" xml:space="preserve"><value>State</value></data>
+    <data name="Connections.CreatedAt" xml:space="preserve"><value>Created At</value></data>
+    <data name="Connections.ClosedAt" xml:space="preserve"><value>Closed At</value></data>
+    <data name="Connections.Duration" xml:space="preserve"><value>Duration</value></data>
+    <data name="Connections.Uplink" xml:space="preserve"><value>Uplink</value></data>
+    <data name="Connections.Downlink" xml:space="preserve"><value>Downlink</value></data>
+    <data name="Connections.BasicInformation" xml:space="preserve"><value>Basic Information</value></data>
+    <data name="Connections.Inbound" xml:space="preserve"><value>Inbound</value></data>
+    <data name="Connections.InboundType" xml:space="preserve"><value>Inbound Type</value></data>
+    <data name="Connections.IPVersion" xml:space="preserve"><value>IP Version</value></data>
+    <data name="Connections.Network" xml:space="preserve"><value>Network</value></data>
+    <data name="Connections.Source" xml:space="preserve"><value>Source</value></data>
+    <data name="Connections.Destination" xml:space="preserve"><value>Destination</value></data>
+    <data name="Connections.Domain" xml:space="preserve"><value>Domain</value></data>
+    <data name="Connections.Protocol" xml:space="preserve"><value>Protocol</value></data>
+    <data name="Connections.User" xml:space="preserve"><value>User</value></data>
+    <data name="Connections.FromOutbound" xml:space="preserve"><value>From Outbound</value></data>
+    <data name="Connections.MatchRule" xml:space="preserve"><value>Match Rule</value></data>
+    <data name="Connections.Outbound" xml:space="preserve"><value>Outbound</value></data>
+    <data name="Connections.OutboundType" xml:space="preserve"><value>Outbound Type</value></data>
+    <data name="Connections.Chain" xml:space="preserve"><value>Chain</value></data>
+    <data name="Connections.Metadata" xml:space="preserve"><value>Metadata</value></data>
+    <data name="Connections.ProcessID" xml:space="preserve"><value>Process ID</value></data>
+    <data name="Connections.ProcessPath" xml:space="preserve"><value>Process Path</value></data>
+    <data name="Connections.UserName" xml:space="preserve"><value>User Name</value></data>
+    <data name="Connections.PackageName" xml:space="preserve"><value>Package Name</value></data>
+    <data name="Connections.ProcessInformation" xml:space="preserve"><value>Process Information</value></data>
+    <data name="Connections.CloseConnection" xml:space="preserve"><value>Close connection</value></data>
+
+    <!-- CoreSettings -->
+    <data name="CoreSettings.Unavailable" xml:space="preserve"><value>Unavailable</value></data>
+    <data name="CoreSettings.AppShips" xml:space="preserve"><value>{0} · app ships {1}</value></data>
+    <data name="CoreSettings.TheDaemonReportsThisSizeWhileItRunsStartTheServiceTo" xml:space="preserve"><value>The daemon reports this size while it runs. Start the service to read it.</value></data>
+    <data name="CoreSettings.NotCreatedYet" xml:space="preserve"><value>not created yet</value></data>
+    <data name="CoreSettings.UnableToOpenTheFolder" xml:space="preserve"><value>Unable to open the folder</value></data>
+
+    <!-- CrashReports -->
+    <data name="CrashReports.ReportsUnavailable" xml:space="preserve"><value>Reports unavailable</value></data>
+    <data name="CrashReports.TheSingBoxDaemonServiceIsNotRunningSoReportsAreUnava" xml:space="preserve"><value>The SingBox daemon service is not running, so reports are unavailable.</value></data>
+    <data name="CrashReports.UnableToListReports" xml:space="preserve"><value>Unable to list reports</value></data>
+    <data name="CrashReports.Local" xml:space="preserve"><value>Local</value></data>
+    <data name="CrashReports.DeleteAllReports" xml:space="preserve"><value>Delete all reports?</value></data>
+    <data name="CrashReports.AllSavedCrashReportsWillBePermanentlyDeleted" xml:space="preserve"><value>All saved crash reports will be permanently deleted.</value></data>
+    <data name="CrashReports.DeleteAll" xml:space="preserve"><value>Delete all</value></data>
+    <data name="CrashReports.UnableToDeleteReports" xml:space="preserve"><value>Unable to delete reports</value></data>
+    <data name="CrashReports.Unknown" xml:space="preserve"><value>Unknown</value></data>
+
+    <!-- Groups -->
+    <data name="Groups.CoreIsStopped" xml:space="preserve"><value>Core is stopped</value></data>
+    <data name="Groups.StartAProfileToReceiveGroupsFromTheCoreService" xml:space="preserve"><value>Start a profile to receive groups from the core service.</value></data>
+    <data name="Groups.NoSelectableGroups" xml:space="preserve"><value>No selectable groups</value></data>
+    <data name="Groups.TheActiveConfigurationDidNotReportAnySelectorGroups" xml:space="preserve"><value>The active configuration did not report any selector groups.</value></data>
+    <data name="Groups.URLTestThisGroup" xml:space="preserve"><value>URL test this group</value></data>
+    <data name="Groups.Collapse" xml:space="preserve"><value>Collapse</value></data>
+    <data name="Groups.Expand" xml:space="preserve"><value>Expand</value></data>
+    <!-- group chip context menu -->
+    <data name="GroupsTestItem.Text" xml:space="preserve"><value>Test</value></data>
+    <data name="Groups.UnableToChangeSelection" xml:space="preserve"><value>Unable to change selection</value></data>
+    <data name="Groups.UnableToStartURLTest" xml:space="preserve"><value>Unable to start URLTest</value></data>
+
+    <!-- Home -->
+    <data name="Home.GetStarted" xml:space="preserve"><value>Get started</value></data>
+    <data name="Home.AddOrSelectAProfileThenStartTheService" xml:space="preserve"><value>Add or select a profile, then start the service.</value></data>
+    <data name="Home.Remote" xml:space="preserve"><value>Remote</value></data>
+    <data name="Home.Local" xml:space="preserve"><value>Local</value></data>
+    <data name="Home.AddProfile" xml:space="preserve"><value>Add profile</value></data>
+    <data name="Home.EnterAValidHTTPOrHTTPSSubscriptionURL" xml:space="preserve"><value>Enter a valid HTTP or HTTPS subscription URL.</value></data>
+    <data name="Home.ChooseASingBoxJSONConfigurationFile" xml:space="preserve"><value>Choose a SingBox JSON configuration file.</value></data>
+    <data name="Home.Added" xml:space="preserve"><value>Added "{0}".</value></data>
+    <data name="Home.Install" xml:space="preserve"><value>Install</value></data>
+    <data name="Home.Upgrade" xml:space="preserve"><value>Upgrade</value></data>
+    <data name="Home.Start" xml:space="preserve"><value>Start</value></data>
+    <data name="Home.ConnectingToTheService" xml:space="preserve"><value>Connecting to the service…</value></data>
+    <data name="Home.ConnectionLostReconnecting" xml:space="preserve"><value>Connection lost. Reconnecting…</value></data>
+    <data name="Home.ServiceIsNotInstalled" xml:space="preserve"><value>Service is not installed.</value></data>
+    <data name="Home.ServiceIsStopped" xml:space="preserve"><value>Service is stopped.</value></data>
+    <data name="Home.TheServiceIsUnavailable" xml:space="preserve"><value>The service is unavailable.</value></data>
+    <data name="Home.UnableToChangeMode" xml:space="preserve"><value>Unable to change mode</value></data>
+    <data name="Home.UnableToChangeSystemProxy" xml:space="preserve"><value>Unable to change system proxy</value></data>
+    <data name="Home.Profile" xml:space="preserve"><value>Profile</value></data>
+
+    <!-- Logs -->
+    <data name="Logs.Resume" xml:space="preserve"><value>Resume</value></data>
+    <data name="Logs.Pause" xml:space="preserve"><value>Pause</value></data>
+    <data name="Logs.Default" xml:space="preserve"><value>Default</value></data>
+    <data name="Logs.Filter" xml:space="preserve"><value>Filter: {0}</value></data>
+    <data name="Logs.UnableToClearServiceLogs" xml:space="preserve"><value>{0}  Unable to clear service logs: {1}</value></data>
+
+    <!-- NetworkQuality -->
+    <data name="NetworkQuality.NetworkQuality" xml:space="preserve"><value>Network Quality</value></data>
+    <data name="NetworkQuality.TheseToolsRequireTheLibboxCoreTheAppIsCurrentlyUsing" xml:space="preserve"><value>These tools require the libbox core; the app is currently using the development fallback process.</value></data>
+    <data name="NetworkQuality.StartTheServiceToRunTheNetworkQualityTest" xml:space="preserve"><value>Start the service to run the network quality test.</value></data>
+    <data name="NetworkQuality.Done" xml:space="preserve"><value>Done</value></data>
+    <data name="NetworkQuality.MeasuringIdleLatency" xml:space="preserve"><value>Measuring idle latency…</value></data>
+    <data name="NetworkQuality.DownloadTest0F0S" xml:space="preserve"><value>Download test… ({0:F0}s)</value></data>
+    <data name="NetworkQuality.UploadTest0F0S" xml:space="preserve"><value>Upload test… ({0:F0}s)</value></data>
+    <data name="NetworkQuality.ToolError" xml:space="preserve"><value>Tool error</value></data>
+
+    <!-- OomReports -->
+    <data name="OomReports.UnableToUpdateTheMemoryLimitSetting" xml:space="preserve"><value>Unable to update the memory limit setting</value></data>
+    <data name="OomReports.UnableToUpdateTheMemoryLimit" xml:space="preserve"><value>Unable to update the memory limit</value></data>
+    <data name="OomReports.UnableToUpdateTheKillConnectionsSetting" xml:space="preserve"><value>Unable to update the kill connections setting</value></data>
+    <data name="OomReports.ServiceNotStarted" xml:space="preserve"><value>Service not started</value></data>
+    <data name="OomReports.StartTheServiceToCollectAMemoryReport" xml:space="preserve"><value>Start the service to collect a memory report.</value></data>
+    <data name="OomReports.UnableToFetchTheMemoryReport" xml:space="preserve"><value>Unable to fetch the memory report</value></data>
+    <data name="OomReports.ReportsUnavailable" xml:space="preserve"><value>Reports unavailable</value></data>
+    <data name="OomReports.TheSingBoxDaemonServiceIsNotRunningSoReportsAreUnava" xml:space="preserve"><value>The SingBox daemon service is not running, so reports are unavailable.</value></data>
+    <data name="OomReports.UnableToListReports" xml:space="preserve"><value>Unable to list reports</value></data>
+    <data name="OomReports.Local" xml:space="preserve"><value>Local</value></data>
+    <data name="OomReports.DeleteAllReports" xml:space="preserve"><value>Delete all reports?</value></data>
+    <data name="OomReports.AllSavedMemoryReportsWillBePermanentlyDeleted" xml:space="preserve"><value>All saved memory reports will be permanently deleted.</value></data>
+    <data name="OomReports.DeleteAll" xml:space="preserve"><value>Delete all</value></data>
+    <data name="OomReports.UnableToDeleteReports" xml:space="preserve"><value>Unable to delete reports</value></data>
+    <data name="OomReports.Unknown" xml:space="preserve"><value>Unknown</value></data>
+
+    <!-- PowerReports -->
+    <data name="PowerReports.UnableToUpdateThePowerReportSetting" xml:space="preserve"><value>Unable to update the power report setting</value></data>
+    <data name="PowerReports.ReportsUnavailable" xml:space="preserve"><value>Reports unavailable</value></data>
+    <data name="PowerReports.TheSingBoxDaemonServiceIsNotRunningSoReportsAreUnava" xml:space="preserve"><value>The SingBox daemon service is not running, so reports are unavailable.</value></data>
+    <data name="PowerReports.UnableToListReports" xml:space="preserve"><value>Unable to list reports</value></data>
+    <data name="PowerReports.Local" xml:space="preserve"><value>Local</value></data>
+    <data name="PowerReports.DeleteAllReports" xml:space="preserve"><value>Delete all reports?</value></data>
+    <data name="PowerReports.AllSavedPowerReportsWillBePermanentlyDeleted" xml:space="preserve"><value>All saved power reports will be permanently deleted.</value></data>
+    <data name="PowerReports.DeleteAll" xml:space="preserve"><value>Delete all</value></data>
+    <data name="PowerReports.UnableToDeleteReports" xml:space="preserve"><value>Unable to delete reports</value></data>
+    <data name="PowerReports.Unknown" xml:space="preserve"><value>Unknown</value></data>
+
+    <!-- Profiles -->
+    <data name="Profiles.SubscriptionURL" xml:space="preserve"><value>Subscription URL</value></data>
+    <data name="Profiles.ConfigurationFile" xml:space="preserve"><value>Configuration file</value></data>
+    <data name="Profiles.AutoUpdate" xml:space="preserve"><value>Auto update</value></data>
+    <data name="Profiles.AutoUpdateIntervalMinutes" xml:space="preserve"><value>Auto update interval (minutes)</value></data>
+    <data name="Profiles.Browse" xml:space="preserve"><value>Browse</value></data>
+    <data name="Profiles.EnterAValidHTTPOrHTTPSSubscriptionURL" xml:space="preserve"><value>Enter a valid HTTP or HTTPS subscription URL.</value></data>
+    <data name="Profiles.EnterASingBoxConfigurationFilePath" xml:space="preserve"><value>Enter a SingBox configuration file path.</value></data>
+    <data name="Profiles.UnableToAddProfile" xml:space="preserve"><value>Unable to add profile</value></data>
+    <data name="Profiles.UnableToSaveProfile" xml:space="preserve"><value>Unable to save profile</value></data>
+    <data name="Profiles.UnableToSwitchProfile" xml:space="preserve"><value>Unable to switch profile</value></data>
+    <data name="Profiles.Clipboard" xml:space="preserve"><value>Clipboard</value></data>
+    <data name="Profiles.TheClipboardIsEmpty" xml:space="preserve"><value>The clipboard is empty.</value></data>
+    <data name="Profiles.ImportedProfile" xml:space="preserve"><value>Imported profile</value></data>
+    <data name="Profiles.TheClipboardDoesNotContainASubscriptionURLAConfigura" xml:space="preserve"><value>The clipboard does not contain a subscription URL, a configuration path or JSON content.</value></data>
+    <data name="Profiles.ProfileImported" xml:space="preserve"><value>Profile imported</value></data>
+    <data name="Profiles.UnableToImport" xml:space="preserve"><value>Unable to import</value></data>
+    <data name="Profiles.UpdateAll" xml:space="preserve"><value>Update all</value></data>
+    <data name="Profiles.ThereAreNoRemoteProfiles" xml:space="preserve"><value>There are no remote profiles.</value></data>
+    <data name="Profiles.SubscriptionSUpdated" xml:space="preserve"><value>{0} subscription(s) updated.</value></data>
+    <data name="Profiles.UpdatedFailed" xml:space="preserve"><value>{0} updated, {1} failed: </value></data>
+    <data name="Profiles.Updating" xml:space="preserve"><value>Updating…</value></data>
+    <data name="Profiles.Update" xml:space="preserve"><value>Update</value></data>
+    <data name="Profiles.TheSubscriptionContentIsUnchanged" xml:space="preserve"><value>The subscription content is unchanged.</value></data>
+    <data name="Profiles.UpdateFailed" xml:space="preserve"><value>Update failed</value></data>
+    <data name="Profiles.UnableToRemoveProfile" xml:space="preserve"><value>Unable to remove profile</value></data>
+    <data name="Profiles.Remote" xml:space="preserve"><value>Remote</value></data>
+    <data name="Profiles.Local" xml:space="preserve"><value>Local</value></data>
+
+    <!-- ReportDetail -->
+    <data name="ReportDetail.Report" xml:space="preserve"><value>Report</value></data>
+    <data name="ReportDetail.NoReportWasSelected" xml:space="preserve"><value>No report was selected.</value></data>
+    <data name="ReportDetail.Local" xml:space="preserve"><value>{0} · Local</value></data>
+    <data name="ReportDetail.ReportUnavailable" xml:space="preserve"><value>Report unavailable</value></data>
+    <data name="ReportDetail.TheSingBoxDaemonServiceIsNotRunningSoReportsAreUnava" xml:space="preserve"><value>The SingBox daemon service is not running, so reports are unavailable.</value></data>
+    <data name="ReportDetail.UnableToOpenTheReport" xml:space="preserve"><value>Unable to open the report</value></data>
+    <data name="ReportDetail.ProfileFileExportToView" xml:space="preserve"><value>Profile file (export to view)</value></data>
+    <data name="ReportDetail.Close" xml:space="preserve"><value>Close</value></data>
+    <data name="ReportDetail.UnableToShowTheFile" xml:space="preserve"><value>Unable to show the file</value></data>
+    <!-- export sheet and file preview (x:Uid targets) -->
+    <data name="ExportReportDialog.Title" xml:space="preserve"><value>Export report</value></data>
+    <data name="ExportReportDialog.PrimaryButtonText" xml:space="preserve"><value>Save</value></data>
+    <data name="ExportReportDialog.CloseButtonText" xml:space="preserve"><value>Cancel</value></data>
+    <data name="ExportReportWithLog.Content" xml:space="preserve"><value>With Log</value></data>
+    <data name="ExportReportWithConfiguration.Content" xml:space="preserve"><value>With Configuration</value></data>
+    <data name="ExportReportPrivacyNote.Text" xml:space="preserve"><value>Logs and configuration files may contain private content and should not be made public.</value></data>
+    <data name="ExportReportEncryptWithAge.Content" xml:space="preserve"><value>Encrypt with age</value></data>
+    <data name="ExportReportAgeNote.Text" xml:space="preserve"><value>age is a modern and secure asymmetric encryption tool. When enabled, the archive is encrypted with this project's public key so it can be posted publicly, e.g. in a GitHub issue.</value></data>
+    <data name="ReportFilePreviewTruncationNote.Text" xml:space="preserve"><value>Showing only the last 2 MB of this file.</value></data>
+    <data name="ReportDetail.UnableToExportTheReport" xml:space="preserve"><value>Unable to export the report</value></data>
+    <data name="ReportDetail.TheDaemonReturnedAnEmptyArchive" xml:space="preserve"><value>The daemon returned an empty archive.</value></data>
+    <data name="ReportDetail.Archive" xml:space="preserve"><value>Archive</value></data>
+    <data name="ReportDetail.ReportExported" xml:space="preserve"><value>Report exported</value></data>
+    <data name="ReportDetail.DeleteThisReport" xml:space="preserve"><value>Delete this report?</value></data>
+    <data name="ReportDetail.TheReportAndAllOfItsFilesWillBePermanentlyDeleted" xml:space="preserve"><value>The report and all of its files will be permanently deleted.</value></data>
+    <data name="ReportDetail.Delete" xml:space="preserve"><value>Delete</value></data>
+    <data name="ReportDetail.UnableToDeleteTheReport" xml:space="preserve"><value>Unable to delete the report</value></data>
+    <data name="ReportDetail.CrashReport" xml:space="preserve"><value>Crash Report</value></data>
+    <data name="ReportDetail.OOMReport" xml:space="preserve"><value>OOM Report</value></data>
+    <data name="ReportDetail.PowerReport" xml:space="preserve"><value>Power Report</value></data>
+    <data name="ReportDetail.Unknown" xml:space="preserve"><value>Unknown</value></data>
+
+    <!-- ServiceSettings -->
+    <data name="ServiceSettings.Checking" xml:space="preserve"><value>Checking…</value></data>
+    <data name="ServiceSettings.Running" xml:space="preserve"><value>Running</value></data>
+    <data name="ServiceSettings.NotInstalled" xml:space="preserve"><value>Not installed</value></data>
+    <data name="ServiceSettings.Stopped" xml:space="preserve"><value>Stopped</value></data>
+    <data name="ServiceSettings.TheDaemonServiceIsInstalledAndRunning" xml:space="preserve"><value>The daemon service is installed and running.</value></data>
+    <data name="ServiceSettings.TheDaemonServiceIsNotInstalledInstallItSoProfilesCan" xml:space="preserve"><value>The daemon service is not installed. Install it so profiles can run in the background.</value></data>
+    <data name="ServiceSettings.TheDaemonServiceIsInstalledButStopped" xml:space="preserve"><value>The daemon service is installed but stopped.</value></data>
+    <data name="ServiceSettings.Unavailable" xml:space="preserve"><value>Unavailable</value></data>
+    <data name="ServiceSettings.NotCreatedYet" xml:space="preserve"><value>not created yet</value></data>
+    <data name="ServiceSettings.ServiceApp" xml:space="preserve"><value>Service {0} · App {1}</value></data>
+    <data name="ServiceSettings.TheInstalledServiceRunsCoreButThisAppShipsRepairingI" xml:space="preserve"><value>The installed service runs core {0}, but this app ships {1}. Repairing installs the bundled core as the service; this stops the running service and drops an active connection.</value></data>
+    <data name="ServiceSettings.TheServiceActionWasCancelledSoNothingWasChanged" xml:space="preserve"><value>The service action was cancelled, so nothing was changed.</value></data>
+    <data name="ServiceSettings.ServiceActionFailed" xml:space="preserve"><value>Service action failed</value></data>
+    <data name="ServiceSettings.UnableToOpenTheFolder" xml:space="preserve"><value>Unable to open the folder</value></data>
+
+    <!-- Settings -->
+    <data name="Settings.TheLinkCouldNotBeOpened" xml:space="preserve"><value>The link could not be opened.</value></data>
+    <data name="GeneralExpander.Header" xml:space="preserve"><value>General</value></data>
+    <data name="AboutExpander.Header" xml:space="preserve"><value>About</value></data>
+    <data name="AppCard.Header" xml:space="preserve"><value>App</value></data>
+    <data name="CoreCard.Header" xml:space="preserve"><value>Core</value></data>
+    <data name="ServiceCard.Header" xml:space="preserve"><value>Service</value></data>
+    <data name="DocumentationCard.Header" xml:space="preserve"><value>Documentation</value></data>
+    <data name="SourceCodeCard.Header" xml:space="preserve"><value>Source code</value></data>
+    <data name="SponsorCard.Header" xml:space="preserve"><value>Sponsor</value></data>
+    <data name="SettingsStatusBar.Title" xml:space="preserve"><value>Settings</value></data>
+
+    <!-- StunTest -->
+    <data name="StunTest.STUNTest" xml:space="preserve"><value>STUN Test</value></data>
+    <data name="StunTest.TheseToolsRequireTheLibboxCoreTheAppIsCurrentlyUsing" xml:space="preserve"><value>These tools require the libbox core; the app is currently using the development fallback process.</value></data>
+    <data name="StunTest.StartTheServiceToRunTheSTUNTest" xml:space="preserve"><value>Start the service to run the STUN test.</value></data>
+    <data name="StunTest.Done" xml:space="preserve"><value>Done</value></data>
+    <data name="StunTest.Binding" xml:space="preserve"><value>Binding…</value></data>
+    <data name="StunTest.ProbingNATMapping" xml:space="preserve"><value>Probing NAT mapping…</value></data>
+    <data name="StunTest.ProbingNATFiltering" xml:space="preserve"><value>Probing NAT filtering…</value></data>
+    <data name="StunTest.EndpointIndependent" xml:space="preserve"><value>Endpoint Independent</value></data>
+    <data name="StunTest.AddressDependent" xml:space="preserve"><value>Address Dependent</value></data>
+    <data name="StunTest.AddressAndPortDependent" xml:space="preserve"><value>Address and Port Dependent</value></data>
+    <data name="StunTest.Unknown" xml:space="preserve"><value>Unknown</value></data>
+    <data name="StunTest.ToolError" xml:space="preserve"><value>Tool error</value></data>
+
+    <!-- Tailscale -->
+    <data name="Tailscale.Tailscale" xml:space="preserve"><value>Tailscale</value></data>
+    <data name="Tailscale.EndpointStatusPeersExitNodeAndConnectionTests" xml:space="preserve"><value>Endpoint status, peers, exit node and connection tests.</value></data>
+    <data name="Tailscale.StatusPeersExitNodeAndConnectionTestsForThisEndpoint" xml:space="preserve"><value>Status, peers, exit node and connection tests for this endpoint.</value></data>
+    <data name="Tailscale.TheseToolsRequireTheLibboxCoreTheAppIsCurrentlyUsing" xml:space="preserve"><value>These tools require the libbox core; the app is currently using the development fallback process.</value></data>
+    <data name="Tailscale.StartTheServiceToInspectTailscaleEndpoints" xml:space="preserve"><value>Start the service to inspect Tailscale endpoints.</value></data>
+    <data name="Tailscale.NoTailscaleEndpointsInTheRunningProfile" xml:space="preserve"><value>No Tailscale endpoints in the running profile.</value></data>
+    <data name="Tailscale.TheEndpointIsNotInTheRunningProfile" xml:space="preserve"><value>The "{0}" endpoint is not in the running profile.</value></data>
+    <data name="Tailscale.CopyAddress" xml:space="preserve"><value>Copy address</value></data>
+    <data name="Tailscale.LogOut" xml:space="preserve"><value>Log out</value></data>
+    <data name="Tailscale.LogOutOfTailscale" xml:space="preserve"><value>Log out of Tailscale</value></data>
+    <data name="Tailscale.Disabled" xml:space="preserve"><value>Disabled</value></data>
+    <data name="Tailscale.ChooseExitNode" xml:space="preserve"><value>Choose exit node</value></data>
+    <data name="Tailscale.ExitNode" xml:space="preserve"><value>Exit node</value></data>
+    <data name="Tailscale.OpenAuthURL" xml:space="preserve"><value>Open auth URL</value></data>
+    <data name="Tailscale.CopyAuthURL" xml:space="preserve"><value>Copy auth URL</value></data>
+    <data name="Tailscale.DetailsFor" xml:space="preserve"><value>Details for {0}</value></data>
+    <data name="Tailscale.Ping" xml:space="preserve"><value>Ping</value></data>
+    <data name="Tailscale.PingAlt2" xml:space="preserve"><value>Ping {0}</value></data>
+    <data name="Tailscale.PingThisPeer" xml:space="preserve"><value>Ping this peer</value></data>
+    <data name="Tailscale.Stop" xml:space="preserve"><value>Stop</value></data>
+    <data name="Tailscale.Direct" xml:space="preserve"><value>Direct</value></data>
+    <data name="Tailscale.PeerRelay" xml:space="preserve"><value>Peer relay</value></data>
+    <data name="Tailscale.DERP" xml:space="preserve"><value>DERP</value></data>
+    <data name="Tailscale.LogOutTheEndpointThisUnregistersTheNodeFromYourTailn" xml:space="preserve"><value>Log out the "{0}" endpoint? This unregisters the node from your tailnet; the service must authenticate again.</value></data>
+    <data name="Tailscale.Close" xml:space="preserve"><value>Close</value></data>
+    <data name="Tailscale.MagicDNS" xml:space="preserve"><value>MagicDNS</value></data>
+    <data name="Tailscale.Hostname" xml:space="preserve"><value>Hostname</value></data>
+    <data name="Tailscale.IPv6" xml:space="preserve"><value>IPv6</value></data>
+    <data name="Tailscale.IPv4" xml:space="preserve"><value>IPv4</value></data>
+    <data name="Tailscale.OS" xml:space="preserve"><value>OS</value></data>
+    <data name="Tailscale.KeyExpiry" xml:space="preserve"><value>Key expiry</value></data>
+    <data name="Tailscale.Expired" xml:space="preserve"><value>Expired</value></data>
+    <data name="Tailscale.LastSeen" xml:space="preserve"><value>Last seen</value></data>
+    <data name="Tailscale.Active" xml:space="preserve"><value>Active</value></data>
+    <data name="Tailscale.Available" xml:space="preserve"><value>Available</value></data>
+    <data name="Tailscale.SharedIn" xml:space="preserve"><value>Shared in</value></data>
+    <data name="Tailscale.Yes" xml:space="preserve"><value>Yes</value></data>
+    <data name="Tailscale.JustNow" xml:space="preserve"><value>Just now</value></data>
+    <data name="Tailscale.MinAgo" xml:space="preserve"><value>{0} min ago</value></data>
+    <data name="Tailscale.HoursAgo" xml:space="preserve"><value>{0} hours ago</value></data>
+    <data name="Tailscale.DaysAgo" xml:space="preserve"><value>{0} days ago</value></data>
+    <data name="Tailscale.Running" xml:space="preserve"><value>Running</value></data>
+    <data name="Tailscale.Starting" xml:space="preserve"><value>Starting</value></data>
+    <data name="Tailscale.Stopped" xml:space="preserve"><value>Stopped</value></data>
+    <data name="Tailscale.NeedsLogin" xml:space="preserve"><value>Needs login</value></data>
+    <data name="Tailscale.NeedsMachineAuthorization" xml:space="preserve"><value>Needs machine authorization</value></data>
+    <data name="Tailscale.NoState" xml:space="preserve"><value>No state</value></data>
+    <data name="Tailscale.ExitNodeAlt2" xml:space="preserve"><value>Exit Node</value></data>
+    <data name="Tailscale.SSH" xml:space="preserve"><value>SSH</value></data>
+    <data name="Tailscale.ToolError" xml:space="preserve"><value>Tool error</value></data>
+    <!-- Tailscale endpoint card and exit-node picker (x:Uid targets) -->
+    <data name="TailscaleNetworkCard.Header" xml:space="preserve"><value>Network</value></data>
+    <data name="TailscaleDeviceCard.Header" xml:space="preserve"><value>This device</value></data>
+    <data name="TailscaleExitNodeCard.Header" xml:space="preserve"><value>Exit node</value></data>
+    <data name="TailscaleAuthUrlCard.Header" xml:space="preserve"><value>Auth URL</value></data>
+    <data name="TailscaleLogOutButton.Content" xml:space="preserve"><value>Log out</value></data>
+    <data name="TailscaleOpenButton.Content" xml:space="preserve"><value>Open</value></data>
+    <data name="TailscaleCopyAuthUrlButton.Content" xml:space="preserve"><value>Copy</value></data>
+    <data name="TailscaleExitNodeDialog.Title" xml:space="preserve"><value>Exit node</value></data>
+    <data name="TailscaleExitNodeDialog.CloseButtonText" xml:space="preserve"><value>Close</value></data>
+
+    <!-- Tools -->
+    <data name="Tools.TheseToolsRequireTheLibboxCoreTheAppIsCurrentlyUsing" xml:space="preserve"><value>These tools require the libbox core; the app is currently using the development fallback process.</value></data>
+    <data name="Tools.StartTheServiceToUseTheNetworkQualitySTUNAndTailscal" xml:space="preserve"><value>Start the service to use the network quality, STUN, and Tailscale tools.</value></data>
+    <data name="Tools.ToolError" xml:space="preserve"><value>Tool error</value></data>
+    <data name="Tools.Tailscale" xml:space="preserve"><value>Tailscale</value></data>
+    <data name="EndpointsExpander.Header" xml:space="preserve"><value>Endpoints</value></data>
+    <data name="NetworkExpander.Header" xml:space="preserve"><value>Network</value></data>
+    <data name="DebugExpander.Header" xml:space="preserve"><value>Debug</value></data>
+    <data name="NetworkQualityCard.Header" xml:space="preserve"><value>Network Quality</value></data>
+    <data name="StunTestCard.Header" xml:space="preserve"><value>STUN Test</value></data>
+    <data name="CrashReportCard.Header" xml:space="preserve"><value>Crash Report</value></data>
+    <data name="OomReportCard.Header" xml:space="preserve"><value>OOM Report</value></data>
+    <data name="PowerReportCard.Header" xml:space="preserve"><value>Power Report</value></data>
+    <data name="DebugCaption.Text" xml:space="preserve"><value>Unread report counts are unavailable.</value></data>
+
+    <!-- AppState -->
+    <data name="AppState.SelectOrImportAProfileBeforeConnecting" xml:space="preserve"><value>Select or import a profile before connecting.</value></data>
+    <data name="AppState.TheSelectedProfileIsEmpty" xml:space="preserve"><value>The selected profile is empty.</value></data>
+    <data name="AppState.EnterAValidHTTPOrHTTPSSubscriptionURL" xml:space="preserve"><value>Enter a valid HTTP or HTTPS subscription URL.</value></data>
+    <data name="AppState.ProfileNotFound" xml:space="preserve"><value>Profile not found.</value></data>
+    <data name="AppState.ThisIsALocalProfileNotASubscription" xml:space="preserve"><value>This is a local profile, not a subscription.</value></data>
+    <data name="AppState.TheSubscriptionReturnedAnEmptyConfiguration" xml:space="preserve"><value>The subscription returned an empty configuration.</value></data>
+    <data name="AppState.AutoUpdateIsOnlyAvailableForRemoteProfiles" xml:space="preserve"><value>Auto update is only available for remote profiles.</value></data>
+    <data name="AppState.ProfileSourceCannotBeEmpty" xml:space="preserve"><value>Profile source cannot be empty.</value></data>
+    <data name="AppState.ConfigurationFileWasNotFound" xml:space="preserve"><value>Configuration file was not found.</value></data>
+
+    <!-- Core -->
+    <data name="Core.TheServiceIsOwnedByAnotherWindowsUser" xml:space="preserve"><value>The service is owned by another Windows user.</value></data>
+    <data name="Core.StoppingTheSingBoxCoreLeftRunningWithoutTheApp" xml:space="preserve"><value>Stopping the SingBox core left running without the app.</value></data>
+    <data name="Core.TheDaemonInstallationDirectoryIsNotAdministratorOnly" xml:space="preserve"><value>The daemon installation directory is not administrator-only; boxdd will be told to allow it.</value></data>
+    <data name="Core.TheSingBoxDaemonServiceIsNotRunningSoThisToolIsUnava" xml:space="preserve"><value>The SingBox daemon service is not running, so this tool is unavailable.</value></data>
+    <data name="Core.TheSingBoxServiceIsOwnedByAnotherWindowsUser" xml:space="preserve"><value>The SingBox service is owned by another Windows user.</value></data>
+    <data name="Core.TheSingBoxDaemonDidNotAnswerTheRequestInTime" xml:space="preserve"><value>The SingBox daemon did not answer the request in time.</value></data>
+
+    <!-- ProfileDialogs -->
+    <data name="ProfileDialogs.RemoveProfile" xml:space="preserve"><value>Remove profile</value></data>
+    <data name="ProfileDialogs.RemoveItIsCurrentlyInUseTheRunningServiceWillBeStopp" xml:space="preserve"><value>Remove "{0}"? It is currently in use; the running service will be stopped.</value></data>
+    <data name="ProfileDialogs.Remove" xml:space="preserve"><value>Remove "{0}"?</value></data>
+    <data name="ProfileDialogs.RemoveAlt2" xml:space="preserve"><value>Remove</value></data>
+
+    <!-- RelativeTime -->
+    <data name="RelativeTime.UpdatedJustNow" xml:space="preserve"><value>Updated just now</value></data>
+    <data name="RelativeTime.UpdatedMinAgo" xml:space="preserve"><value>Updated {0} min ago</value></data>
+    <data name="RelativeTime.UpdatedHAgo" xml:space="preserve"><value>Updated {0} h ago</value></data>
+
+    <!-- RuleSetMirror -->
+    <data name="RuleSetMirror.RuleSetURLSRewrittenToTheJsDelivrMirrorForThisStart" xml:space="preserve"><value>{0} rule-set URL(s) rewritten to the jsDelivr mirror for this start.</value></data>
+
+    <!-- manual migration cases -->
+    <data name="Profiles.ProfileCount" xml:space="preserve"><value>{0} profile{1}</value></data>
+    <data name="Core.RunningCoreVersionMismatch" xml:space="preserve"><value>The running core is {0}, but this app includes {1}. Upgrade the service to continue.</value></data>
+
+    <!-- log levels -->
+    <data name="LogLevelErrorItem.Text" xml:space="preserve"><value>Error</value></data>
+    <data name="LogLevelWarnItem.Text" xml:space="preserve"><value>Warn</value></data>
+    <data name="LogLevelInfoItem.Text" xml:space="preserve"><value>Info</value></data>
+    <data name="LogLevelDebugItem.Text" xml:space="preserve"><value>Debug</value></data>
+    <data name="LogLevelTraceItem.Text" xml:space="preserve"><value>Trace</value></data>
+
+    <!-- InfoBar titles -->
+    <data name="ToolsStatusBar.Title" xml:space="preserve"><value>Tools</value></data>
+
+    <!-- dashboard items flyout -->
+    <data name="DashboardUploadItem.Text" xml:space="preserve"><value>Upload</value></data>
+    <data name="DashboardDownloadItem.Text" xml:space="preserve"><value>Download</value></data>
+    <data name="DashboardStatusItem.Text" xml:space="preserve"><value>Status</value></data>
+    <data name="DashboardConnectionsItem.Text" xml:space="preserve"><value>Connections</value></data>
+    <data name="DashboardProxyItem.Text" xml:space="preserve"><value>System Proxy</value></data>
+    <data name="DashboardModeItem.Text" xml:space="preserve"><value>Clash Mode</value></data>
+    <data name="DashboardProfilesItem.Text" xml:space="preserve"><value>Profiles</value></data>
+
+    <!-- add profile dialog -->
+    <data name="AddProfileDialog.Title" xml:space="preserve"><value>Add profile</value></data>
+    <data name="AddProfileDialog.PrimaryButtonText" xml:space="preserve"><value>Add</value></data>
+    <data name="AddProfileDialog.CloseButtonText" xml:space="preserve"><value>Cancel</value></data>
+    <data name="AddProfileNameBox.Header" xml:space="preserve"><value>Profile name (optional)</value></data>
+    <data name="AddProfileNameBox.PlaceholderText" xml:space="preserve"><value>My server</value></data>
+    <data name="AddProfileLocalRadio.Content" xml:space="preserve"><value>Local</value></data>
+    <data name="AddProfileRemoteRadio.Content" xml:space="preserve"><value>Remote</value></data>
+    <data name="AddProfilePathBox.Header" xml:space="preserve"><value>Configuration file</value></data>
+    <data name="AddProfileBrowseButton.Content" xml:space="preserve"><value>Browse</value></data>
+    <data name="AddProfileUrlBox.Header" xml:space="preserve"><value>Subscription URL</value></data>
+    <data name="AddProfileAutoUpdateToggle.Header" xml:space="preserve"><value>Auto update</value></data>
+    <data name="AddProfileIntervalBox.Header" xml:space="preserve"><value>Auto update interval (minutes)</value></data>
+    <data name="AddProfileDownloadingText.Text" xml:space="preserve"><value>Downloading the subscription…</value></data>
+
+    <!-- add profile dialog placeholders -->
+    <data name="AddProfilePathBox.PlaceholderText" xml:space="preserve"><value>C:\Configs\config.json</value></data>
+    <data name="AddProfileUrlBox.PlaceholderText" xml:space="preserve"><value>https://example.com/config.json</value></data>
+
+    <!-- edit profile dialog / shared -->
+    <data name="EditProfileDialog.Title" xml:space="preserve"><value>Edit profile</value></data>
+    <data name="EditProfileDialog.PrimaryButtonText" xml:space="preserve"><value>Save</value></data>
+    <data name="EditProfileReplaceButton.Content" xml:space="preserve"><value>Replace configuration file…</value></data>
+    <data name="EditProfileDialog.CloseButtonText" xml:space="preserve"><value>Cancel</value></data>
+    <data name="EditProfileNameBox.Header" xml:space="preserve"><value>Profile name</value></data>
+    <data name="EditProfileIntervalBox.Header" xml:space="preserve"><value>Auto update interval (minutes)</value></data>
+    <data name="ProfileDialogs.SourceRemoteHeader" xml:space="preserve"><value>Subscription URL</value></data>
+    <data name="Common.Cancel" xml:space="preserve"><value>Cancel</value></data>
+
+    <!-- shared -->
+    <data name="Common.OK" xml:space="preserve"><value>OK</value></data>
+    <data name="Common.Copy" xml:space="preserve"><value>Copy</value></data>
+
+    <!-- row context menus -->
+    <data name="ConnectionCloseItem.Text" xml:space="preserve"><value>Close</value></data>
+    <data name="ConnectionDetailsItem.Text" xml:space="preserve"><value>Details</value></data>
+    <data name="ProfileEditItem.Text" xml:space="preserve"><value>Edit</value></data>
+    <data name="ProfileUpdateItem.Text" xml:space="preserve"><value>Update</value></data>
+    <data name="ProfileRemoveItem.Text" xml:space="preserve"><value>Remove</value></data>
 </root>

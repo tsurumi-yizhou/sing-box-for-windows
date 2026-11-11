@@ -1,0 +1,534 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+    <resheader name="version"><value>2.0</value></resheader>
+    <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+    <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+    <data name="NavDashboard.Content" xml:space="preserve"><value>儀表板</value></data>
+    <data name="NavGroups.Content" xml:space="preserve"><value>分組</value></data>
+    <data name="NavConnections.Content" xml:space="preserve"><value>連線</value></data>
+    <data name="NavLogs.Content" xml:space="preserve"><value>日誌</value></data>
+    <data name="NavTools.Content" xml:space="preserve"><value>工具</value></data>
+    <data name="NavSettings.Content" xml:space="preserve"><value>設定</value></data>
+    <data name="StartButtonText.Text" xml:space="preserve"><value>啟動</value></data>
+    <data name="TrayShow.Text" xml:space="preserve"><value>顯示主視窗</value></data>
+    <data name="TrayQuit.Text" xml:space="preserve"><value>退出</value></data>
+    <data name="HomeTitle.Text" xml:space="preserve"><value>儀表板</value></data>
+    <data name="HomeSubtitle.Text" xml:space="preserve"><value>概覽、目前配置和即時流量。</value></data>
+    <data name="UploadLabel.Text" xml:space="preserve"><value>上傳</value></data>
+    <data name="DownloadLabel.Text" xml:space="preserve"><value>下載</value></data>
+    <data name="StatusLabel.Text" xml:space="preserve"><value>狀態</value></data>
+    <data name="MemoryLabel.Text" xml:space="preserve"><value>記憶體</value></data>
+    <data name="GoroutinesLabel.Text" xml:space="preserve"><value>協程</value></data>
+    <data name="ConnectionsLabel.Text" xml:space="preserve"><value>連線</value></data>
+    <data name="InboundLabel.Text" xml:space="preserve"><value>入站</value></data>
+    <data name="OutboundLabel.Text" xml:space="preserve"><value>出站</value></data>
+    <data name="ViewConnectionsButton.Content" xml:space="preserve"><value>檢視</value></data>
+    <data name="SystemProxyLabel.Text" xml:space="preserve"><value>系統 HTTP 代理</value></data>
+    <data name="ModeLabel.Text" xml:space="preserve"><value>模式</value></data>
+    <data name="ModeBox.PlaceholderText" xml:space="preserve"><value>未報告 Clash 模式</value></data>
+    <data name="ProfilesLabel.Text" xml:space="preserve"><value>配置</value></data>
+    <data name="ManageProfilesButton.Content" xml:space="preserve"><value>管理配置</value></data>
+    <data name="ProfileBox.PlaceholderText" xml:space="preserve"><value>未選擇配置</value></data>
+    <data name="DashboardEditProfileButton.Content" xml:space="preserve"><value>編輯</value></data>
+    <data name="DashboardUpdateProfileButton.Content" xml:space="preserve"><value>更新</value></data>
+    <data name="DashboardRemoveProfileButton.Content" xml:space="preserve"><value>刪除</value></data>
+    <data name="ProfileHint.Title" xml:space="preserve"><value>開始使用</value></data>
+    <data name="ProfileHint.Message" xml:space="preserve"><value>新增或選擇一個配置，然後啟動服務。</value></data>
+    <data name="ProfilesTitle.Text" xml:space="preserve"><value>配置</value></data>
+    <data name="ProfilesSubtitle.Text" xml:space="preserve"><value>標準 sing-box JSON 配置與 HTTP(S) 遠端訂閱。</value></data>
+    <data name="NameBox.Header" xml:space="preserve"><value>配置名稱</value></data>
+    <data name="NameBox.PlaceholderText" xml:space="preserve"><value>我的伺服器</value></data>
+    <data name="AddProfileTypeLabel.Text" xml:space="preserve"><value>配置類型</value></data>
+    <data name="AddProfileTypeLocal.Content" xml:space="preserve"><value>本地</value></data>
+    <data name="AddProfileTypeRemote.Content" xml:space="preserve"><value>遠端</value></data>
+    <data name="BrowseText.Text" xml:space="preserve"><value>瀏覽</value></data>
+    <data name="AddProfileCardHeader.Text" xml:space="preserve"><value>新增配置</value></data>
+    <data name="AddProfileText.Text" xml:space="preserve"><value>新增</value></data>
+    <data name="GroupsTitle.Text" xml:space="preserve"><value>分組</value></data>
+    <data name="GroupsSubtitle.Text" xml:space="preserve"><value>由核心服務提供的選擇器分組。</value></data>
+    <data name="ConnectionsTitle.Text" xml:space="preserve"><value>連線</value></data>
+    <data name="ConnectionsSubtitle.Text" xml:space="preserve"><value>由核心服務提供的即時連線。</value></data>
+    <data name="SortByDate.Text" xml:space="preserve"><value>日期</value></data>
+    <data name="SortByTraffic.Text" xml:space="preserve"><value>流量</value></data>
+    <data name="SortByTrafficTotal.Text" xml:space="preserve"><value>總流量</value></data>
+    <data name="ConnectionSearchBox.PlaceholderText" xml:space="preserve"><value>搜尋連線</value></data>
+    <data name="LogsTitle.Text" xml:space="preserve"><value>日誌</value></data>
+    <data name="LogsSubtitle.Text" xml:space="preserve"><value>由核心服務提供的日誌。</value></data>
+    <data name="FilterBox.PlaceholderText" xml:space="preserve"><value>搜尋日誌</value></data>
+    <data name="LogLevelDefault.Text" xml:space="preserve"><value>預設</value></data>
+    <data name="LogLevelDefaultItem.Text" xml:space="preserve"><value>預設</value></data>
+    <data name="SaveToClipboardItem.Text" xml:space="preserve"><value>複製到剪貼簿</value></data>
+    <data name="SaveToFileItem.Text" xml:space="preserve"><value>儲存到檔案</value></data>
+    <data name="ClearLogsItem.Text" xml:space="preserve"><value>清空日誌</value></data>
+    <data name="ClearFilterButton.Content" xml:space="preserve"><value>清除</value></data>
+    <data name="ToolsTitle.Text" xml:space="preserve"><value>工具</value></data>
+    <data name="ToolsSubtitle.Text" xml:space="preserve"><value>由 libbox 命令伺服器支援的診斷工具。</value></data>
+    <data name="NetworkQualityTitle.Text" xml:space="preserve"><value>網絡質量</value></data>
+    <data name="NetworkQualityDescription.Text" xml:space="preserve"><value>透過目前出站測量下載/上傳容量、響應能力（RPM）與空閒延遲。</value></data>
+    <data name="NqConfigUrlBox.Header" xml:space="preserve"><value>配置 URL（可選）</value></data>
+    <data name="NqConfigUrlBox.PlaceholderText" xml:space="preserve"><value>預設測速端點</value></data>
+    <data name="NqHttp3Box.Content" xml:space="preserve"><value>使用 HTTP/3</value></data>
+    <data name="NqStartButton.Content" xml:space="preserve"><value>開始</value></data>
+    <data name="NqDownloadLabel.Text" xml:space="preserve"><value>下載</value></data>
+    <data name="NqUploadLabel.Text" xml:space="preserve"><value>上傳</value></data>
+    <data name="NqRpmLabel.Text" xml:space="preserve"><value>響應能力（RPM）</value></data>
+    <data name="NqIdleLatencyLabel.Text" xml:space="preserve"><value>空閒延遲</value></data>
+    <data name="STUNTestTitle.Text" xml:space="preserve"><value>STUN 測試</value></data>
+    <data name="STUNTestDescription.Text" xml:space="preserve"><value>透過目前出站探測外部地址與 NAT 對應/過濾行為。</value></data>
+    <data name="StunServerBox.Header" xml:space="preserve"><value>STUN 伺服器（可選）</value></data>
+    <data name="StunServerBox.PlaceholderText" xml:space="preserve"><value>stun.l.google.com:19302</value></data>
+    <data name="StunStartButton.Content" xml:space="preserve"><value>開始</value></data>
+    <data name="StunExternalLabel.Text" xml:space="preserve"><value>外部地址</value></data>
+    <data name="StunLatencyLabel.Text" xml:space="preserve"><value>延遲</value></data>
+    <data name="StunMappingLabel.Text" xml:space="preserve"><value>NAT 對應行為</value></data>
+    <data name="StunFilteringLabel.Text" xml:space="preserve"><value>NAT 過濾行為</value></data>
+    <data name="SettingsTitle.Text" xml:space="preserve"><value>設定</value></data>
+    <data name="SettingsSubtitle.Text" xml:space="preserve"><value>應用、核心、服務與關於連結。</value></data>
+    <data name="CoreVersionCard.Header" xml:space="preserve"><value>核心版本</value></data>
+    <data name="SettingsProfilesTitle.Text" xml:space="preserve"><value>配置</value></data>
+    <data name="AboutTitle.Text" xml:space="preserve"><value>關於</value></data>
+    <data name="ThemeCard.Header" xml:space="preserve"><value>主題</value></data>
+    <data name="ThemeCard.Description" xml:space="preserve"><value>跟隨系統設定，或強制使用淺色/深色主題。</value></data>
+    <data name="LanguageCard.Header" xml:space="preserve"><value>語言</value></data>
+    <data name="LanguageCard.Description" xml:space="preserve"><value>跟隨系統語言，或為應用程式指定一種語言。重新啟動後生效。</value></data>
+    <data name="LanguageSystem.Content" xml:space="preserve"><value>跟隨系統</value></data>
+    <data name="LanguageRestartHint.Text" xml:space="preserve"><value>重新啟動應用程式以套用新語言。</value></data>
+    <data name="ThemeDefault.Content" xml:space="preserve"><value>預設</value></data>
+    <data name="ThemeLight.Content" xml:space="preserve"><value>淺色</value></data>
+    <data name="ThemeDark.Content" xml:space="preserve"><value>深色</value></data>
+    <data name="BackdropCard.Header" xml:space="preserve"><value>背景材質</value></data>
+    <data name="BackdropCard.Description" xml:space="preserve"><value>選擇雲母或亞克力作為視窗背景。</value></data>
+    <data name="BackdropMica.Content" xml:space="preserve"><value>雲母</value></data>
+    <data name="BackdropAcrylic.Content" xml:space="preserve"><value>亞克力</value></data>
+    <data name="LaunchCard.Header" xml:space="preserve"><value>登入時啟動</value></data>
+    <data name="LaunchCard.Description" xml:space="preserve"><value>登入後在系統匣中靜默執行並啟動服務，不顯示視窗。</value></data>
+    <data name="DataFolderCard.Header" xml:space="preserve"><value>資料資料夾</value></data>
+    <data name="ProfilesCard.Header" xml:space="preserve"><value>管理配置</value></data>
+    <data name="ProfilesCard.Description" xml:space="preserve"><value>配置是儲存在應用資料目錄中的標準 sing-box JSON 配置。</value></data>
+    <data name="ImportClipboardText.Text" xml:space="preserve"><value>貼上</value></data>
+    <data name="UpdateAllText.Text" xml:space="preserve"><value>全部更新</value></data>
+    <data name="DashboardItemsText.Text" xml:space="preserve"><value>儀表盤專案</value></data>
+    <data name="ExpandAllText.Text" xml:space="preserve"><value>展開全部</value></data>
+    <data name="RefreshText.Text" xml:space="preserve"><value>重新整理</value></data>
+    <data name="CloseAllText.Text" xml:space="preserve"><value>全部關閉</value></data>
+    <data name="StateFilterActiveText.Text" xml:space="preserve"><value>活動</value></data>
+    <data name="FilterAll.Text" xml:space="preserve"><value>全部</value></data>
+    <data name="FilterActive.Text" xml:space="preserve"><value>活動</value></data>
+    <data name="FilterClosed.Text" xml:space="preserve"><value>已關閉</value></data>
+    <data name="SortByDateText.Text" xml:space="preserve"><value>日期</value></data>
+    <data name="PauseText.Text" xml:space="preserve"><value>暫停</value></data>
+    <data name="CrashReportsTitle.Text" xml:space="preserve"><value>崩潰報告</value></data>
+    <data name="CrashReportsSubtitle.Text" xml:space="preserve"><value>服務崩潰時儲存的報告。</value></data>
+    <data name="OomReportsTitle.Text" xml:space="preserve"><value>記憶體不足報告</value></data>
+    <data name="OomReportsSubtitle.Text" xml:space="preserve"><value>服務記憶體不足時儲存的報告。</value></data>
+    <data name="OomFetchReportText.Text" xml:space="preserve"><value>獲取記憶體報告</value></data>
+    <data name="OomKillerToggle.Header" xml:space="preserve"><value>啟用記憶體限制</value></data>
+    <data name="OomKillerToggleDescription.Text" xml:space="preserve"><value>為服務提供一個軟記憶體上限。服務會執行額外的垃圾回收並響應記憶體壓力，以儘量維持在該上限內。</value></data>
+    <data name="OomMemoryLimitBox.Header" xml:space="preserve"><value>記憶體限制</value></data>
+    <data name="OomMemoryLimitDescription.Text" xml:space="preserve"><value>軟記憶體上限。服務會盡量保持在該限制內，且不會大幅超出。</value></data>
+    <data name="OomKillConnectionsToggle.Header" xml:space="preserve"><value>超出限制時斷開連線</value></data>
+    <data name="OomKillConnectionsDescription.Text" xml:space="preserve"><value>當服務記憶體超出限制時關閉所有連線以釋放記憶體。</value></data>
+    <data name="PowerReportsTitle.Text" xml:space="preserve"><value>電源報告</value></data>
+    <data name="PowerReportsSubtitle.Text" xml:space="preserve"><value>啟用電源報告後，每次服務執行都會儲存一份報告。</value></data>
+    <data name="PowerReportToggle.Header" xml:space="preserve"><value>啟用電源報告</value></data>
+    <data name="PowerReportToggleDescription.Text" xml:space="preserve"><value>每次服務執行都會儲存一份報告</value></data>
+    <data name="ReportDeleteAllText.Text" xml:space="preserve"><value>全部刪除</value></data>
+    <data name="ReportEmptyText.Text" xml:space="preserve"><value>空</value></data>
+    <data name="ReportSectionReports.Text" xml:space="preserve"><value>報告</value></data>
+    <data name="ReportSettingsHeader.Text" xml:space="preserve"><value>設定</value></data>
+    <data name="ReportExportText.Text" xml:space="preserve"><value>匯出</value></data>
+    <data name="ReportDeleteText.Text" xml:space="preserve"><value>刪除</value></data>
+    <data name="ReportDetailFilesHeader.Text" xml:space="preserve"><value>檔案</value></data>
+    <data name="AppSettingsTitle.Text" xml:space="preserve"><value>應用</value></data>
+    <data name="AppSettingsSubtitle.Text" xml:space="preserve"><value>主題、背景材質、語言、登入啟動與配置。</value></data>
+    <data name="CoreSettingsTitle.Text" xml:space="preserve"><value>核心</value></data>
+    <data name="CoreSettingsSubtitle.Text" xml:space="preserve"><value>核心版本、工作目錄與資料佔用。</value></data>
+    <data name="CoreDataSizeCard.Header" xml:space="preserve"><value>資料大小</value></data>
+    <data name="CoreWorkingDirectoryCard.Header" xml:space="preserve"><value>工作目錄</value></data>
+    <data name="ServiceSettingsTitle.Text" xml:space="preserve"><value>服務</value></data>
+    <data name="ServiceSettingsSubtitle.Text" xml:space="preserve"><value>後台守護程序服務及其執行的核心。</value></data>
+    <data name="ServiceStatusCard.Header" xml:space="preserve"><value>服務狀態</value></data>
+    <data name="ServiceCoresCard.Header" xml:space="preserve"><value>核心版本</value></data>
+    <data name="ServiceExecutableCard.Header" xml:space="preserve"><value>服務可執行檔案</value></data>
+    <data name="ServiceWorkingDirectoryCard.Header" xml:space="preserve"><value>工作目錄</value></data>
+    <data name="RefreshButton.Content" xml:space="preserve"><value>重新整理</value></data>
+    <data name="StartServiceButton.Content" xml:space="preserve"><value>啟動服務</value></data>
+    <data name="RepairServiceButton.Content" xml:space="preserve"><value>安裝或修復服務</value></data>
+    <data name="RepairActionButton.Content" xml:space="preserve"><value>修復服務</value></data>
+    <data name="RepairBar.Title" xml:space="preserve"><value>核心版本不一致</value></data>
+    <data name="ServiceElevationCaption.Text" xml:space="preserve"><value>安裝或啟動服務需要管理員授權。</value></data>
+    <data name="Tray.Stopping" xml:space="preserve"><value>正在停止…</value></data>
+    <data name="Tray.Starting" xml:space="preserve"><value>正在啟動…</value></data>
+    <data name="Tray.UnableToStop" xml:space="preserve"><value>無法停止</value></data>
+    <data name="Tray.UnableToStart" xml:space="preserve"><value>無法啟動</value></data>
+    <data name="Tray.Stop" xml:space="preserve"><value>停止</value></data>
+    <data name="Tray.Start" xml:space="preserve"><value>啟動</value></data>
+    <data name="ConnectionRow.Active" xml:space="preserve"><value>活動</value></data>
+    <data name="ConnectionRow.Closed" xml:space="preserve"><value>已關閉</value></data>
+    <data name="AppSettings.AvailableWhenTheAppIsInstalledAsAPackage" xml:space="preserve"><value>應用以包形式安裝後可用。</value></data>
+    <data name="Connections.All" xml:space="preserve"><value>全部</value></data>
+    <data name="Connections.Closed" xml:space="preserve"><value>已關閉</value></data>
+    <data name="Connections.Active" xml:space="preserve"><value>活動</value></data>
+    <data name="Connections.Traffic" xml:space="preserve"><value>流量</value></data>
+    <data name="Connections.TrafficTotal" xml:space="preserve"><value>總流量</value></data>
+    <data name="Connections.Date" xml:space="preserve"><value>日期</value></data>
+    <data name="Connections.UnableToCloseConnections" xml:space="preserve"><value>無法關閉連線</value></data>
+    <data name="Connections.CoreIsStopped" xml:space="preserve"><value>核心已停止</value></data>
+    <data name="Connections.StartAProfileToReceiveConnectionsFromTheCoreService" xml:space="preserve"><value>啟動配置以接收來自核心服務的連線。</value></data>
+    <data name="Connections.NoConnections" xml:space="preserve"><value>沒有連線</value></data>
+    <data name="Connections.NoActiveConnections" xml:space="preserve"><value>沒有使用中的連線</value></data>
+    <data name="Connections.NoClosedConnections" xml:space="preserve"><value>沒有已關閉的連線</value></data>
+    <data name="Connections.NoMatchingConnections" xml:space="preserve"><value>沒有符合的連線</value></data>
+    <data name="Connections.Close" xml:space="preserve"><value>關閉</value></data>
+    <data name="Connections.UnableToCloseConnection" xml:space="preserve"><value>無法關閉連線</value></data>
+    <data name="Connections.State" xml:space="preserve"><value>狀態</value></data>
+    <data name="Connections.CreatedAt" xml:space="preserve"><value>建立時間</value></data>
+    <data name="Connections.ClosedAt" xml:space="preserve"><value>關閉時間</value></data>
+    <data name="Connections.Duration" xml:space="preserve"><value>時長</value></data>
+    <data name="Connections.Uplink" xml:space="preserve"><value>上行</value></data>
+    <data name="Connections.Downlink" xml:space="preserve"><value>下行</value></data>
+    <data name="Connections.BasicInformation" xml:space="preserve"><value>基本資訊</value></data>
+    <data name="Connections.Inbound" xml:space="preserve"><value>入站</value></data>
+    <data name="Connections.InboundType" xml:space="preserve"><value>入站型別</value></data>
+    <data name="Connections.IPVersion" xml:space="preserve"><value>IP 版本</value></data>
+    <data name="Connections.Network" xml:space="preserve"><value>網絡</value></data>
+    <data name="Connections.Source" xml:space="preserve"><value>來源</value></data>
+    <data name="Connections.Destination" xml:space="preserve"><value>目標</value></data>
+    <data name="Connections.Domain" xml:space="preserve"><value>域名</value></data>
+    <data name="Connections.Protocol" xml:space="preserve"><value>協議</value></data>
+    <data name="Connections.User" xml:space="preserve"><value>使用者</value></data>
+    <data name="Connections.FromOutbound" xml:space="preserve"><value>來源出站</value></data>
+    <data name="Connections.MatchRule" xml:space="preserve"><value>匹配規則</value></data>
+    <data name="Connections.Outbound" xml:space="preserve"><value>出站</value></data>
+    <data name="Connections.OutboundType" xml:space="preserve"><value>出站型別</value></data>
+    <data name="Connections.Chain" xml:space="preserve"><value>鏈</value></data>
+    <data name="Connections.Metadata" xml:space="preserve"><value>後設資料</value></data>
+    <data name="Connections.ProcessID" xml:space="preserve"><value>程序 ID</value></data>
+    <data name="Connections.ProcessPath" xml:space="preserve"><value>程序路徑</value></data>
+    <data name="Connections.UserName" xml:space="preserve"><value>使用者名稱</value></data>
+    <data name="Connections.PackageName" xml:space="preserve"><value>包名</value></data>
+    <data name="Connections.ProcessInformation" xml:space="preserve"><value>程序資訊</value></data>
+    <data name="Connections.CloseConnection" xml:space="preserve"><value>關閉連線</value></data>
+    <data name="CoreSettings.Unavailable" xml:space="preserve"><value>不可用</value></data>
+    <data name="CoreSettings.AppShips" xml:space="preserve"><value>{0} · 應用附帶 {1}</value></data>
+    <data name="CoreSettings.TheDaemonReportsThisSizeWhileItRunsStartTheServiceTo" xml:space="preserve"><value>該大小由守護程序在執行時統計。啟動服務後即可讀取。</value></data>
+    <data name="CoreSettings.NotCreatedYet" xml:space="preserve"><value>尚未建立</value></data>
+    <data name="CoreSettings.UnableToOpenTheFolder" xml:space="preserve"><value>無法開啟資料夾</value></data>
+    <data name="CrashReports.ReportsUnavailable" xml:space="preserve"><value>報告不可用</value></data>
+    <data name="CrashReports.TheSingBoxDaemonServiceIsNotRunningSoReportsAreUnava" xml:space="preserve"><value>SingBox 守護程序服務未執行，無法讀取報告。</value></data>
+    <data name="CrashReports.UnableToListReports" xml:space="preserve"><value>無法列出報告</value></data>
+    <data name="CrashReports.Local" xml:space="preserve"><value>本機</value></data>
+    <data name="CrashReports.DeleteAllReports" xml:space="preserve"><value>刪除全部報告？</value></data>
+    <data name="CrashReports.AllSavedCrashReportsWillBePermanentlyDeleted" xml:space="preserve"><value>所有已儲存的崩潰報告將被永久刪除。</value></data>
+    <data name="CrashReports.DeleteAll" xml:space="preserve"><value>全部刪除</value></data>
+    <data name="CrashReports.UnableToDeleteReports" xml:space="preserve"><value>無法刪除報告</value></data>
+    <data name="CrashReports.Unknown" xml:space="preserve"><value>未知</value></data>
+    <data name="Groups.CoreIsStopped" xml:space="preserve"><value>核心已停止</value></data>
+    <data name="Groups.StartAProfileToReceiveGroupsFromTheCoreService" xml:space="preserve"><value>啟動配置以接收來自核心服務的分組。</value></data>
+    <data name="Groups.NoSelectableGroups" xml:space="preserve"><value>無可用分組</value></data>
+    <data name="Groups.TheActiveConfigurationDidNotReportAnySelectorGroups" xml:space="preserve"><value>目前配置未報告任何選擇器分組。</value></data>
+    <data name="Groups.URLTestThisGroup" xml:space="preserve"><value>測試該分組延遲</value></data>
+    <data name="Groups.Collapse" xml:space="preserve"><value>收起</value></data>
+    <data name="Groups.Expand" xml:space="preserve"><value>展開</value></data>
+    <!-- group chip context menu -->
+    <data name="GroupsTestItem.Text" xml:space="preserve"><value>測試</value></data>
+    <data name="Groups.UnableToChangeSelection" xml:space="preserve"><value>無法更改選擇</value></data>
+    <data name="Groups.UnableToStartURLTest" xml:space="preserve"><value>無法開始 URLTest</value></data>
+    <data name="Home.GetStarted" xml:space="preserve"><value>開始使用</value></data>
+    <data name="Home.AddOrSelectAProfileThenStartTheService" xml:space="preserve"><value>新增或選擇一個配置，然後啟動服務。</value></data>
+    <data name="Home.Remote" xml:space="preserve"><value>遠端</value></data>
+    <data name="Home.Local" xml:space="preserve"><value>本地</value></data>
+    <data name="Home.AddProfile" xml:space="preserve"><value>新增配置</value></data>
+    <data name="Home.EnterAValidHTTPOrHTTPSSubscriptionURL" xml:space="preserve"><value>請輸入有效的 HTTP 或 HTTPS 訂閱 URL。</value></data>
+    <data name="Home.ChooseASingBoxJSONConfigurationFile" xml:space="preserve"><value>請選擇一個 SingBox JSON 配置檔案。</value></data>
+    <data name="Home.Added" xml:space="preserve"><value>已新增“{0}”。</value></data>
+    <data name="Home.Install" xml:space="preserve"><value>安裝</value></data>
+    <data name="Home.Upgrade" xml:space="preserve"><value>升級</value></data>
+    <data name="Home.Start" xml:space="preserve"><value>啟動</value></data>
+    <data name="Home.ConnectingToTheService" xml:space="preserve"><value>正在連線服務…</value></data>
+    <data name="Home.ConnectionLostReconnecting" xml:space="preserve"><value>連線已斷開，正在重連…</value></data>
+    <data name="Home.ServiceIsNotInstalled" xml:space="preserve"><value>服務尚未安裝。</value></data>
+    <data name="Home.ServiceIsStopped" xml:space="preserve"><value>服務已停止。</value></data>
+    <data name="Home.TheServiceIsUnavailable" xml:space="preserve"><value>服務不可用。</value></data>
+    <data name="Home.UnableToChangeMode" xml:space="preserve"><value>無法更改模式</value></data>
+    <data name="Home.UnableToChangeSystemProxy" xml:space="preserve"><value>無法更改系統代理</value></data>
+    <data name="Home.Profile" xml:space="preserve"><value>配置</value></data>
+    <data name="Logs.Resume" xml:space="preserve"><value>繼續</value></data>
+    <data name="Logs.Pause" xml:space="preserve"><value>暫停</value></data>
+    <data name="Logs.Default" xml:space="preserve"><value>預設</value></data>
+    <data name="Logs.Filter" xml:space="preserve"><value>過濾：{0}</value></data>
+    <data name="Logs.UnableToClearServiceLogs" xml:space="preserve"><value>{0}  無法清空服務日誌：{1}</value></data>
+    <data name="NetworkQuality.NetworkQuality" xml:space="preserve"><value>網絡質量</value></data>
+    <data name="NetworkQuality.TheseToolsRequireTheLibboxCoreTheAppIsCurrentlyUsing" xml:space="preserve"><value>這些工具需要 libbox 核心；目前正在使用開發後備程序。</value></data>
+    <data name="NetworkQuality.StartTheServiceToRunTheNetworkQualityTest" xml:space="preserve"><value>啟動服務後可執行網絡質量測試。</value></data>
+    <data name="NetworkQuality.Done" xml:space="preserve"><value>完成</value></data>
+    <data name="NetworkQuality.MeasuringIdleLatency" xml:space="preserve"><value>正在測量空閒延遲…</value></data>
+    <data name="NetworkQuality.DownloadTest0F0S" xml:space="preserve"><value>下載測試…（{0:F0} 秒）</value></data>
+    <data name="NetworkQuality.UploadTest0F0S" xml:space="preserve"><value>上傳測試…（{0:F0} 秒）</value></data>
+    <data name="NetworkQuality.ToolError" xml:space="preserve"><value>工具錯誤</value></data>
+    <data name="OomReports.UnableToUpdateTheMemoryLimitSetting" xml:space="preserve"><value>無法更新記憶體限制設定</value></data>
+    <data name="OomReports.UnableToUpdateTheMemoryLimit" xml:space="preserve"><value>無法更新記憶體限制</value></data>
+    <data name="OomReports.UnableToUpdateTheKillConnectionsSetting" xml:space="preserve"><value>無法更新斷開連線設定</value></data>
+    <data name="OomReports.ServiceNotStarted" xml:space="preserve"><value>服務未啟動</value></data>
+    <data name="OomReports.StartTheServiceToCollectAMemoryReport" xml:space="preserve"><value>啟動服務後才能獲取記憶體報告。</value></data>
+    <data name="OomReports.UnableToFetchTheMemoryReport" xml:space="preserve"><value>無法獲取記憶體報告</value></data>
+    <data name="OomReports.ReportsUnavailable" xml:space="preserve"><value>報告不可用</value></data>
+    <data name="OomReports.TheSingBoxDaemonServiceIsNotRunningSoReportsAreUnava" xml:space="preserve"><value>SingBox 守護程序服務未執行，無法讀取報告。</value></data>
+    <data name="OomReports.UnableToListReports" xml:space="preserve"><value>無法列出報告</value></data>
+    <data name="OomReports.Local" xml:space="preserve"><value>本機</value></data>
+    <data name="OomReports.DeleteAllReports" xml:space="preserve"><value>刪除全部報告？</value></data>
+    <data name="OomReports.AllSavedMemoryReportsWillBePermanentlyDeleted" xml:space="preserve"><value>所有已儲存的記憶體不足報告將被永久刪除。</value></data>
+    <data name="OomReports.DeleteAll" xml:space="preserve"><value>全部刪除</value></data>
+    <data name="OomReports.UnableToDeleteReports" xml:space="preserve"><value>無法刪除報告</value></data>
+    <data name="OomReports.Unknown" xml:space="preserve"><value>未知</value></data>
+    <data name="PowerReports.UnableToUpdateThePowerReportSetting" xml:space="preserve"><value>無法更新電源報告設定</value></data>
+    <data name="PowerReports.ReportsUnavailable" xml:space="preserve"><value>報告不可用</value></data>
+    <data name="PowerReports.TheSingBoxDaemonServiceIsNotRunningSoReportsAreUnava" xml:space="preserve"><value>SingBox 守護程序服務未執行，無法讀取報告。</value></data>
+    <data name="PowerReports.UnableToListReports" xml:space="preserve"><value>無法列出報告</value></data>
+    <data name="PowerReports.Local" xml:space="preserve"><value>本機</value></data>
+    <data name="PowerReports.DeleteAllReports" xml:space="preserve"><value>刪除全部報告？</value></data>
+    <data name="PowerReports.AllSavedPowerReportsWillBePermanentlyDeleted" xml:space="preserve"><value>所有已儲存的電源報告將被永久刪除。</value></data>
+    <data name="PowerReports.DeleteAll" xml:space="preserve"><value>全部刪除</value></data>
+    <data name="PowerReports.UnableToDeleteReports" xml:space="preserve"><value>無法刪除報告</value></data>
+    <data name="PowerReports.Unknown" xml:space="preserve"><value>未知</value></data>
+    <data name="Profiles.SubscriptionURL" xml:space="preserve"><value>訂閱 URL</value></data>
+    <data name="Profiles.ConfigurationFile" xml:space="preserve"><value>配置檔案</value></data>
+    <data name="Profiles.AutoUpdate" xml:space="preserve"><value>自動更新</value></data>
+    <data name="Profiles.AutoUpdateIntervalMinutes" xml:space="preserve"><value>自動更新間隔（分鐘）</value></data>
+    <data name="Profiles.Browse" xml:space="preserve"><value>瀏覽</value></data>
+    <data name="Profiles.EnterAValidHTTPOrHTTPSSubscriptionURL" xml:space="preserve"><value>請輸入有效的 HTTP 或 HTTPS 訂閱 URL。</value></data>
+    <data name="Profiles.EnterASingBoxConfigurationFilePath" xml:space="preserve"><value>請輸入 SingBox 配置檔案路徑。</value></data>
+    <data name="Profiles.UnableToAddProfile" xml:space="preserve"><value>無法新增配置</value></data>
+    <data name="Profiles.UnableToSaveProfile" xml:space="preserve"><value>無法儲存配置</value></data>
+    <data name="Profiles.UnableToSwitchProfile" xml:space="preserve"><value>無法切換配置</value></data>
+    <data name="Profiles.Clipboard" xml:space="preserve"><value>剪貼簿</value></data>
+    <data name="Profiles.TheClipboardIsEmpty" xml:space="preserve"><value>剪貼簿為空。</value></data>
+    <data name="Profiles.ImportedProfile" xml:space="preserve"><value>匯入的配置</value></data>
+    <data name="Profiles.TheClipboardDoesNotContainASubscriptionURLAConfigura" xml:space="preserve"><value>剪貼簿內容不是訂閱 URL、配置路徑或 JSON 內容。</value></data>
+    <data name="Profiles.ProfileImported" xml:space="preserve"><value>配置已匯入</value></data>
+    <data name="Profiles.UnableToImport" xml:space="preserve"><value>無法匯入</value></data>
+    <data name="Profiles.UpdateAll" xml:space="preserve"><value>全部更新</value></data>
+    <data name="Profiles.ThereAreNoRemoteProfiles" xml:space="preserve"><value>沒有遠端配置。</value></data>
+    <data name="Profiles.SubscriptionSUpdated" xml:space="preserve"><value>已更新 {0} 個訂閱。</value></data>
+    <data name="Profiles.UpdatedFailed" xml:space="preserve"><value>已更新 {0} 個，{1} 個失敗：</value></data>
+    <data name="Profiles.Updating" xml:space="preserve"><value>正在更新…</value></data>
+    <data name="Profiles.Update" xml:space="preserve"><value>更新</value></data>
+    <data name="Profiles.TheSubscriptionContentIsUnchanged" xml:space="preserve"><value>訂閱內容沒有變化。</value></data>
+    <data name="Profiles.UpdateFailed" xml:space="preserve"><value>更新失敗</value></data>
+    <data name="Profiles.UnableToRemoveProfile" xml:space="preserve"><value>無法刪除配置</value></data>
+    <data name="Profiles.Remote" xml:space="preserve"><value>遠端</value></data>
+    <data name="Profiles.Local" xml:space="preserve"><value>本地</value></data>
+    <data name="ReportDetail.Report" xml:space="preserve"><value>報告</value></data>
+    <data name="ReportDetail.NoReportWasSelected" xml:space="preserve"><value>未選擇報告。</value></data>
+    <data name="ReportDetail.Local" xml:space="preserve"><value>{0} · 本機</value></data>
+    <data name="ReportDetail.ReportUnavailable" xml:space="preserve"><value>報告不可用</value></data>
+    <data name="ReportDetail.TheSingBoxDaemonServiceIsNotRunningSoReportsAreUnava" xml:space="preserve"><value>SingBox 守護程序服務未執行，無法讀取報告。</value></data>
+    <data name="ReportDetail.UnableToOpenTheReport" xml:space="preserve"><value>無法開啟報告</value></data>
+    <data name="ReportDetail.ProfileFileExportToView" xml:space="preserve"><value>配置檔案（請匯出檢視）</value></data>
+    <data name="ReportDetail.Close" xml:space="preserve"><value>關閉</value></data>
+    <data name="ReportDetail.UnableToShowTheFile" xml:space="preserve"><value>無法顯示檔案</value></data>
+    <!-- export sheet and file preview (x:Uid targets) -->
+    <data name="ExportReportDialog.Title" xml:space="preserve"><value>匯出報告</value></data>
+    <data name="ExportReportDialog.PrimaryButtonText" xml:space="preserve"><value>儲存</value></data>
+    <data name="ExportReportDialog.CloseButtonText" xml:space="preserve"><value>取消</value></data>
+    <data name="ExportReportWithLog.Content" xml:space="preserve"><value>包含日誌</value></data>
+    <data name="ExportReportWithConfiguration.Content" xml:space="preserve"><value>包含配置</value></data>
+    <data name="ExportReportPrivacyNote.Text" xml:space="preserve"><value>日誌和配置檔案可能包含私人內容，請勿公開。</value></data>
+    <data name="ExportReportEncryptWithAge.Content" xml:space="preserve"><value>使用 age 加密</value></data>
+    <data name="ExportReportAgeNote.Text" xml:space="preserve"><value>age 是一個現代且安全的非對稱加密工具。啟用後，歸檔將使用本專案的公鑰加密，可以安全地公開發布（例如在 GitHub issue 中）。</value></data>
+    <data name="ReportFilePreviewTruncationNote.Text" xml:space="preserve"><value>僅顯示該檔案較後 2 MB 的內容。</value></data>
+    <data name="ReportDetail.UnableToExportTheReport" xml:space="preserve"><value>無法匯出報告</value></data>
+    <data name="ReportDetail.TheDaemonReturnedAnEmptyArchive" xml:space="preserve"><value>守護程序返回了空的歸檔。</value></data>
+    <data name="ReportDetail.Archive" xml:space="preserve"><value>歸檔</value></data>
+    <data name="ReportDetail.ReportExported" xml:space="preserve"><value>報告已匯出</value></data>
+    <data name="ReportDetail.DeleteThisReport" xml:space="preserve"><value>刪除此報告？</value></data>
+    <data name="ReportDetail.TheReportAndAllOfItsFilesWillBePermanentlyDeleted" xml:space="preserve"><value>該報告及其所有檔案將被永久刪除。</value></data>
+    <data name="ReportDetail.Delete" xml:space="preserve"><value>刪除</value></data>
+    <data name="ReportDetail.UnableToDeleteTheReport" xml:space="preserve"><value>無法刪除報告</value></data>
+    <data name="ReportDetail.CrashReport" xml:space="preserve"><value>崩潰報告</value></data>
+    <data name="ReportDetail.OOMReport" xml:space="preserve"><value>記憶體不足報告</value></data>
+    <data name="ReportDetail.PowerReport" xml:space="preserve"><value>電源報告</value></data>
+    <data name="ReportDetail.Unknown" xml:space="preserve"><value>未知</value></data>
+    <data name="ServiceSettings.Checking" xml:space="preserve"><value>檢查中…</value></data>
+    <data name="ServiceSettings.Running" xml:space="preserve"><value>執行中</value></data>
+    <data name="ServiceSettings.NotInstalled" xml:space="preserve"><value>未安裝</value></data>
+    <data name="ServiceSettings.Stopped" xml:space="preserve"><value>已停止</value></data>
+    <data name="ServiceSettings.TheDaemonServiceIsInstalledAndRunning" xml:space="preserve"><value>守護程序服務已安裝並正在執行。</value></data>
+    <data name="ServiceSettings.TheDaemonServiceIsNotInstalledInstallItSoProfilesCan" xml:space="preserve"><value>守護程序服務尚未安裝。安裝後配置才能在後台執行。</value></data>
+    <data name="ServiceSettings.TheDaemonServiceIsInstalledButStopped" xml:space="preserve"><value>守護程序服務已安裝但已停止。</value></data>
+    <data name="ServiceSettings.Unavailable" xml:space="preserve"><value>不可用</value></data>
+    <data name="ServiceSettings.NotCreatedYet" xml:space="preserve"><value>尚未建立</value></data>
+    <data name="ServiceSettings.ServiceApp" xml:space="preserve"><value>服務 {0} · 應用 {1}</value></data>
+    <data name="ServiceSettings.TheInstalledServiceRunsCoreButThisAppShipsRepairingI" xml:space="preserve"><value>已安裝的服務執行核心 {0}，而此應用附帶 {1}。修復會把附帶的核心安裝為服務；此操作會停止正在執行的服務並中斷目前連線。</value></data>
+    <data name="ServiceSettings.TheServiceActionWasCancelledSoNothingWasChanged" xml:space="preserve"><value>服務操作已取消，未做任何更改。</value></data>
+    <data name="ServiceSettings.ServiceActionFailed" xml:space="preserve"><value>服務操作失敗</value></data>
+    <data name="ServiceSettings.UnableToOpenTheFolder" xml:space="preserve"><value>無法開啟資料夾</value></data>
+    <data name="Settings.TheLinkCouldNotBeOpened" xml:space="preserve"><value>無法開啟該連結。</value></data>
+    <data name="GeneralExpander.Header" xml:space="preserve"><value>一般</value></data>
+    <data name="AboutExpander.Header" xml:space="preserve"><value>關於</value></data>
+    <data name="AppCard.Header" xml:space="preserve"><value>應用</value></data>
+    <data name="CoreCard.Header" xml:space="preserve"><value>核心</value></data>
+    <data name="ServiceCard.Header" xml:space="preserve"><value>服務</value></data>
+    <data name="DocumentationCard.Header" xml:space="preserve"><value>文件</value></data>
+    <data name="SourceCodeCard.Header" xml:space="preserve"><value>原始碼</value></data>
+    <data name="SponsorCard.Header" xml:space="preserve"><value>贊助</value></data>
+    <data name="SettingsStatusBar.Title" xml:space="preserve"><value>設定</value></data>
+    <data name="StunTest.STUNTest" xml:space="preserve"><value>STUN 測試</value></data>
+    <data name="StunTest.TheseToolsRequireTheLibboxCoreTheAppIsCurrentlyUsing" xml:space="preserve"><value>這些工具需要 libbox 核心；目前正在使用開發後備程序。</value></data>
+    <data name="StunTest.StartTheServiceToRunTheSTUNTest" xml:space="preserve"><value>啟動服務後可執行 STUN 測試。</value></data>
+    <data name="StunTest.Done" xml:space="preserve"><value>完成</value></data>
+    <data name="StunTest.Binding" xml:space="preserve"><value>正在繫結…</value></data>
+    <data name="StunTest.ProbingNATMapping" xml:space="preserve"><value>正在探測 NAT 對應行為…</value></data>
+    <data name="StunTest.ProbingNATFiltering" xml:space="preserve"><value>正在探測 NAT 過濾行為…</value></data>
+    <data name="StunTest.EndpointIndependent" xml:space="preserve"><value>端點無關</value></data>
+    <data name="StunTest.AddressDependent" xml:space="preserve"><value>地址相關</value></data>
+    <data name="StunTest.AddressAndPortDependent" xml:space="preserve"><value>地址和埠相關</value></data>
+    <data name="StunTest.Unknown" xml:space="preserve"><value>未知</value></data>
+    <data name="StunTest.ToolError" xml:space="preserve"><value>工具錯誤</value></data>
+    <data name="Tailscale.Tailscale" xml:space="preserve"><value>Tailscale</value></data>
+    <data name="Tailscale.EndpointStatusPeersExitNodeAndConnectionTests" xml:space="preserve"><value>端點狀態、對等節點、出口節點與連線測試。</value></data>
+    <data name="Tailscale.StatusPeersExitNodeAndConnectionTestsForThisEndpoint" xml:space="preserve"><value>此端點的狀態、對等節點、出口節點與連線測試。</value></data>
+    <data name="Tailscale.TheseToolsRequireTheLibboxCoreTheAppIsCurrentlyUsing" xml:space="preserve"><value>這些工具需要 libbox 核心；目前正在使用開發後備程序。</value></data>
+    <data name="Tailscale.StartTheServiceToInspectTailscaleEndpoints" xml:space="preserve"><value>啟動服務後可檢視 Tailscale 端點。</value></data>
+    <data name="Tailscale.NoTailscaleEndpointsInTheRunningProfile" xml:space="preserve"><value>目前執行的配置中沒有 Tailscale 端點。</value></data>
+    <data name="Tailscale.TheEndpointIsNotInTheRunningProfile" xml:space="preserve"><value>目前執行的配置中沒有“{0}”端點。</value></data>
+    <data name="Tailscale.CopyAddress" xml:space="preserve"><value>複製地址</value></data>
+    <data name="Tailscale.LogOut" xml:space="preserve"><value>退出登入</value></data>
+    <data name="Tailscale.LogOutOfTailscale" xml:space="preserve"><value>退出 Tailscale 登入</value></data>
+    <data name="Tailscale.Disabled" xml:space="preserve"><value>已禁用</value></data>
+    <data name="Tailscale.ChooseExitNode" xml:space="preserve"><value>選擇出口節點</value></data>
+    <data name="Tailscale.ExitNode" xml:space="preserve"><value>出口節點</value></data>
+    <data name="Tailscale.OpenAuthURL" xml:space="preserve"><value>開啟認證連結</value></data>
+    <data name="Tailscale.CopyAuthURL" xml:space="preserve"><value>複製認證連結</value></data>
+    <data name="Tailscale.DetailsFor" xml:space="preserve"><value>{0} 的詳細資訊</value></data>
+    <data name="Tailscale.Ping" xml:space="preserve"><value>Ping</value></data>
+    <data name="Tailscale.PingAlt2" xml:space="preserve"><value>Ping {0}</value></data>
+    <data name="Tailscale.PingThisPeer" xml:space="preserve"><value>Ping 此對等節點</value></data>
+    <data name="Tailscale.Stop" xml:space="preserve"><value>停止</value></data>
+    <data name="Tailscale.Direct" xml:space="preserve"><value>直連</value></data>
+    <data name="Tailscale.PeerRelay" xml:space="preserve"><value>對等中繼</value></data>
+    <data name="Tailscale.DERP" xml:space="preserve"><value>DERP</value></data>
+    <data name="Tailscale.LogOutTheEndpointThisUnregistersTheNodeFromYourTailn" xml:space="preserve"><value>確定退出“{0}”端點嗎？這會從 tailnet 中登出該節點，服務需要重新認證。</value></data>
+    <data name="Tailscale.Close" xml:space="preserve"><value>關閉</value></data>
+    <data name="Tailscale.MagicDNS" xml:space="preserve"><value>MagicDNS</value></data>
+    <data name="Tailscale.Hostname" xml:space="preserve"><value>主機名</value></data>
+    <data name="Tailscale.IPv6" xml:space="preserve"><value>IPv6</value></data>
+    <data name="Tailscale.IPv4" xml:space="preserve"><value>IPv4</value></data>
+    <data name="Tailscale.OS" xml:space="preserve"><value>作業系統</value></data>
+    <data name="Tailscale.KeyExpiry" xml:space="preserve"><value>金鑰有效期</value></data>
+    <data name="Tailscale.Expired" xml:space="preserve"><value>已過期</value></data>
+    <data name="Tailscale.LastSeen" xml:space="preserve"><value>最後線上</value></data>
+    <data name="Tailscale.Active" xml:space="preserve"><value>已啟用</value></data>
+    <data name="Tailscale.Available" xml:space="preserve"><value>可用</value></data>
+    <data name="Tailscale.SharedIn" xml:space="preserve"><value>共享</value></data>
+    <data name="Tailscale.Yes" xml:space="preserve"><value>是</value></data>
+    <data name="Tailscale.JustNow" xml:space="preserve"><value>剛剛</value></data>
+    <data name="Tailscale.MinAgo" xml:space="preserve"><value>{0} 分鐘前</value></data>
+    <data name="Tailscale.HoursAgo" xml:space="preserve"><value>{0} 小時前</value></data>
+    <data name="Tailscale.DaysAgo" xml:space="preserve"><value>{0} 天前</value></data>
+    <data name="Tailscale.Running" xml:space="preserve"><value>執行中</value></data>
+    <data name="Tailscale.Starting" xml:space="preserve"><value>正在啟動</value></data>
+    <data name="Tailscale.Stopped" xml:space="preserve"><value>已停止</value></data>
+    <data name="Tailscale.NeedsLogin" xml:space="preserve"><value>需要登入</value></data>
+    <data name="Tailscale.NeedsMachineAuthorization" xml:space="preserve"><value>需要裝置授權</value></data>
+    <data name="Tailscale.NoState" xml:space="preserve"><value>無狀態</value></data>
+    <data name="Tailscale.ExitNodeAlt2" xml:space="preserve"><value>出口節點</value></data>
+    <data name="Tailscale.SSH" xml:space="preserve"><value>SSH</value></data>
+    <data name="Tailscale.ToolError" xml:space="preserve"><value>工具錯誤</value></data>
+    <!-- Tailscale endpoint card and exit-node picker (x:Uid targets) -->
+    <data name="TailscaleNetworkCard.Header" xml:space="preserve"><value>網絡</value></data>
+    <data name="TailscaleDeviceCard.Header" xml:space="preserve"><value>此裝置</value></data>
+    <data name="TailscaleExitNodeCard.Header" xml:space="preserve"><value>出口節點</value></data>
+    <data name="TailscaleAuthUrlCard.Header" xml:space="preserve"><value>認證連結</value></data>
+    <data name="TailscaleLogOutButton.Content" xml:space="preserve"><value>退出登入</value></data>
+    <data name="TailscaleOpenButton.Content" xml:space="preserve"><value>開啟</value></data>
+    <data name="TailscaleCopyAuthUrlButton.Content" xml:space="preserve"><value>複製</value></data>
+    <data name="TailscaleExitNodeDialog.Title" xml:space="preserve"><value>出口節點</value></data>
+    <data name="TailscaleExitNodeDialog.CloseButtonText" xml:space="preserve"><value>關閉</value></data>
+    <data name="Tools.TheseToolsRequireTheLibboxCoreTheAppIsCurrentlyUsing" xml:space="preserve"><value>這些工具需要 libbox 核心；目前正在使用開發後備程序。</value></data>
+    <data name="Tools.StartTheServiceToUseTheNetworkQualitySTUNAndTailscal" xml:space="preserve"><value>啟動服務後即可使用網絡質量、STUN 與 Tailscale 工具。</value></data>
+    <data name="Tools.ToolError" xml:space="preserve"><value>工具錯誤</value></data>
+    <data name="Tools.Tailscale" xml:space="preserve"><value>Tailscale</value></data>
+    <data name="EndpointsExpander.Header" xml:space="preserve"><value>端點</value></data>
+    <data name="NetworkExpander.Header" xml:space="preserve"><value>網絡</value></data>
+    <data name="DebugExpander.Header" xml:space="preserve"><value>除錯</value></data>
+    <data name="NetworkQualityCard.Header" xml:space="preserve"><value>網絡質量</value></data>
+    <data name="StunTestCard.Header" xml:space="preserve"><value>STUN 測試</value></data>
+    <data name="CrashReportCard.Header" xml:space="preserve"><value>崩潰報告</value></data>
+    <data name="OomReportCard.Header" xml:space="preserve"><value>記憶體不足報告</value></data>
+    <data name="PowerReportCard.Header" xml:space="preserve"><value>電源報告</value></data>
+    <data name="DebugCaption.Text" xml:space="preserve"><value>無法獲取報告的未讀數量。</value></data>
+    <data name="AppState.SelectOrImportAProfileBeforeConnecting" xml:space="preserve"><value>連線前請選擇或匯入配置。</value></data>
+    <data name="AppState.TheSelectedProfileIsEmpty" xml:space="preserve"><value>所選配置為空。</value></data>
+    <data name="AppState.EnterAValidHTTPOrHTTPSSubscriptionURL" xml:space="preserve"><value>請輸入有效的 HTTP 或 HTTPS 訂閱 URL。</value></data>
+    <data name="AppState.ProfileNotFound" xml:space="preserve"><value>未找到配置。</value></data>
+    <data name="AppState.ThisIsALocalProfileNotASubscription" xml:space="preserve"><value>這是本地配置，不是訂閱。</value></data>
+    <data name="AppState.TheSubscriptionReturnedAnEmptyConfiguration" xml:space="preserve"><value>訂閱返回了空配置。</value></data>
+    <data name="AppState.AutoUpdateIsOnlyAvailableForRemoteProfiles" xml:space="preserve"><value>僅遠端配置支援自動更新。</value></data>
+    <data name="AppState.ProfileSourceCannotBeEmpty" xml:space="preserve"><value>配置來源不能為空。</value></data>
+    <data name="AppState.ConfigurationFileWasNotFound" xml:space="preserve"><value>未找到配置檔案。</value></data>
+    <data name="Core.TheServiceIsOwnedByAnotherWindowsUser" xml:space="preserve"><value>服務正由其他 Windows 使用者佔用。</value></data>
+    <data name="Core.StoppingTheSingBoxCoreLeftRunningWithoutTheApp" xml:space="preserve"><value>正在停止上次遺留執行的 SingBox 核心。</value></data>
+    <data name="Core.TheDaemonInstallationDirectoryIsNotAdministratorOnly" xml:space="preserve"><value>守護程序安裝目錄並非僅管理員可寫；將按 boxdd 要求顯式允許。</value></data>
+    <data name="Core.TheSingBoxDaemonServiceIsNotRunningSoThisToolIsUnava" xml:space="preserve"><value>SingBox 守護程序服務未執行，無法使用此工具。</value></data>
+    <data name="Core.TheSingBoxServiceIsOwnedByAnotherWindowsUser" xml:space="preserve"><value>SingBox 服務正由其他 Windows 使用者佔用。</value></data>
+    <data name="Core.TheSingBoxDaemonDidNotAnswerTheRequestInTime" xml:space="preserve"><value>SingBox 守護程序未在規定時間內響應請求。</value></data>
+    <data name="ProfileDialogs.RemoveProfile" xml:space="preserve"><value>刪除配置</value></data>
+    <data name="ProfileDialogs.RemoveItIsCurrentlyInUseTheRunningServiceWillBeStopp" xml:space="preserve"><value>確定刪除“{0}”嗎？該配置正在使用中，執行中的服務將被停止。</value></data>
+    <data name="ProfileDialogs.Remove" xml:space="preserve"><value>確定刪除“{0}”嗎？</value></data>
+    <data name="ProfileDialogs.RemoveAlt2" xml:space="preserve"><value>刪除</value></data>
+    <data name="RelativeTime.UpdatedJustNow" xml:space="preserve"><value>剛剛更新</value></data>
+    <data name="RelativeTime.UpdatedMinAgo" xml:space="preserve"><value>{0} 分鐘前更新</value></data>
+    <data name="RelativeTime.UpdatedHAgo" xml:space="preserve"><value>{0} 小時前更新</value></data>
+    <data name="RuleSetMirror.RuleSetURLSRewrittenToTheJsDelivrMirrorForThisStart" xml:space="preserve"><value>本次啟動已將 {0} 個規則集 URL 改寫至 jsDelivr 映象。</value></data>
+    <data name="Profiles.ProfileCount" xml:space="preserve"><value>{0} 個配置</value></data>
+    <data name="Core.RunningCoreVersionMismatch" xml:space="preserve"><value>執行中的核心為 {0}，應用附帶的是 {1}。請升級服務以繼續。</value></data>
+    <data name="LogLevelErrorItem.Text" xml:space="preserve"><value>錯誤</value></data>
+    <data name="LogLevelWarnItem.Text" xml:space="preserve"><value>警告</value></data>
+    <data name="LogLevelInfoItem.Text" xml:space="preserve"><value>資訊</value></data>
+    <data name="LogLevelDebugItem.Text" xml:space="preserve"><value>除錯</value></data>
+    <data name="LogLevelTraceItem.Text" xml:space="preserve"><value>跟蹤</value></data>
+    <data name="ToolsStatusBar.Title" xml:space="preserve"><value>工具</value></data>
+    <data name="DashboardUploadItem.Text" xml:space="preserve"><value>上傳</value></data>
+    <data name="DashboardDownloadItem.Text" xml:space="preserve"><value>下載</value></data>
+    <data name="DashboardStatusItem.Text" xml:space="preserve"><value>狀態</value></data>
+    <data name="DashboardConnectionsItem.Text" xml:space="preserve"><value>連線</value></data>
+    <data name="DashboardProxyItem.Text" xml:space="preserve"><value>系統代理</value></data>
+    <data name="DashboardModeItem.Text" xml:space="preserve"><value>Clash 模式</value></data>
+    <data name="DashboardProfilesItem.Text" xml:space="preserve"><value>配置</value></data>
+    <data name="AddProfileDialog.Title" xml:space="preserve"><value>新增配置</value></data>
+    <data name="AddProfileDialog.PrimaryButtonText" xml:space="preserve"><value>新增</value></data>
+    <data name="AddProfileDialog.CloseButtonText" xml:space="preserve"><value>取消</value></data>
+    <data name="AddProfileNameBox.Header" xml:space="preserve"><value>配置名稱（可選）</value></data>
+    <data name="AddProfileNameBox.PlaceholderText" xml:space="preserve"><value>我的伺服器</value></data>
+    <data name="AddProfileLocalRadio.Content" xml:space="preserve"><value>本地</value></data>
+    <data name="AddProfileRemoteRadio.Content" xml:space="preserve"><value>遠端</value></data>
+    <data name="AddProfilePathBox.Header" xml:space="preserve"><value>配置檔案</value></data>
+    <data name="AddProfileBrowseButton.Content" xml:space="preserve"><value>瀏覽</value></data>
+    <data name="AddProfileUrlBox.Header" xml:space="preserve"><value>訂閱 URL</value></data>
+    <data name="AddProfileAutoUpdateToggle.Header" xml:space="preserve"><value>自動更新</value></data>
+    <data name="AddProfileIntervalBox.Header" xml:space="preserve"><value>自動更新間隔（分鐘）</value></data>
+    <data name="AddProfileDownloadingText.Text" xml:space="preserve"><value>正在下載訂閱…</value></data>
+    <data name="AddProfilePathBox.PlaceholderText" xml:space="preserve"><value>C:\Configs\config.json</value></data>
+    <data name="AddProfileUrlBox.PlaceholderText" xml:space="preserve"><value>https://example.com/config.json</value></data>
+    <data name="EditProfileDialog.Title" xml:space="preserve"><value>編輯配置</value></data>
+    <data name="EditProfileDialog.PrimaryButtonText" xml:space="preserve"><value>儲存</value></data>
+    <data name="EditProfileReplaceButton.Content" xml:space="preserve"><value>取代設定檔…</value></data>
+    <data name="EditProfileDialog.CloseButtonText" xml:space="preserve"><value>取消</value></data>
+    <data name="EditProfileNameBox.Header" xml:space="preserve"><value>配置名稱</value></data>
+    <data name="EditProfileIntervalBox.Header" xml:space="preserve"><value>自動更新間隔（分鐘）</value></data>
+    <data name="ProfileDialogs.SourceRemoteHeader" xml:space="preserve"><value>訂閱 URL</value></data>
+    <data name="Common.Cancel" xml:space="preserve"><value>取消</value></data>
+
+    <!-- shared -->
+    <data name="Common.OK" xml:space="preserve"><value>確定</value></data>
+    <data name="Common.Copy" xml:space="preserve"><value>複製</value></data>
+
+    <!-- row context menus -->
+    <data name="ConnectionCloseItem.Text" xml:space="preserve"><value>關閉</value></data>
+    <data name="ConnectionDetailsItem.Text" xml:space="preserve"><value>詳細資訊</value></data>
+    <data name="ProfileEditItem.Text" xml:space="preserve"><value>編輯</value></data>
+    <data name="ProfileUpdateItem.Text" xml:space="preserve"><value>更新</value></data>
+    <data name="ProfileRemoveItem.Text" xml:space="preserve"><value>刪除</value></data>
+</root>

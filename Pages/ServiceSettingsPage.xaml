@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page x:Class="SFW.Pages.ServiceSettingsPage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:toolkit="using:CommunityToolkit.WinUI.Controls">
+    <ScrollViewer>
+        <StackPanel Padding="40,28,40,40" Spacing="8">
+
+            <StackPanel Spacing="6" Margin="0,0,0,16">
+                <TextBlock x:Uid="ServiceSettingsTitle" Style="{StaticResource PageTitleTextStyle}" Text="Service" />
+                <TextBlock x:Uid="ServiceSettingsSubtitle" Style="{StaticResource PageSubtitleTextStyle}" TextWrapping="Wrap" Text="The background daemon service and the core it runs." />
+            </StackPanel>
+
+            <!-- Action failures: declined UAC, failed install, failed start. -->
+            <InfoBar x:Name="StatusBar" IsClosable="True" IsOpen="False" Severity="Error" />
+
+            <!-- Stale service: a registered service that still runs an older core
+                 than the one this app ships. Repairing needs one UAC approval and
+                 is only ever started from this button, never automatically. -->
+            <InfoBar x:Uid="RepairBar" x:Name="RepairBar" IsClosable="True" IsOpen="False" Severity="Warning" Title="Core version mismatch">
+                <InfoBar.ActionButton>
+                    <Button x:Uid="RepairActionButton" x:Name="RepairActionButton" Content="Repair service" Click="RepairActionButton_Click" />
+                </InfoBar.ActionButton>
+            </InfoBar>
+
+            <StackPanel Spacing="4">
+                <toolkit:SettingsCard x:Uid="ServiceStatusCard" x:Name="ServiceStatusCard" Header="Service status">
+                    <toolkit:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xE946;" />
+                    </toolkit:SettingsCard.HeaderIcon>
+                    <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                        <TextBlock x:Name="StatusText" FontSize="14" VerticalAlignment="Center" />
+                        <Button x:Uid="RefreshButton" x:Name="RefreshButton" Content="Refresh" Click="RefreshButton_Click" />
+                    </StackPanel>
+                </toolkit:SettingsCard>
+
+                <toolkit:SettingsCard x:Uid="ServiceCoresCard" x:Name="CoresCard" Header="Core versions">
+                    <toolkit:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xE9F5;" />
+                    </toolkit:SettingsCard.HeaderIcon>
+                </toolkit:SettingsCard>
+
+                <toolkit:SettingsCard x:Uid="ServiceExecutableCard" x:Name="ExecutableCard" Header="Service executable" IsClickEnabled="True" Click="ExecutableCard_Click">
+                    <toolkit:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xE8A5;" />
+                    </toolkit:SettingsCard.HeaderIcon>
+                </toolkit:SettingsCard>
+
+                <toolkit:SettingsCard x:Uid="ServiceWorkingDirectoryCard" x:Name="ServiceWorkingDirectoryCard" Header="Working directory" IsClickEnabled="True" Click="ServiceWorkingDirectoryCard_Click">
+                    <toolkit:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xE8B7;" />
+                    </toolkit:SettingsCard.HeaderIcon>
+                </toolkit:SettingsCard>
+            </StackPanel>
+
+            <!-- Service control. Both actions elevate (one UAC prompt) and are
+                 therefore user-initiated only. -->
+            <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,8,0,0">
+                <Button x:Uid="StartServiceButton" x:Name="StartServiceButton" Content="Start service" Visibility="Collapsed" Click="StartServiceButton_Click" />
+                <Button x:Uid="RepairServiceButton" x:Name="RepairServiceButton" Content="Install / repair service" Style="{StaticResource AccentButtonStyle}" Visibility="Collapsed" Click="RepairServiceButton_Click" />
+                <ProgressRing x:Name="ActionProgress" Width="20" Height="20" IsActive="False" Visibility="Collapsed" VerticalAlignment="Center" />
+            </StackPanel>
+            <TextBlock x:Uid="ServiceElevationCaption" Style="{StaticResource CardCaptionTextStyle}" Margin="4,0,0,0" TextWrapping="Wrap" Text="Installing or starting the service requires administrator approval." />
+        </StackPanel>
+    </ScrollViewer>
+</Page>

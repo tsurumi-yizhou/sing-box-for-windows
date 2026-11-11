@@ -10,13 +10,17 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="UiSmokeTest.cs" />
-    <PackageReference Include="Grpc.Net.Client" Version="2.83.0" />
-    <PackageReference Include="Google.Protobuf" Version="3.29.3" />
-    <PackageReference Include="Grpc.Tools" Version="2.83.0" PrivateAssets="All" />
+    <PackageReference Include="xunit.v3" Version="4.0.3" />
+    <PackageReference Include="Grpc.Net.Client" Version="2.85.0" />
+    <PackageReference Include="Google.Protobuf" Version="3.36.2" />
+    <PackageReference Include="Grpc.Tools" Version="2.85.0" PrivateAssets="All" />
     <Protobuf Include="..\Protos\started_service.proto" GrpcServices="Client" ProtoRoot="..\Protos" />
     <Protobuf Include="..\Protos\desktop_service.proto" GrpcServices="Client" ProtoRoot="..\Protos" />
     <Content Include="..\daemon\**\*" Link="resources\daemon\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="..\Services\Core\RpcSubscription.cs" Link="RpcSubscription.cs" />
+    <Compile Include="..\Services\Core\CoreModels.cs" Link="CoreModels.cs" />
+    <Compile Include="..\Services\Core\CoreReportModels.cs" Link="CoreReportModels.cs" />
+    <Compile Include="..\Models\AppSettings.cs" Link="AppSettings.cs" />
     <Compile Include="..\Services\AtomicFile.cs" Link="AtomicFile.cs" />
     <Compile Include="..\Services\Core\ConfigurationValidator.cs" Link="ConfigurationValidator.cs" />
     <Compile Include="..\Services\Core\NamedPipeChannel.cs" Link="NamedPipeChannel.cs" />

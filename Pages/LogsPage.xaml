@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Page x:Class="SFW.Pages.LogsPage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:models="using:SFW.Models">
+    <Page.Resources>
+        <!-- The filter menus draw a check mark next to the active choice only. The
+             icon is a template so every marked item gets its own instance, while the
+             markup itself stays in XAML. -->
+        <DataTemplate x:Key="MenuCheckIconTemplate">
+            <FontIcon Glyph="&#xE73E;" />
+        </DataTemplate>
+    </Page.Resources>
+
     <Grid Padding="40,28,40,40" RowSpacing="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -32,11 +41,11 @@
                 <DropDownButton.Flyout>
                     <MenuFlyout x:Name="LevelMenu" Opening="LevelMenu_Opening">
                         <MenuFlyoutItem x:Uid="LogLevelDefaultItem" Text="Default" Tag="7" Click="LevelItem_Click" />
-                        <MenuFlyoutItem Text="Error" Tag="2" Click="LevelItem_Click" />
-                        <MenuFlyoutItem Text="Warn" Tag="3" Click="LevelItem_Click" />
-                        <MenuFlyoutItem Text="Info" Tag="4" Click="LevelItem_Click" />
-                        <MenuFlyoutItem Text="Debug" Tag="5" Click="LevelItem_Click" />
-                        <MenuFlyoutItem Text="Trace" Tag="6" Click="LevelItem_Click" />
+                        <MenuFlyoutItem x:Uid="LogLevelErrorItem" Text="Error" Tag="2" Click="LevelItem_Click" />
+                        <MenuFlyoutItem x:Uid="LogLevelWarnItem" Text="Warn" Tag="3" Click="LevelItem_Click" />
+                        <MenuFlyoutItem x:Uid="LogLevelInfoItem" Text="Info" Tag="4" Click="LevelItem_Click" />
+                        <MenuFlyoutItem x:Uid="LogLevelDebugItem" Text="Debug" Tag="5" Click="LevelItem_Click" />
+                        <MenuFlyoutItem x:Uid="LogLevelTraceItem" Text="Trace" Tag="6" Click="LevelItem_Click" />
                     </MenuFlyout>
                 </DropDownButton.Flyout>
             </DropDownButton>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="SFW.Controls.ReportList"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:models="using:SFW.Models">
+
+    <!-- The report list shared by the crash, OOM and power report pages: unread
+         dot, timestamp (bold while unread), kind caption and a chevron. -->
+    <ItemsControl x:Name="Items">
+        <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="models:ReportListRow">
+                <Button Style="{StaticResource ToolbarButtonStyle}"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Stretch"
+                        Padding="8,6,8,6"
+                        Tag="{x:Bind}"
+                        Click="Row_Click"
+                        AutomationProperties.Name="{x:Bind Title}">
+                    <Grid ColumnSpacing="10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Ellipse Width="10" Height="10" VerticalAlignment="Center"
+                                 Fill="{x:Bind DotBrush}" />
+                        <StackPanel Grid.Column="1" Spacing="1" VerticalAlignment="Center">
+                            <TextBlock Text="{x:Bind Title}" FontSize="14"
+                                       FontWeight="{x:Bind TitleWeight}"
+                                       TextTrimming="CharacterEllipsis" />
+                            <TextBlock Text="{x:Bind KindCaption}"
+                                       Style="{StaticResource CardCaptionTextStyle}"
+                                       TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+                        <FontIcon Grid.Column="2" Glyph="&#xE76C;" FontSize="12"
+                                  VerticalAlignment="Center"
+                                  Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                    </Grid>
+                </Button>
+            </DataTemplate>
+        </ItemsControl.ItemTemplate>
+    </ItemsControl>
+</UserControl>

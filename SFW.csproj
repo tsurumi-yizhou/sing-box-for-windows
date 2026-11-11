@@ -20,6 +20,10 @@
              instead of the disposable bin\...\AppX staging folder. -->
         <WinAppLooseLayoutPath>$(MSBuildProjectDirectory)\.daemon-install\</WinAppLooseLayoutPath>
         <WinAppRunExecutable>sing-box.exe</WinAppRunExecutable>
+        <!-- dotnet run launches through the WinApp CLI, which starts WinUI DevTools
+             by default for WinUI apps (Debug and Release alike). Keep normal runs
+             clean; opt in with -p:WinAppRunDevTools=on when debugging. -->
+        <WinAppRunDevTools>off</WinAppRunDevTools>
         <!-- Custom entry point (Program.cs): the WinUI generated Main is replaced so
              the app can register itself as a single instance and redirect later
              launches to the running one. -->
@@ -44,6 +48,7 @@
         <Content Include="Assets\Square44x44Logo.targetsize-48_altform-lightunplated.png" />
         <Content Include="Assets\StoreLogo.png" />
         <Content Include="Assets\AppIcon.ico" />
+        <Content Include="Assets\TrayStopped.ico" />
         <Content Include="Assets\AppIcon.png" />
         <Content Include="Assets\Wide310x150Logo.scale-200.png" />
     </ItemGroup>
@@ -70,12 +75,16 @@
 
     <ItemGroup>
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+        <PackageReference Include="CommunityToolkit.WinUI.Controls.Segmented" Version="8.2.251219" />
         <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls"
             Version="8.2.251219" />
-        <PackageReference Include="Google.Protobuf" Version="3.29.3" />
-        <PackageReference Include="Grpc.Net.Client" Version="2.83.0" />
-        <PackageReference Include="Grpc.Tools" Version="2.83.0" PrivateAssets="All" />
+        <PackageReference Include="CommunityToolkit.WinUI.Converters" Version="8.2.251219" />
+        <PackageReference Include="CommunityToolkit.WinUI.Extensions" Version="8.2.251219" />
+        <PackageReference Include="Google.Protobuf" Version="3.36.2" />
+        <PackageReference Include="Grpc.Net.Client" Version="2.85.0" />
+        <PackageReference Include="Grpc.Tools" Version="2.85.0" PrivateAssets="All" />
         <PackageReference Include="H.NotifyIcon.WinUI" Version="2.4.1" />
+        <PackageReference Include="System.ServiceProcess.ServiceController" Version="11.0.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -103,9 +112,9 @@
     <PropertyGroup> above to opt out.
   -->
     <ItemGroup>
-        <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.2705" />
-        <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.4.0" />
-        <PackageReference Include="Microsoft.Windows.SDK.BuildTools.WinApp" Version="0.6.1" />
+        <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.2957" />
+        <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.6.5" />
+        <PackageReference Include="Microsoft.Windows.SDK.BuildTools.WinApp" Version="0.8.0" />
     </ItemGroup>
 
     <!--
@@ -165,6 +174,20 @@
         <Exec
             Condition="Exists('$(OutDir)AppX\sing-box.exe') and Exists('$(OutDir)AppX\resources\daemon\sing-box-daemon.exe')"
             Command="&quot;$(SystemRoot)\System32\WindowsPowerShell\v1.0\powershell.exe&quot; -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\Scripts\Sign-Outputs.ps1&quot; -Paths &quot;$(OutDir)AppX\sing-box.exe;$(OutDir)AppX\resources\daemon\sing-box-daemon.exe&quot;" />
+    </Target>
+
+    <!-- MSIX packaging runs before the Build target completes. Signing only in
+         SignOutputs is too late: the package may already contain an unsigned
+         apphost. Sign the actual payload sources immediately before MakeAppx. -->
+    <Target Name="SignPackagePayload" BeforeTargets="_GenerateAppxPackageFile">
+        <ItemGroup>
+            <_SfwSignedPayload Include="@(AppxPackagePayload)"
+                Condition="'%(AppxPackagePayload.TargetPath)' == 'sing-box.exe' or '%(AppxPackagePayload.Filename)%(AppxPackagePayload.Extension)' == 'sing-box-daemon.exe'" />
+        </ItemGroup>
+        <Error Condition="'@(_SfwSignedPayload)' == ''"
+            Text="No SFW executables were found in the MSIX payload to sign." />
+        <Exec
+            Command="&quot;$(SystemRoot)\System32\WindowsPowerShell\v1.0\powershell.exe&quot; -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\Scripts\Sign-Outputs.ps1&quot; -Paths &quot;@(_SfwSignedPayload->'%(FullPath)', ';')&quot;" />
     </Target>
 
     <!-- Publish Properties -->

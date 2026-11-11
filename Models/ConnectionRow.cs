@@ -38,11 +38,17 @@ public sealed partial class ConnectionRow : ObservableObject
     public string InboundText { get; }
     public string ChainText { get; }
 
+    public string Id => Connection.Id;
+
+    /// <summary>The row menu only offers "close" while the connection is live.</summary>
+    public Visibility CloseItemVisibility =>
+        Connection.ClosedAt == 0 ? Visibility.Visible : Visibility.Collapsed;
+
     public void Update(CoreConnection c)
     {
         Connection = c;
         var active = c.ClosedAt == 0;
-        StateText = active ? Loc.Get("Active", "活动") : Loc.Get("Closed", "已关闭");
+        StateText = active ? Loc.Get("ConnectionRow.Active") : Loc.Get("ConnectionRow.Closed");
         StateBrush = (Brush)Application.Current.Resources[active ? "SystemFillColorSuccessBrush" : "SystemFillColorCriticalBrush"];
         UpText = active
             ? $"↑ {ConnectionsPage.FormatBytes(c.Uplink)}/s | {ConnectionsPage.FormatBytes(c.UplinkTotal)}"
@@ -50,5 +56,6 @@ public sealed partial class ConnectionRow : ObservableObject
         DownText = active
             ? $"↓ {ConnectionsPage.FormatBytes(c.Downlink)}/s | {ConnectionsPage.FormatBytes(c.DownlinkTotal)}"
             : $"↓ {ConnectionsPage.FormatBytes(c.DownlinkTotal)}";
+        OnPropertyChanged(nameof(CloseItemVisibility));
     }
 }

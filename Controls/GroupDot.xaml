@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="SFW.Controls.GroupDot"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- One dot of the collapsed group grid: the URL-test delay as colour, plus a
+         white centre mark on the selected outbound. DotGridPanel gives the size. -->
+    <Grid Width="11" Height="11">
+        <Rectangle x:Name="DotRect" RadiusX="4" RadiusY="4" />
+        <Ellipse x:Name="SelectedDot" Width="4" Height="4" Fill="White"
+                 HorizontalAlignment="Center" VerticalAlignment="Center"
+                 Visibility="Collapsed" />
+    </Grid>
+</UserControl>

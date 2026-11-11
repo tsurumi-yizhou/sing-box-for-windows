@@ -3,79 +3,55 @@
     <ScrollViewer>
         <StackPanel Padding="40,28,40,40" Spacing="8">
 
-            <StackPanel Spacing="6" Margin="0,0,0,16">
+            <StackPanel Spacing="6" Margin="0,0,0,8">
                 <TextBlock x:Uid="SettingsTitle" Style="{StaticResource PageTitleTextStyle}" Text="Settings" />
-                <TextBlock x:Uid="SettingsSubtitle" Style="{StaticResource PageSubtitleTextStyle}" Text="Core and profile behavior." />
+                <TextBlock x:Uid="SettingsSubtitle" Style="{StaticResource PageSubtitleTextStyle}" TextWrapping="Wrap" Text="App, core, service and about links." />
             </StackPanel>
 
-            <!-- App -->
-            <TextBlock x:Uid="AppSectionTitle" Style="{StaticResource CardLabelTextStyle}" Text="APP" Margin="4,8,0,4" />
-            <StackPanel Spacing="4">
-                <toolkit:SettingsCard x:Uid="ThemeCard" Header="Theme" Description="Use the system setting or force a light or dark theme.">
-                    <toolkit:SettingsCard.HeaderIcon>
-                        <FontIcon Glyph="&#xE790;" />
-                    </toolkit:SettingsCard.HeaderIcon>
-                    <ComboBox x:Name="ThemeBox" MinWidth="140" SelectionChanged="ThemeBox_SelectionChanged">
-                        <ComboBoxItem x:Uid="ThemeDefault" Content="Default" Tag="default" />
-                        <ComboBoxItem x:Uid="ThemeLight" Content="Light" Tag="light" />
-                        <ComboBoxItem x:Uid="ThemeDark" Content="Dark" Tag="dark" />
-                    </ComboBox>
-                </toolkit:SettingsCard>
-                <toolkit:SettingsCard x:Uid="BackdropCard" Header="Backdrop material" Description="Choose Mica or Acrylic for the window background.">
-                    <toolkit:SettingsCard.HeaderIcon>
-                        <FontIcon Glyph="&#xE7F8;" />
-                    </toolkit:SettingsCard.HeaderIcon>
-                    <ComboBox x:Name="BackdropBox" MinWidth="140" SelectionChanged="BackdropBox_SelectionChanged">
-                        <ComboBoxItem x:Uid="BackdropMica" Content="Mica" Tag="mica" />
-                        <ComboBoxItem x:Uid="BackdropAcrylic" Content="Acrylic" Tag="acrylic" />
-                    </ComboBox>
-                </toolkit:SettingsCard>
-                <toolkit:SettingsCard x:Uid="LaunchCard" x:Name="LaunchCard" Header="Start at login" Description="Run in the tray and start the service when you sign in.">
-                    <toolkit:SettingsCard.HeaderIcon>
-                        <FontIcon Glyph="&#xE8EC;" />
-                    </toolkit:SettingsCard.HeaderIcon>
-                    <ToggleSwitch x:Name="LaunchAtLoginToggle" Toggled="LaunchAtLoginToggle_Toggled" />
-                </toolkit:SettingsCard>
-            </StackPanel>
+            <InfoBar x:Uid="SettingsStatusBar" x:Name="StatusBar" IsClosable="True" IsOpen="False" Severity="Error" />
 
-            <!-- Core -->
-            <TextBlock x:Uid="CoreTitle" Style="{StaticResource CardLabelTextStyle}" Text="CORE" Margin="4,16,0,4" />
-            <StackPanel Spacing="4">
-                <toolkit:SettingsCard x:Uid="CoreVersionCard" x:Name="CoreVersionCard" Header="Core version">
-                    <toolkit:SettingsCard.HeaderIcon>
-                        <FontIcon Glyph="&#xE946;" />
-                    </toolkit:SettingsCard.HeaderIcon>
-                </toolkit:SettingsCard>
+            <!-- General: the SFA/SFM hub groups, grouped by the native
+                 SettingsExpander so section headers, chevrons and the collapsed
+                 states come from the Windows settings controls instead of a
+                 hand-drawn list. All copy comes from x:Uid resources. -->
+            <toolkit:SettingsExpander x:Uid="GeneralExpander" x:Name="GeneralExpander" IsExpanded="True">
+                <toolkit:SettingsExpander.HeaderIcon>
+                    <FontIcon Glyph="&#xE713;" FontSize="16" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                </toolkit:SettingsExpander.HeaderIcon>
+                <toolkit:SettingsExpander.Items>
+                    <toolkit:SettingsCard Padding="16,8,16,8" x:Uid="AppCard" x:Name="AppCard" IsClickEnabled="True" Click="AppCard_Click">
+                    </toolkit:SettingsCard>
+                    <toolkit:SettingsCard Padding="16,8,16,8" x:Uid="CoreCard" x:Name="CoreCard" IsClickEnabled="True" Click="CoreCard_Click">
+                    </toolkit:SettingsCard>
+                    <toolkit:SettingsCard Padding="16,8,16,8" x:Uid="ServiceCard" x:Name="ServiceCard" IsClickEnabled="True" Click="ServiceCard_Click">
+                    </toolkit:SettingsCard>
+                </toolkit:SettingsExpander.Items>
+            </toolkit:SettingsExpander>
 
-                <toolkit:SettingsCard x:Uid="DataFolderCard" x:Name="DataFolderCard" Header="Data folder" IsClickEnabled="True" Click="OpenDataFolder_Click">
-                    <toolkit:SettingsCard.HeaderIcon>
-                        <FontIcon Glyph="&#xE8B7;" />
-                    </toolkit:SettingsCard.HeaderIcon>
-                </toolkit:SettingsCard>
-            </StackPanel>
-
-            <!-- Profiles -->
-            <TextBlock x:Uid="SettingsProfilesTitle" Style="{StaticResource CardLabelTextStyle}" Text="PROFILES" Margin="4,16,0,4" />
-            <toolkit:SettingsCard x:Uid="ProfilesCard" Header="Manage profiles" Description="Profiles are standard sing-box JSON configurations stored in the app data directory." IsClickEnabled="True" Click="OpenProfilesButton_Click">
-                <toolkit:SettingsCard.HeaderIcon>
-                    <FontIcon Glyph="&#xE8A5;" />
-                </toolkit:SettingsCard.HeaderIcon>
-            </toolkit:SettingsCard>
-
-            <!-- About -->
-            <TextBlock x:Uid="AboutTitle" Style="{StaticResource CardLabelTextStyle}" Text="ABOUT" Margin="4,16,0,4" />
-            <StackPanel Spacing="4">
-                <toolkit:SettingsCard x:Name="VersionCard" Header="Sing-Box for Windows">
-                    <toolkit:SettingsCard.HeaderIcon>
-                        <FontIcon Glyph="&#xE946;" />
-                    </toolkit:SettingsCard.HeaderIcon>
-                </toolkit:SettingsCard>
-                <toolkit:SettingsCard x:Uid="SourceCard" Header="Source code" Description="A native client built on the libbox command client and standard sing-box JSON profiles." IsClickEnabled="True" Click="SourceCard_Click">
-                    <toolkit:SettingsCard.HeaderIcon>
-                        <FontIcon Glyph="&#xE8A5;" />
-                    </toolkit:SettingsCard.HeaderIcon>
-                </toolkit:SettingsCard>
-            </StackPanel>
+            <!-- About: documentation, source code and sponsor links. The
+                 external-link glyph replaces the navigation chevron. -->
+            <toolkit:SettingsExpander x:Uid="AboutExpander" x:Name="AboutExpander" IsExpanded="True">
+                <toolkit:SettingsExpander.HeaderIcon>
+                    <FontIcon Glyph="&#xE8A5;" FontSize="16" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                </toolkit:SettingsExpander.HeaderIcon>
+                <toolkit:SettingsExpander.Items>
+                    <toolkit:SettingsCard Padding="16,8,16,8" x:Uid="DocumentationCard" x:Name="DocumentationCard" IsClickEnabled="True" Click="DocumentationCard_Click">
+                        <toolkit:SettingsCard.ActionIcon>
+                            <FontIcon Glyph="&#xE8A7;" />
+                        </toolkit:SettingsCard.ActionIcon>
+                    </toolkit:SettingsCard>
+                    <toolkit:SettingsCard Padding="16,8,16,8" x:Uid="SourceCodeCard" x:Name="SourceCodeCard" IsClickEnabled="True" Click="SourceCodeCard_Click">
+                        <toolkit:SettingsCard.ActionIcon>
+                            <FontIcon Glyph="&#xE8A7;" />
+                        </toolkit:SettingsCard.ActionIcon>
+                    </toolkit:SettingsCard>
+                    <toolkit:SettingsCard Padding="16,8,16,8" x:Uid="SponsorCard" x:Name="SponsorCard" IsClickEnabled="True" Click="SponsorCard_Click">
+                        <toolkit:SettingsCard.ActionIcon>
+                            <FontIcon Glyph="&#xE8A7;" />
+                        </toolkit:SettingsCard.ActionIcon>
+                    </toolkit:SettingsCard>
+                </toolkit:SettingsExpander.Items>
+            </toolkit:SettingsExpander>
         </StackPanel>
     </ScrollViewer>
 </Page>

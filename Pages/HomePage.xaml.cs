@@ -1,4 +1,3 @@
-using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -69,11 +68,14 @@ public sealed partial class HomePage : Page
     private void RefreshProfiles()
     {
         var selected = App.State.ActiveProfile();
-        ProfileBox.ItemsSource = App.State.Settings.Profiles;
+        // The combo holds the list instance it was first given, so adding a
+        // profile to the settings list alone does not rebuild its items; a fresh
+        // snapshot makes the dashboard pick the new entry up.
+        ProfileBox.ItemsSource = App.State.Settings.Profiles.ToList();
         ProfileBox.SelectedItem = selected;
         ProfileHint.Severity = InfoBarSeverity.Informational;
-        ProfileHint.Title = Loc.Get("Get started", "开始使用");
-        ProfileHint.Message = Loc.Get("Add or select a profile, then start the service.", "添加或选择一个配置，然后启动服务。");
+        ProfileHint.Title = Loc.Get("Home.GetStarted");
+        ProfileHint.Message = Loc.Get("Home.AddOrSelectAProfileThenStartTheService");
         SetProfileHintOpen(selected is null);
         DashboardEditProfileButton.IsEnabled = selected is not null;
         DashboardUpdateProfileButton.IsEnabled = selected?.IsRemote == true;
@@ -95,7 +97,7 @@ public sealed partial class HomePage : Page
         }
 
         ProfileInfoRow.Visibility = Visibility.Visible;
-        ProfileTypeText.Text = profile.IsRemote ? Loc.Get("Remote", "远程") : Loc.Get("Local", "本地");
+        ProfileTypeText.Text = profile.IsRemote ? Loc.Get("Home.Remote") : Loc.Get("Home.Local");
         var updated = profile.IsRemote ? profile.LastUpdated : null;
         ProfileUpdatedPanel.Visibility = updated is null ? Visibility.Collapsed : Visibility.Visible;
         ProfileUpdatedText.Text = updated is { } time ? RelativeTime.Format(time) : string.Empty;
@@ -103,38 +105,13 @@ public sealed partial class HomePage : Page
 
     // ----- Dashboard items (SFA/SFM card management) -----
 
-    private void DashboardItemsButton_Click(object sender, RoutedEventArgs e)
+    private void DashboardItemsFlyout_Opening(object? sender, object e)
     {
-        var flyout = new MenuFlyout();
-        foreach (var (key, en, zh) in new[]
+        var disabled = App.State.Settings.DisabledDashboardCards;
+        foreach (var item in DashboardItemsFlyout.Items.OfType<ToggleMenuFlyoutItem>())
         {
-            ("upload", "Upload", "上传"),
-            ("download", "Download", "下载"),
-            ("status", "Status", "状态"),
-            ("connections", "Connections", "连接"),
-            ("proxy", "System Proxy", "系统代理"),
-            ("mode", "Clash Mode", "Clash 模式"),
-        })
-        {
-            var item = new ToggleMenuFlyoutItem
-            {
-                Text = Loc.Get(en, zh),
-                IsChecked = !App.State.Settings.DisabledDashboardCards.Contains(key),
-                Tag = key,
-            };
-            item.Click += DashboardItemToggle_Click;
-            flyout.Items.Add(item);
+            if (item.Tag is string key) item.IsChecked = !disabled.Contains(key);
         }
-
-        // Profiles is always visible in SFA/SFM and cannot be hidden.
-        flyout.Items.Add(new ToggleMenuFlyoutItem
-        {
-            Text = Loc.Get("Profiles", "配置"),
-            IsChecked = true,
-            IsEnabled = false,
-        });
-
-        flyout.ShowAt(DashboardItemsButton);
     }
 
     private void DashboardItemToggle_Click(object sender, RoutedEventArgs e)
@@ -212,199 +189,26 @@ public sealed partial class HomePage : Page
     /// </summary>
     private async void AddProfileButton_Click(object sender, RoutedEventArgs e)
     {
-        var nameBox = new TextBox
-        {
-            Header = Loc.Get("Profile name (optional)", "配置名称（可选）"),
-            PlaceholderText = Loc.Get("My server", "我的服务器"),
-        };
-
-        var localRadio = new RadioButton
-        {
-            Content = Loc.Get("Local", "本地"),
-            GroupName = "NewProfileType",
-            IsChecked = true,
-        };
-        var remoteRadio = new RadioButton
-        {
-            Content = Loc.Get("Remote", "远程"),
-            GroupName = "NewProfileType",
-        };
-        var typeRow = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 20 };
-        typeRow.Children.Add(localRadio);
-        typeRow.Children.Add(remoteRadio);
-        var typePanel = new StackPanel { Spacing = 6 };
-        typePanel.Children.Add(new TextBlock { Text = Loc.Get("Profile type", "配置类型") });
-        typePanel.Children.Add(typeRow);
-
-        var pathBox = new TextBox
-        {
-            Header = Loc.Get("Configuration file", "配置文件"),
-            PlaceholderText = @"C:\Configs\config.json",
-            MinWidth = 420,
-        };
-        var browseButton = new Button
-        {
-            Content = Loc.Get("Browse", "浏览"),
-            VerticalAlignment = VerticalAlignment.Bottom,
-        };
-        var pathGrid = new Grid { ColumnSpacing = 8 };
-        pathGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        pathGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        pathGrid.Children.Add(pathBox);
-        Grid.SetColumn(browseButton, 1);
-        pathGrid.Children.Add(browseButton);
-
-        var urlBox = new TextBox
-        {
-            Header = Loc.Get("Subscription URL", "订阅 URL"),
-            PlaceholderText = "https://example.com/config.json",
-            MinWidth = 420,
-        };
-        var autoUpdateToggle = new ToggleSwitch
-        {
-            Header = Loc.Get("Auto update", "自动更新"),
-            IsOn = true,
-            MinWidth = 0,
-            OnContent = string.Empty,
-            OffContent = string.Empty,
-        };
-        var intervalBox = new NumberBox
-        {
-            Header = Loc.Get("Auto update interval (minutes)", "自动更新间隔（分钟）"),
-            Minimum = ProfileDialogs.MinAutoUpdateIntervalMinutes,
-            Maximum = 7 * 24 * 60,
-            Value = ProfileDialogs.DefaultAutoUpdateIntervalMinutes,
-            SmallChange = 15,
-            LargeChange = 60,
-            SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Inline,
-        };
-        var remotePanel = new StackPanel { Spacing = 12, Visibility = Visibility.Collapsed };
-        remotePanel.Children.Add(urlBox);
-        remotePanel.Children.Add(autoUpdateToggle);
-        remotePanel.Children.Add(intervalBox);
-
-        // Progress and errors live inside the form: the download keeps the dialog
-        // open (SFA keeps the form editable, SFM disables it behind a spinner), so
-        // the entered URL survives a failure instead of being replaced by a toast.
-        var progressRing = new ProgressRing { IsActive = false, Width = 16, Height = 16 };
-        var progressText = new TextBlock
-        {
-            Text = Loc.Get("Downloading the subscription…", "正在下载订阅…"),
-            VerticalAlignment = VerticalAlignment.Center,
-            Foreground = Application.Current.Resources["TextFillColorSecondaryBrush"] as Brush,
-        };
-        var progressRow = new StackPanel
-        {
-            Orientation = Orientation.Horizontal,
-            Spacing = 8,
-            Visibility = Visibility.Collapsed,
-        };
-        progressRow.Children.Add(progressRing);
-        progressRow.Children.Add(progressText);
-        var errorText = new TextBlock
-        {
-            TextWrapping = TextWrapping.Wrap,
-            Visibility = Visibility.Collapsed,
-            Foreground = Application.Current.Resources["SystemFillColorCriticalBrush"] as Brush,
-        };
-
-        var panel = new StackPanel { Spacing = 12 };
-        panel.Children.Add(nameBox);
-        panel.Children.Add(typePanel);
-        panel.Children.Add(pathGrid);
-        panel.Children.Add(remotePanel);
-        panel.Children.Add(progressRow);
-        panel.Children.Add(errorText);
-
-        var dialog = new ContentDialog
-        {
-            Title = Loc.Get("Add profile", "添加配置"),
-            Content = panel,
-            PrimaryButtonText = Loc.Get("Add", "添加"),
-            CloseButtonText = Loc.Get("Cancel", "取消"),
-            DefaultButton = ContentDialogButton.Primary,
-            XamlRoot = XamlRoot,
-        };
-
-        void ApplyType()
-        {
-            var remote = remoteRadio.IsChecked == true;
-            pathGrid.Visibility = remote ? Visibility.Collapsed : Visibility.Visible;
-            remotePanel.Visibility = remote ? Visibility.Visible : Visibility.Collapsed;
-        }
-
-        localRadio.Checked += (_, _) => ApplyType();
-        remoteRadio.Checked += (_, _) => ApplyType();
-        browseButton.Click += async (_, _) =>
+        var dialog = new Dialogs.AddProfileDialog { XamlRoot = XamlRoot };
+        dialog.SubmitAsync = async form =>
         {
             try
             {
-                if (await ConfigFilePicker.PickAsync() is { } picked) pathBox.Text = picked;
-            }
-            catch (Exception exception)
-            {
-                errorText.Text = exception.Message;
-                errorText.Visibility = Visibility.Visible;
-            }
-        };
-
-        dialog.PrimaryButtonClick += async (_, args) =>
-        {
-            // Keep the form open: it closes itself only once the profile exists.
-            args.Cancel = true;
-
-            var remote = remoteRadio.IsChecked == true;
-            var source = (remote ? urlBox.Text : pathBox.Text).Trim();
-            if (string.IsNullOrWhiteSpace(source))
-            {
-                errorText.Text = remote
-                    ? Loc.Get("Enter a valid HTTP or HTTPS subscription URL.", "请输入有效的 HTTP 或 HTTPS 订阅 URL。")
-                    : Loc.Get("Choose a SingBox JSON configuration file.", "请选择一个 SingBox JSON 配置文件。");
-                errorText.Visibility = Visibility.Visible;
-                return;
-            }
-
-            errorText.Visibility = Visibility.Collapsed;
-            progressRow.Visibility = remote ? Visibility.Visible : Visibility.Collapsed;
-            progressRing.IsActive = remote;
-            dialog.IsPrimaryButtonEnabled = false;
-            try
-            {
-                var intervalMinutes = double.IsNaN(intervalBox.Value)
-                    ? ProfileDialogs.DefaultAutoUpdateIntervalMinutes
-                    : ProfileDialogs.ClampAutoUpdateInterval((int)intervalBox.Value);
-                var profile = remote
-                    ? await App.State.AddSubscriptionAsync(nameBox.Text.Trim(), source, autoUpdateToggle.IsOn, intervalMinutes)
-                    : await AddLocalProfileAsync(nameBox.Text.Trim(), source);
+                var profile = form.IsRemote
+                    ? await App.State.AddSubscriptionAsync(
+                        form.Name, form.Source, form.AutoUpdate, form.IntervalMinutes)
+                    : await App.State.AddLocalProfileAsync(form.Name, form.Source);
                 RefreshProfiles();
-                dialog.Hide();
-                ShowProfileStatus(InfoBarSeverity.Success, Loc.Get("Add profile", "添加配置"),
-                    string.Format(Loc.Get("Added \"{0}\".", "已添加“{0}”。"), profile.Name));
+                ShowProfileStatus(InfoBarSeverity.Success, Loc.Get("Home.AddProfile"),
+                    string.Format(Loc.Get("Home.Added"), profile.Name));
+                return null;
             }
             catch (Exception exception)
             {
-                errorText.Text = exception.Message;
-                errorText.Visibility = Visibility.Visible;
-            }
-            finally
-            {
-                progressRing.IsActive = false;
-                progressRow.Visibility = Visibility.Collapsed;
-                dialog.IsPrimaryButtonEnabled = true;
+                return exception.Message;
             }
         };
-
         await dialog.ShowAsync();
-    }
-
-    /// <summary>Validates a local configuration file and registers it as a profile.</summary>
-    private static async Task<Profile> AddLocalProfileAsync(string name, string path)
-    {
-        if (!File.Exists(path))
-            throw new FileNotFoundException(Loc.Get("Configuration file was not found.", "未找到配置文件。"), path);
-        await ConfigurationValidator.CheckAsync(await File.ReadAllTextAsync(path));
-        var profileName = string.IsNullOrWhiteSpace(name) ? Path.GetFileNameWithoutExtension(path) : name;
-        return App.State.AddProfile(profileName, path);
     }
 
     private async void DashboardEditProfileButton_Click(object sender, RoutedEventArgs e)
@@ -479,7 +283,7 @@ public sealed partial class HomePage : Page
     // ----- Core event handling -----
 
     private void Core_ConnectionChanged(object? sender, DaemonConnectionState state) =>
-        DispatcherQueue.TryEnqueue(() => UpdateConnection(state));
+        DispatcherQueue.Post(() => UpdateConnection(state), nameof(UpdateConnection));
 
     private void UpdateConnection(DaemonConnectionState state)
     {
@@ -487,18 +291,18 @@ public sealed partial class HomePage : Page
             DaemonConnectionPhase.NotRunning or DaemonConnectionPhase.VersionMismatch ? Visibility.Visible : Visibility.Collapsed;
         ServiceSetupButton.Content = state.Phase switch
         {
-            DaemonConnectionPhase.NotInstalled => Loc.Get("Install", "安装"),
-            DaemonConnectionPhase.VersionMismatch => Loc.Get("Upgrade", "升级"),
-            _ => Loc.Get("Start", "启动"),
+            DaemonConnectionPhase.NotInstalled => Loc.Get("Home.Install"),
+            DaemonConnectionPhase.VersionMismatch => Loc.Get("Home.Upgrade"),
+            _ => Loc.Get("Home.Start"),
         };
         ConnectionInfo.IsOpen = state.Phase is not (DaemonConnectionPhase.Connected or DaemonConnectionPhase.Disconnected);
         ConnectionInfo.Message = state.Error ?? state.Phase switch
         {
-            DaemonConnectionPhase.Connecting => Loc.Get("Connecting to the service…", "正在连接服务…"),
-            DaemonConnectionPhase.Reconnecting => Loc.Get("Connection lost. Reconnecting…", "连接已断开，正在重连…"),
-            DaemonConnectionPhase.NotInstalled => Loc.Get("Service is not installed.", "服务尚未安装。"),
-            DaemonConnectionPhase.NotRunning => Loc.Get("Service is stopped.", "服务已停止。"),
-            _ => Loc.Get("The service is unavailable.", "服务不可用。"),
+            DaemonConnectionPhase.Connecting => Loc.Get("Home.ConnectingToTheService"),
+            DaemonConnectionPhase.Reconnecting => Loc.Get("Home.ConnectionLostReconnecting"),
+            DaemonConnectionPhase.NotInstalled => Loc.Get("Home.ServiceIsNotInstalled"),
+            DaemonConnectionPhase.NotRunning => Loc.Get("Home.ServiceIsStopped"),
+            _ => Loc.Get("Home.TheServiceIsUnavailable"),
         };
     }
 
@@ -525,16 +329,16 @@ public sealed partial class HomePage : Page
     }
 
     private void Core_StateChanged(object? sender, RuntimeState state) =>
-        DispatcherQueue.TryEnqueue(() => UpdateRuntime(state));
+        DispatcherQueue.Post(() => UpdateRuntime(state), nameof(UpdateRuntime));
 
     private void Core_StatusChanged(object? sender, CoreStatus status) =>
-        DispatcherQueue.TryEnqueue(() => UpdateStatus(status));
+        DispatcherQueue.Post(() => UpdateStatus(status), nameof(UpdateStatus));
 
     private void Core_ClashModeChanged(object? sender, CoreClashMode mode) =>
-        DispatcherQueue.TryEnqueue(() => UpdateClashMode(mode));
+        DispatcherQueue.Post(() => UpdateClashMode(mode), nameof(UpdateClashMode));
 
     private void Core_SystemProxyChanged(object? sender, CoreSystemProxy proxy) =>
-        DispatcherQueue.TryEnqueue(() => UpdateSystemProxy(proxy));
+        DispatcherQueue.Post(() => UpdateSystemProxy(proxy), nameof(UpdateSystemProxy));
 
     private void UpdateRuntime(RuntimeState state)
     {
@@ -606,54 +410,23 @@ public sealed partial class HomePage : Page
         ApplyCardVisibility();
     }
 
+    /// <summary>
+    /// Rebuilds the native segmented mode selector from the modes the core
+    /// reports; the control itself owns the look and the selection visuals.
+    /// </summary>
     private void BuildModeSegments(IReadOnlyList<string> modes, string current)
     {
-        ModeSegmentedPanel.Children.Clear();
-        ModeSegmentedPanel.ColumnDefinitions.Clear();
-        var selectedBackground = Application.Current.Resources["CardBackgroundFillColorDefaultBrush"] as Brush;
-        var selectedBorder = Application.Current.Resources["CardStrokeColorDefaultBrush"] as Brush;
-        var transparent = new SolidColorBrush(Colors.Transparent);
-
-        for (var i = 0; i < modes.Count; i++)
-        {
-            var mode = modes[i];
-            var selected = string.Equals(mode, current, StringComparison.Ordinal);
-            ModeSegmentedPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            var button = new Button
-            {
-                Content = new TextBlock
-                {
-                    Text = mode,
-                    FontWeight = selected ? Microsoft.UI.Text.FontWeights.SemiBold : Microsoft.UI.Text.FontWeights.Normal,
-                    TextTrimming = TextTrimming.CharacterEllipsis,
-                    Foreground = selected
-                        ? Application.Current.Resources["TextFillColorPrimaryBrush"] as Brush
-                        : Application.Current.Resources["TextFillColorSecondaryBrush"] as Brush,
-                },
-                Tag = mode,
-                IsEnabled = !_modeChangePending,
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                HorizontalContentAlignment = HorizontalAlignment.Center,
-                Padding = new Thickness(12, 6, 12, 6),
-                Margin = new Thickness(2, 0, 2, 0),
-                CornerRadius = new CornerRadius(6),
-                MinWidth = 0,
-                Background = selected ? selectedBackground : transparent,
-                BorderBrush = selected ? selectedBorder : transparent,
-                BorderThickness = new Thickness(1),
-            };
-            button.Click += ModeSegment_Click;
-            Grid.SetColumn(button, i);
-            ModeSegmentedPanel.Children.Add(button);
-        }
+        ModeSegmented.ItemsSource = modes;
+        ModeSegmented.SelectedItem = string.IsNullOrWhiteSpace(current) ? null : current;
+        ModeSegmented.IsEnabled = !_modeChangePending;
     }
 
-    private async void ModeSegment_Click(object sender, RoutedEventArgs e)
+    private async void ModeSegment_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (_applyingMode || _modeChangePending || sender is not Button { Tag: string mode }) return;
+        if (_applyingMode || _modeChangePending) return;
+        if (ModeSegmented.SelectedItem is not string mode) return;
         if (string.Equals(mode, _selectedSegmentedMode, StringComparison.Ordinal)) return;
         _selectedSegmentedMode = mode;
-        BuildModeSegments(App.State.Core.ClashMode.Modes, mode);
         await SetModeAsync(mode);
     }
 
@@ -678,7 +451,7 @@ public sealed partial class HomePage : Page
     private async Task SetModeAsync(string mode)
     {
         _modeChangePending = true;
-        foreach (var button in ModeSegmentedPanel.Children.OfType<Button>()) button.IsEnabled = false;
+        ModeSegmented.IsEnabled = false;
         ModeBox.IsEnabled = false;
         try
         {
@@ -688,19 +461,14 @@ public sealed partial class HomePage : Page
         {
             // Revert the optimistic selection to the last daemon-confirmed mode.
             UpdateClashMode(App.State.Core.ClashMode);
-            var dialog = new ContentDialog
-            {
-                Title = Loc.Get("Unable to change mode", "无法更改模式"),
-                Content = exception.Message,
-                CloseButtonText = Loc.Get("OK", "确定"),
-                XamlRoot = XamlRoot,
-            };
+            var dialog = new Dialogs.MessageDialog("Home.UnableToChangeMode", exception.Message)
+            { XamlRoot = XamlRoot };
             await dialog.ShowAsync();
         }
         finally
         {
             _modeChangePending = false;
-            foreach (var button in ModeSegmentedPanel.Children.OfType<Button>()) button.IsEnabled = true;
+            ModeSegmented.IsEnabled = true;
             ModeBox.IsEnabled = true;
         }
     }
@@ -718,13 +486,8 @@ public sealed partial class HomePage : Page
         }
         catch (Exception exception)
         {
-            var dialog = new ContentDialog
-            {
-                Title = Loc.Get("Unable to change system proxy", "无法更改系统代理"),
-                Content = exception.Message,
-                CloseButtonText = Loc.Get("OK", "确定"),
-                XamlRoot = XamlRoot,
-            };
+            var dialog = new Dialogs.MessageDialog("Home.UnableToChangeSystemProxy", exception.Message)
+            { XamlRoot = XamlRoot };
             await dialog.ShowAsync();
         }
         finally
@@ -768,7 +531,7 @@ public sealed partial class HomePage : Page
     }
 
     private void ShowProfileError(string message) =>
-        ShowProfileStatus(InfoBarSeverity.Error, Loc.Get("Profile", "配置"), message);
+        ShowProfileStatus(InfoBarSeverity.Error, Loc.Get("Home.Profile"), message);
 
     private void ShowProfileStatus(InfoBarSeverity severity, string title, string message)
     {

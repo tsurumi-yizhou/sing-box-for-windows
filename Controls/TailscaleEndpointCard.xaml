@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="SFW.Controls.TailscaleEndpointCard"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls">
+
+    <!-- One Tailscale endpoint (SFM TailscaleEndpointView parity), built from the
+         native SettingsExpander/SettingsCard controls: state in the header, then
+         network / this device / exit node / auth URL rows and peers grouped by
+         tailnet user. Rows are declared once and only toggled, so a snapshot
+         refresh cannot re-order the card. -->
+    <toolkit:SettingsExpander x:Name="Expander" IsExpanded="True" HorizontalAlignment="Stretch">
+        <toolkit:SettingsExpander.Header>
+            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <Ellipse x:Name="StateDot" Width="10" Height="10" VerticalAlignment="Center" />
+                <TextBlock x:Name="CardTitleText" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center" />
+                <TextBlock x:Name="StateText" Style="{StaticResource CardCaptionTextStyle}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+        </toolkit:SettingsExpander.Header>
+
+        <toolkit:SettingsExpander.Items>
+            <toolkit:SettingsCard x:Uid="TailscaleNetworkCard" x:Name="NetworkCard" Header="Network"
+                                  Padding="16,8,16,8" Visibility="Collapsed">
+                <TextBlock x:Name="NetworkValue" FontSize="14" TextTrimming="CharacterEllipsis" />
+            </toolkit:SettingsCard>
+
+            <toolkit:SettingsCard x:Uid="TailscaleDeviceCard" x:Name="DeviceCard" Header="This device"
+                                  Padding="16,8,16,8" Visibility="Collapsed">
+                <toolkit:SettingsCard.Description>
+                    <StackPanel Spacing="1">
+                        <TextBlock x:Name="DeviceName" FontSize="14" TextTrimming="CharacterEllipsis" />
+                        <TextBlock x:Name="DeviceCaption" Style="{StaticResource CardCaptionTextStyle}"
+                                   TextTrimming="CharacterEllipsis" Visibility="Collapsed" />
+                    </StackPanel>
+                </toolkit:SettingsCard.Description>
+                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <Button x:Name="CopyAddressButton" Style="{StaticResource IconActionButtonStyle}"
+                            Click="CopyAddressButton_Click">
+                        <FontIcon Glyph="&#xE8C8;" FontSize="14" />
+                    </Button>
+                    <Button x:Name="LogOutButton" x:Uid="TailscaleLogOutButton" Content="Log out"
+                            Style="{StaticResource ToolbarButtonStyle}" Click="LogOutButton_Click" />
+                </StackPanel>
+            </toolkit:SettingsCard>
+
+            <toolkit:SettingsCard x:Uid="TailscaleExitNodeCard" x:Name="ExitNodeCard" Header="Exit node"
+                                  Padding="16,8,16,8" IsClickEnabled="True"
+                                  Click="ChangeExitNodeButton_Click" Visibility="Collapsed">
+                <TextBlock x:Name="ExitNodeValue" FontSize="14" TextTrimming="CharacterEllipsis" />
+                <toolkit:SettingsCard.ActionIcon>
+                    <FontIcon Glyph="&#xE76C;" FontSize="14" />
+                </toolkit:SettingsCard.ActionIcon>
+            </toolkit:SettingsCard>
+
+            <toolkit:SettingsCard x:Uid="TailscaleAuthUrlCard" x:Name="AuthUrlCard" Header="Auth URL"
+                                  Padding="16,8,16,8" Visibility="Collapsed">
+                <Grid ColumnSpacing="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock x:Name="AuthUrlValue" FontSize="14" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <Button x:Name="OpenAuthUrlButton" x:Uid="TailscaleOpenButton" Content="Open"
+                                Style="{StaticResource ToolbarButtonStyle}" Click="OpenAuthUrlButton_Click" />
+                        <Button x:Name="CopyAuthUrlButton" x:Uid="TailscaleCopyAuthUrlButton" Content="Copy"
+                                Style="{StaticResource ToolbarButtonStyle}" Click="CopyAuthUrlButton_Click" />
+                    </StackPanel>
+                </Grid>
+            </toolkit:SettingsCard>
+        </toolkit:SettingsExpander.Items>
+
+        <toolkit:SettingsExpander.ItemsFooter>
+            <StackPanel x:Name="Blocks" Spacing="8" Padding="0,8,0,8" />
+        </toolkit:SettingsExpander.ItemsFooter>
+    </toolkit:SettingsExpander>
+</UserControl>

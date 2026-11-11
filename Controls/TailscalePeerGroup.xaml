@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="SFW.Controls.TailscalePeerGroup"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Peers of one tailnet user. The daemon only sometimes has a display name
+         for the user, so the caption row collapses instead of leaving a gap. -->
+    <StackPanel Spacing="10">
+        <TextBlock x:Name="GroupTitle" FontSize="13" FontWeight="SemiBold"
+                   Margin="0,4,0,0" Visibility="Collapsed" />
+        <StackPanel x:Name="Peers" Spacing="10" />
+    </StackPanel>
+</UserControl>

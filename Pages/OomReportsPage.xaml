@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Page x:Class="SFW.Pages.OomReportsPage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:controls="using:SFW.Controls">
+    <Grid Padding="40,28,40,40" RowSpacing="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Header: fetch a report while the service runs, delete all when there is anything. -->
+        <Grid ColumnSpacing="16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Spacing="6">
+                <TextBlock x:Uid="OomReportsTitle" Style="{StaticResource PageTitleTextStyle}" Text="OOM Report" />
+                <TextBlock x:Uid="OomReportsSubtitle" Style="{StaticResource PageSubtitleTextStyle}" Text="Reports saved when the service runs out of memory." />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Bottom">
+                <Button x:Name="FetchReportButton" Style="{StaticResource ToolbarButtonStyle}" Click="FetchReportButton_Click" Visibility="Collapsed" ToolTipService.ToolTip="Fetch Memory Report">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon Glyph="&#xE896;" FontSize="14" />
+                        <TextBlock x:Uid="OomFetchReportText" Text="Fetch Memory Report" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+                <Button x:Name="RefreshButton" Style="{StaticResource ToolbarButtonStyle}" Click="RefreshButton_Click" ToolTipService.ToolTip="Refresh">
+                    <FontIcon Glyph="&#xE72C;" FontSize="14" />
+                </Button>
+                <Button x:Name="DeleteAllButton" Style="{StaticResource ToolbarButtonStyle}" Click="DeleteAllButton_Click" Visibility="Collapsed">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon Glyph="&#xE74D;" FontSize="14" />
+                        <TextBlock x:Uid="ReportDeleteAllText" Text="Delete all" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <InfoBar x:Name="StatusBar" Grid.Row="1" IsOpen="False" IsClosable="True" Severity="Informational" Title="OOM Report" />
+
+        <!-- SFM OOMReportListView settings: soft memory limit + kill connections. -->
+        <Border Grid.Row="2" Style="{StaticResource CardBorderStyle}">
+            <StackPanel Spacing="14">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <FontIcon Glyph="&#xE713;" FontSize="16" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                    <TextBlock x:Uid="ReportSettingsHeader" Style="{StaticResource CardHeaderTextStyle}" Text="Settings" />
+                </StackPanel>
+
+                <StackPanel Spacing="4">
+                    <ToggleSwitch x:Name="OomKillerToggle" x:Uid="OomKillerToggle" Header="Enable Memory Limit" Toggled="OomKillerToggle_Toggled" />
+                    <TextBlock x:Uid="OomKillerToggleDescription" Style="{StaticResource CardCaptionTextStyle}" TextWrapping="Wrap" Text="Provide a soft memory limit for the service. The service will perform multiple garbage collections and listen for memory pressure to stay within the limit." />
+                </StackPanel>
+
+                <StackPanel x:Name="OomOptionsPanel" Spacing="12" Visibility="Collapsed">
+                    <StackPanel Spacing="4">
+                        <ComboBox x:Name="OomMemoryLimitBox" x:Uid="OomMemoryLimitBox" Header="Memory Limit" MinWidth="180" SelectionChanged="OomMemoryLimitBox_SelectionChanged" />
+                        <TextBlock x:Uid="OomMemoryLimitDescription" Style="{StaticResource CardCaptionTextStyle}" TextWrapping="Wrap" Text="The soft memory limit. The service tries to stay within this limit and never exceeds it by much." />
+                    </StackPanel>
+                    <StackPanel Spacing="4">
+                        <ToggleSwitch x:Name="OomKillConnectionsToggle" x:Uid="OomKillConnectionsToggle" Header="Kill Connections" Toggled="OomKillConnectionsToggle_Toggled" />
+                        <TextBlock x:Uid="OomKillConnectionsDescription" Style="{StaticResource CardCaptionTextStyle}" TextWrapping="Wrap" Text="Close all connections to free memory when the service memory exceeds the limit." />
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <TextBlock x:Uid="ReportSectionReports" Grid.Row="3" Style="{StaticResource CardLabelTextStyle}" Text="Reports" Margin="4,0,0,0" />
+
+        <Grid Grid.Row="4">
+            <ProgressRing x:Name="LoadingRing" Width="32" Height="32" IsActive="False" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            <TextBlock x:Name="EmptyText" x:Uid="ReportEmptyText" Style="{StaticResource PageSubtitleTextStyle}" Text="Empty" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" />
+            <ScrollViewer x:Name="ReportScroll" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+                <Border Style="{StaticResource CardBorderStyle}">
+                    <controls:ReportList x:Name="ReportList" />
+                </Border>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+</Page>

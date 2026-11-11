@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Page x:Class="SFW.Pages.ProfilesPage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Grid Padding="40,28,40,40" RowSpacing="20">
+    <Grid Padding="40,28,40,40" RowSpacing="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -18,7 +18,7 @@
         <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8">
             <Button Click="ImportClipboardButton_Click" ToolTipService.ToolTip="Import from clipboard">
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <FontIcon Glyph="&#xE77B;" FontSize="14" />
+                    <FontIcon Glyph="&#xE77F;" FontSize="14" />
                     <TextBlock x:Uid="ImportClipboardText" Text="Paste" VerticalAlignment="Center" />
                 </StackPanel>
             </Button>
@@ -30,52 +30,67 @@
             </Button>
         </StackPanel>
 
-        <Border Grid.Row="2" Style="{StaticResource CardBorderStyle}">
-            <StackPanel Spacing="12">
+        <!-- Add profile: a native Expander card keeps the form a floating, collapsible
+             group; its background, border and hover visuals come from the WinUI
+             control. Spacing follows the 8px grid. -->
+        <Expander x:Name="AddProfileExpander" Grid.Row="2" IsExpanded="True"
+                  HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+            <Expander.Header>
                 <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                     <FontIcon Glyph="&#xE710;" FontSize="16" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
-                    <TextBlock x:Uid="AddProfileCardHeader" Style="{StaticResource CardHeaderTextStyle}" Text="Add profile" />
+                    <TextBlock x:Uid="AddProfileCardHeader" Text="Add profile" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center" />
                 </StackPanel>
+            </Expander.Header>
+            <StackPanel Spacing="16" Padding="0,0,0,8">
                 <!-- SFA NewProfileScreen parity: the selected type drives which fields are shown. -->
-                <StackPanel Orientation="Horizontal" Spacing="20">
-                    <TextBlock x:Uid="AddProfileTypeLabel" Style="{StaticResource CardLabelTextStyle}" Text="Profile type" VerticalAlignment="Center" />
-                    <RadioButton x:Uid="AddProfileTypeLocal" x:Name="TypeLocalRadio" Content="Local" GroupName="NewProfileType" IsChecked="True" Checked="NewProfileType_Checked" />
-                    <RadioButton x:Uid="AddProfileTypeRemote" x:Name="TypeRemoteRadio" Content="Remote" GroupName="NewProfileType" Checked="NewProfileType_Checked" />
+                <StackPanel Spacing="8">
+                    <TextBlock x:Uid="AddProfileTypeLabel" Style="{StaticResource CardLabelTextStyle}" Text="Profile type" />
+                    <StackPanel Orientation="Horizontal" Spacing="16">
+                        <RadioButton x:Uid="AddProfileTypeLocal" x:Name="TypeLocalRadio" Content="Local" GroupName="NewProfileType" IsChecked="True" Checked="NewProfileType_Checked" />
+                        <RadioButton x:Uid="AddProfileTypeRemote" x:Name="TypeRemoteRadio" Content="Remote" GroupName="NewProfileType" Checked="NewProfileType_Checked" />
+                    </StackPanel>
                 </StackPanel>
-                <Grid ColumnSpacing="12">
+
+                <Grid ColumnSpacing="16">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="190" />
+                        <ColumnDefinition Width="240" />
                         <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <TextBox x:Uid="NameBox" x:Name="NameBox" Header="Profile name" PlaceholderText="My server" />
-                    <TextBox x:Name="ConfigBox" Grid.Column="1" Header="Configuration file" PlaceholderText="C:\Configs\config.json" />
-                    <Button x:Name="BrowseButton" Grid.Column="2" VerticalAlignment="Bottom" Style="{StaticResource ToolbarButtonStyle}" Click="BrowseButton_Click">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <FontIcon Glyph="&#xE8B7;" />
-                            <TextBlock x:Uid="BrowseText" Text="Browse" />
-                        </StackPanel>
-                    </Button>
-                    <Button Grid.Column="3" VerticalAlignment="Bottom" Style="{StaticResource AccentButtonStyle}" Click="AddButton_Click">
+                    <!-- The file picker is an attached action inside the field, the
+                         way Windows settings keep a browse affordance compact. -->
+                    <Grid Grid.Column="1">
+                        <TextBox x:Name="ConfigBox" Padding="12,8,44,8" Header="Configuration file" PlaceholderText="C:\Configs\config.json" />
+                        <Button x:Name="BrowseButton" Width="32" Height="32" Margin="0,0,4,0"
+                                HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                                Background="Transparent" BorderThickness="0" Padding="0"
+                                Click="BrowseButton_Click"
+                                ToolTipService.ToolTip="Browse for a configuration file">
+                            <FontIcon Glyph="&#xE8B7;" FontSize="14" />
+                        </Button>
+                    </Grid>
+                </Grid>
+
+                <!-- Remote (subscription) options: SFA/SFM "Auto Update" + interval. -->
+                <StackPanel x:Name="RemoteOptionsPanel" Spacing="16" Visibility="Collapsed">
+                    <ToggleSwitch x:Name="AutoUpdateToggle" Header="Auto update" IsOn="True" />
+                    <NumberBox x:Name="AutoUpdateIntervalBox" Header="Auto update interval (minutes)" Minimum="15" Maximum="10080" Value="60" SmallChange="15" LargeChange="60" SpinButtonPlacementMode="Inline" />
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                    <Button Style="{StaticResource AccentButtonStyle}" Click="AddButton_Click">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <FontIcon Glyph="&#xE710;" />
                             <TextBlock x:Uid="AddProfileText" Text="Add profile" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
-                </Grid>
-                <!-- Remote (subscription) options: SFA/SFM "Auto Update" + interval in minutes.
-                     Labels are applied in code: x:Uid cannot resolve ToggleSwitch.Content. -->
-                <StackPanel x:Name="RemoteOptionsPanel" Spacing="12" Visibility="Collapsed">
-                    <ToggleSwitch x:Name="AutoUpdateToggle" Header="Auto update" IsOn="True" />
-                    <NumberBox x:Name="AutoUpdateIntervalBox" Header="Auto update interval (minutes)" Minimum="15" Maximum="10080" Value="60" SmallChange="15" LargeChange="60" SpinButtonPlacementMode="Inline" />
                 </StackPanel>
             </StackPanel>
-        </Border>
+        </Expander>
 
         <InfoBar x:Name="StatusBar" Grid.Row="3" IsOpen="False" IsClosable="True" Severity="Informational" Title="Profiles" />
 
-        <Grid Grid.Row="4" RowSpacing="10">
+        <Grid Grid.Row="4" RowSpacing="8">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
@@ -90,7 +105,30 @@
             <ListView x:Name="ProfilesList" Grid.Row="1" SelectionMode="None" IsItemClickEnabled="True" ItemClick="ProfilesList_ItemClick">
                 <ListView.ItemTemplate>
                     <DataTemplate>
-                        <Border Style="{StaticResource CardBorderStyle}" Padding="14,10,14,10" RightTapped="Profile_RightTapped">
+                        <Border Style="{StaticResource CardBorderStyle}" Padding="16,8,16,8">
+                            <Border.ContextFlyout>
+                                <MenuFlyout>
+                                    <MenuFlyoutItem x:Uid="ProfileEditItem" Text="Edit"
+                                                    Tag="{Binding Id}" Click="EditButton_Click">
+                                        <MenuFlyoutItem.Icon>
+                                            <FontIcon Glyph="&#xE70F;" />
+                                        </MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                    <MenuFlyoutItem x:Uid="ProfileUpdateItem" Text="Update"
+                                                    Tag="{Binding Id}" Click="UpdateButton_Click"
+                                                    Visibility="{Binding IsRemote, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        <MenuFlyoutItem.Icon>
+                                            <FontIcon Glyph="&#xE72C;" />
+                                        </MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                    <MenuFlyoutItem x:Uid="ProfileRemoveItem" Text="Remove"
+                                                    Tag="{Binding Id}" Click="RemoveButton_Click">
+                                        <MenuFlyoutItem.Icon>
+                                            <FontIcon Glyph="&#xE74D;" />
+                                        </MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                </MenuFlyout>
+                            </Border.ContextFlyout>
                             <Grid ColumnSpacing="12">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
@@ -103,7 +141,8 @@
                                         <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
                                         <FontIcon Glyph="&#xE73E;" FontSize="14" VerticalAlignment="Center" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" Visibility="{Binding IsSelected, Converter={StaticResource BoolToVisibilityConverter}}" />
                                     </StackPanel>
-                                    <TextBlock Text="{Binding DisplaySource}" Style="{StaticResource CardCaptionTextStyle}" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Text="{Binding DisplaySource}" Style="{StaticResource CardCaptionTextStyle}" TextTrimming="CharacterEllipsis"
+                                               Visibility="{Binding HasDisplaySource, Converter={StaticResource BoolToVisibilityConverter}}" />
                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                         <Border Background="{ThemeResource ControlFillColorSecondaryBrush}" CornerRadius="4" Padding="8,2,8,2">
                                             <TextBlock Text="{Binding Type}" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
@@ -113,14 +152,14 @@
                                     <TextBlock Text="{Binding LastUpdateError}" FontSize="11" Foreground="{ThemeResource SystemFillColorCriticalBrush}" TextTrimming="CharacterEllipsis" Visibility="{Binding HasLastUpdateError, Converter={StaticResource BoolToVisibilityConverter}}" />
                                 </StackPanel>
                                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                    <Button Tag="{Binding Id}" Style="{StaticResource ToolbarButtonStyle}" Click="EditButton_Click" ToolTipService.ToolTip="Edit profile">
+                                    <Button Tag="{Binding Id}" Style="{StaticResource IconActionButtonStyle}" Click="EditButton_Click" ToolTipService.ToolTip="Edit profile">
                                         <FontIcon Glyph="&#xE70F;" />
                                     </Button>
                                     <ToggleSwitch Tag="{Binding Id}" IsOn="{Binding AutoUpdate}" Toggled="AutoUpdateToggle_Toggled" MinWidth="0" OnContent="" OffContent="" ToolTipService.ToolTip="Auto update this remote profile" IsEnabled="{Binding IsRemote}" />
-                                    <Button Tag="{Binding Id}" IsEnabled="{Binding IsRemote}" Style="{StaticResource ToolbarButtonStyle}" Click="UpdateButton_Click" ToolTipService.ToolTip="Update subscription">
+                                    <Button Tag="{Binding Id}" IsEnabled="{Binding IsRemote}" Style="{StaticResource IconActionButtonStyle}" Click="UpdateButton_Click" ToolTipService.ToolTip="Update subscription">
                                         <FontIcon Glyph="&#xE72C;" />
                                     </Button>
-                                    <Button Tag="{Binding Id}" Style="{StaticResource ToolbarButtonStyle}" Click="RemoveButton_Click" ToolTipService.ToolTip="Remove profile">
+                                    <Button Tag="{Binding Id}" Style="{StaticResource IconActionButtonStyle}" Click="RemoveButton_Click" ToolTipService.ToolTip="Remove profile">
                                         <FontIcon Glyph="&#xE74D;" />
                                     </Button>
                                 </StackPanel>

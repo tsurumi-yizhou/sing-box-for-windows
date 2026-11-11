@@ -1,5 +1,5 @@
 # Build first, then stop the service, replace its locked resources, and restart.
-# Keep this separate from Build: ordinary builds must not interrupt a live VPN.
+# Keep this separate from Build: a normal build must not interrupt a live VPN.
 [CmdletBinding()]
 param(
     [ValidateSet('Debug', 'Release')] [string] $Configuration = 'Debug',

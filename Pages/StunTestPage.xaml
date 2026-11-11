@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page x:Class="SFW.Pages.StunTestPage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer>
+        <StackPanel Padding="40,28,40,40" Spacing="20">
+
+            <StackPanel Spacing="6">
+                <TextBlock x:Uid="STUNTestTitle" Style="{StaticResource PageTitleTextStyle}" Text="STUN Test" />
+                <TextBlock x:Uid="STUNTestDescription" Style="{StaticResource PageSubtitleTextStyle}" TextWrapping="Wrap" Text="Discover the external address and NAT mapping/filtering behavior through the current outbound." />
+            </StackPanel>
+
+            <InfoBar x:Name="StatusBar" IsClosable="False" IsOpen="False" Severity="Informational" Title="STUN Test" />
+
+            <Border Style="{StaticResource CardBorderStyle}">
+                <StackPanel Spacing="12">
+                    <TextBox x:Uid="StunServerBox" x:Name="StunServerBox" Header="STUN server (optional)" PlaceholderText="stun.voipgate.com:3478" />
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <Button x:Uid="StunStartButton" x:Name="StunStartButton" Style="{StaticResource AccentButtonStyle}" Content="Start" Click="StunStartButton_Click" />
+                        <ProgressRing x:Name="StunProgress" IsActive="False" Visibility="Collapsed" Width="24" Height="24" VerticalAlignment="Center" />
+                        <TextBlock x:Name="StunPhaseText" Style="{StaticResource CardCaptionTextStyle}" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <StackPanel x:Name="StunResults" Spacing="4" Visibility="Collapsed">
+                        <Grid>
+                            <TextBlock x:Uid="StunExternalLabel" Style="{StaticResource CardLineLabelTextStyle}" Text="External address" />
+                            <TextBlock x:Name="StunExternalText" Style="{StaticResource CardLineValueTextStyle}" />
+                        </Grid>
+                        <Grid>
+                            <TextBlock x:Uid="StunLatencyLabel" Style="{StaticResource CardLineLabelTextStyle}" Text="Latency" />
+                            <TextBlock x:Name="StunLatencyText" Style="{StaticResource CardLineValueTextStyle}" />
+                        </Grid>
+                        <Grid>
+                            <TextBlock x:Uid="StunMappingLabel" Style="{StaticResource CardLineLabelTextStyle}" Text="NAT mapping" />
+                            <TextBlock x:Name="StunMappingText" Style="{StaticResource CardLineValueTextStyle}" />
+                        </Grid>
+                        <Grid>
+                            <TextBlock x:Uid="StunFilteringLabel" Style="{StaticResource CardLineLabelTextStyle}" Text="NAT filtering" />
+                            <TextBlock x:Name="StunFilteringText" Style="{StaticResource CardLineValueTextStyle}" />
+                        </Grid>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

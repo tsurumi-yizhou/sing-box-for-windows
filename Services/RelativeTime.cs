@@ -9,11 +9,11 @@ public static class RelativeTime
     public static string Format(DateTimeOffset time)
     {
         var elapsed = DateTimeOffset.Now - time;
-        if (elapsed < TimeSpan.FromMinutes(1)) return Loc.Get("Updated just now", "刚刚更新");
+        if (elapsed < TimeSpan.FromMinutes(1)) return Loc.Get("RelativeTime.UpdatedJustNow");
         if (elapsed < TimeSpan.FromHours(1))
-            return string.Format(Loc.Get("Updated {0} min ago", "{0} 分钟前更新"), (int)elapsed.TotalMinutes);
+            return string.Format(Loc.Get("RelativeTime.UpdatedMinAgo"), (int)elapsed.TotalMinutes);
         if (elapsed < TimeSpan.FromDays(1))
-            return string.Format(Loc.Get("Updated {0} h ago", "{0} 小时前更新"), (int)elapsed.TotalHours);
+            return string.Format(Loc.Get("RelativeTime.UpdatedHAgo"), (int)elapsed.TotalHours);
         return time.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
     }
 }

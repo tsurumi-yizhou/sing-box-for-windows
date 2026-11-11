@@ -35,12 +35,13 @@ public sealed partial class ProfilesPage : Page
         // Also raised during InitializeComponent, before the later fields exist.
         if (ConfigBox is null || BrowseButton is null || RemoteOptionsPanel is null) return;
         var remote = TypeRemoteRadio.IsChecked == true;
-        ConfigBox.Header = remote ? Loc.Get("Subscription URL", "订阅 URL") : Loc.Get("Configuration file", "配置文件");
+        ConfigBox.Header = remote ? Loc.Get("Profiles.SubscriptionURL") : Loc.Get("Profiles.ConfigurationFile");
         ConfigBox.PlaceholderText = remote ? "https://example.com/config.json" : @"C:\Configs\config.json";
         BrowseButton.Visibility = remote ? Visibility.Collapsed : Visibility.Visible;
+        ConfigBox.Padding = remote ? new Thickness(12, 8, 12, 8) : new Thickness(12, 8, 44, 8);
         RemoteOptionsPanel.Visibility = remote ? Visibility.Visible : Visibility.Collapsed;
-        AutoUpdateToggle.Header = Loc.Get("Auto update", "自动更新");
-        AutoUpdateIntervalBox.Header = Loc.Get("Auto update interval (minutes)", "自动更新间隔（分钟）");
+        AutoUpdateToggle.Header = Loc.Get("Profiles.AutoUpdate");
+        AutoUpdateIntervalBox.Header = Loc.Get("Profiles.AutoUpdateIntervalMinutes");
     }
 
     private void RefreshRelativeTimes()
@@ -59,7 +60,7 @@ public sealed partial class ProfilesPage : Page
         }
         catch (Exception error)
         {
-            ShowStatus(InfoBarSeverity.Error, Loc.Get("Browse", "浏览"), error.Message);
+            ShowStatus(InfoBarSeverity.Error, Loc.Get("Profiles.Browse"), error.Message);
         }
     }
 
@@ -77,8 +78,8 @@ public sealed partial class ProfilesPage : Page
         if (string.IsNullOrEmpty(source))
         {
             ConfigBox.Description = remote
-                ? Loc.Get("Enter a valid HTTP or HTTPS subscription URL.", "请输入有效的 HTTP 或 HTTPS 订阅 URL。")
-                : Loc.Get("Enter a SingBox configuration file path.", "请输入 SingBox 配置文件路径。");
+                ? Loc.Get("Profiles.EnterAValidHTTPOrHTTPSSubscriptionURL")
+                : Loc.Get("Profiles.EnterASingBoxConfigurationFilePath");
             return;
         }
 
@@ -93,18 +94,14 @@ public sealed partial class ProfilesPage : Page
             }
             else
             {
-                if (!File.Exists(source))
-                    throw new FileNotFoundException(Loc.Get("Configuration file was not found.", "未找到配置文件。"), source);
-                await Services.Core.ConfigurationValidator.CheckAsync(await File.ReadAllTextAsync(source));
-                var name = string.IsNullOrWhiteSpace(NameBox.Text)
-                    ? Path.GetFileNameWithoutExtension(source)
-                    : NameBox.Text.Trim();
-                App.State.AddProfile(name, source);
+                // Validated and copied into the app data directory, so the
+                // profile does not depend on the picked file staying put.
+                await App.State.AddLocalProfileAsync(NameBox.Text.Trim(), source);
             }
         }
         catch (Exception error)
         {
-            ShowStatus(InfoBarSeverity.Error, Loc.Get("Unable to add profile", "无法添加配置"), error.Message);
+            ShowStatus(InfoBarSeverity.Error, Loc.Get("Profiles.UnableToAddProfile"), error.Message);
             return;
         }
 
@@ -129,7 +126,7 @@ public sealed partial class ProfilesPage : Page
         }
         catch (Exception error)
         {
-            ShowStatus(InfoBarSeverity.Error, Loc.Get("Unable to save profile", "无法保存配置"), error.Message);
+            ShowStatus(InfoBarSeverity.Error, Loc.Get("Profiles.UnableToSaveProfile"), error.Message);
         }
     }
 
@@ -143,7 +140,7 @@ public sealed partial class ProfilesPage : Page
         }
         catch (Exception error)
         {
-            ShowStatus(InfoBarSeverity.Error, Loc.Get("Unable to switch profile", "无法切换配置"), error.Message);
+            ShowStatus(InfoBarSeverity.Error, Loc.Get("Profiles.UnableToSwitchProfile"), error.Message);
         }
         Refresh();
     }
@@ -163,7 +160,7 @@ public sealed partial class ProfilesPage : Page
             content = content.Trim();
             if (string.IsNullOrEmpty(content))
             {
-                ShowStatus(InfoBarSeverity.Informational, Loc.Get("Clipboard", "剪贴板"), Loc.Get("The clipboard is empty.", "剪贴板为空。"));
+                ShowStatus(InfoBarSeverity.Informational, Loc.Get("Profiles.Clipboard"), Loc.Get("Profiles.TheClipboardIsEmpty"));
                 return;
             }
 
@@ -174,30 +171,25 @@ public sealed partial class ProfilesPage : Page
             }
             else if (File.Exists(content))
             {
-                App.State.AddProfile(Path.GetFileNameWithoutExtension(content), content);
+                await App.State.AddLocalProfileAsync(string.Empty, content);
             }
             else if (content.StartsWith('{'))
             {
-                await Services.Core.ConfigurationValidator.CheckAsync(content);
-                var directory = Path.Combine(App.State.DataDirectory, "profiles");
-                Directory.CreateDirectory(directory);
-                var path = Path.Combine(directory, $"{Guid.NewGuid():N}.json");
-                await AtomicFile.WriteAllTextAsync(path, content);
-                App.State.AddProfile(Loc.Get("Imported profile", "导入的配置"), path);
+                await App.State.AddLocalProfileContentAsync(Loc.Get("Profiles.ImportedProfile"), content);
             }
             else
             {
-                ShowStatus(InfoBarSeverity.Warning, Loc.Get("Clipboard", "剪贴板"),
-                    Loc.Get("The clipboard does not contain a subscription URL, a configuration path or JSON content.", "剪贴板内容不是订阅 URL、配置路径或 JSON 内容。"));
+                ShowStatus(InfoBarSeverity.Warning, Loc.Get("Profiles.Clipboard"),
+                    Loc.Get("Profiles.TheClipboardDoesNotContainASubscriptionURLAConfigura"));
                 return;
             }
 
-            ShowStatus(InfoBarSeverity.Success, Loc.Get("Profile imported", "配置已导入"), content.Length > 80 ? content[..80] + "…" : content);
+            ShowStatus(InfoBarSeverity.Success, Loc.Get("Profiles.ProfileImported"), content.Length > 80 ? content[..80] + "…" : content);
             Refresh();
         }
         catch (Exception error)
         {
-            ShowStatus(InfoBarSeverity.Error, Loc.Get("Unable to import", "无法导入"), error.Message);
+            ShowStatus(InfoBarSeverity.Error, Loc.Get("Profiles.UnableToImport"), error.Message);
         }
     }
 
@@ -207,7 +199,7 @@ public sealed partial class ProfilesPage : Page
         var remotes = App.State.Settings.Profiles.Where(p => p.IsRemote).ToList();
         if (remotes.Count == 0)
         {
-            ShowStatus(InfoBarSeverity.Informational, Loc.Get("Update all", "全部更新"), Loc.Get("There are no remote profiles.", "没有远程配置。"));
+            ShowStatus(InfoBarSeverity.Informational, Loc.Get("Profiles.UpdateAll"), Loc.Get("Profiles.ThereAreNoRemoteProfiles"));
             return;
         }
 
@@ -231,40 +223,15 @@ public sealed partial class ProfilesPage : Page
 
             if (errors.Count == 0)
             {
-                ShowStatus(InfoBarSeverity.Success, Loc.Get("Update all", "全部更新"),
-                    string.Format(Loc.Get("{0} subscription(s) updated.", "已更新 {0} 个订阅。"), succeeded));
+                ShowStatus(InfoBarSeverity.Success, Loc.Get("Profiles.UpdateAll"),
+                    string.Format(Loc.Get("Profiles.SubscriptionSUpdated"), succeeded));
             }
             else
             {
-                ShowStatus(InfoBarSeverity.Warning, Loc.Get("Update all", "全部更新"),
-                    string.Format(Loc.Get("{0} updated, {1} failed: ", "已更新 {0} 个，{1} 个失败："), succeeded, errors.Count) + string.Join("; ", errors));
+                ShowStatus(InfoBarSeverity.Warning, Loc.Get("Profiles.UpdateAll"),
+                    string.Format(Loc.Get("Profiles.UpdatedFailed"), succeeded, errors.Count) + string.Join("; ", errors));
             }
-        }, Loc.Get("Updating…", "正在更新…"));
-    }
-
-    /// <summary>SFA long-press context menu on a profile.</summary>
-    private void Profile_RightTapped(object sender, Microsoft.UI.Xaml.Input.RightTappedRoutedEventArgs e)
-    {
-        if (sender is not FrameworkElement { DataContext: ProfileRow row } element) return;
-        var flyout = new MenuFlyout();
-
-        var editItem = new MenuFlyoutItem { Text = Loc.Get("Edit", "编辑"), Icon = new FontIcon { Glyph = "\uE70F" }, Tag = row.Id };
-        editItem.Click += EditButton_Click;
-        flyout.Items.Add(editItem);
-
-        if (row.IsRemote)
-        {
-            var updateItem = new MenuFlyoutItem { Text = Loc.Get("Update", "更新"), Icon = new FontIcon { Glyph = "\uE72C" }, Tag = row.Id };
-            updateItem.Click += UpdateButton_Click;
-            flyout.Items.Add(updateItem);
-        }
-
-        var removeItem = new MenuFlyoutItem { Text = Loc.Get("Remove", "删除"), Icon = new FontIcon { Glyph = "\uE74D" }, Tag = row.Id };
-        removeItem.Click += RemoveButton_Click;
-        flyout.Items.Add(removeItem);
-
-        flyout.ShowAt(element, new FlyoutShowOptions { Position = e.GetPosition(element) });
-        e.Handled = true;
+        }, Loc.Get("Profiles.Updating"));
     }
 
     private void ShowStatus(InfoBarSeverity severity, string title, string message)
@@ -272,30 +239,45 @@ public sealed partial class ProfilesPage : Page
         StatusBar.IsOpen = true;
         StatusBar.Severity = severity;
         StatusBar.Title = title;
-        StatusBar.Message = message;
+        // The InfoBar's built-in Message is a plain TextBlock; put the text in a
+        // selectable block instead so an error can be copied.
+        StatusBar.Message = string.Empty;
+        StatusBar.Content = new TextBlock
+        {
+            Text = message,
+            TextWrapping = TextWrapping.Wrap,
+            IsTextSelectionEnabled = true,
+        };
     }
 
     private async void UpdateButton_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is not Button { Tag: long id } button) return;
-        await BusyButton.RunAsync(button, async () =>
+        if (sender is not FrameworkElement { Tag: long id }) return;
+        if (sender is Button button)
         {
-            try
+            await BusyButton.RunAsync(button, () => UpdateProfileAsync(id));
+            return;
+        }
+        await UpdateProfileAsync(id);
+    }
+
+    private async Task UpdateProfileAsync(long id)
+    {
+        try
+        {
+            var changed = await App.State.UpdateSubscriptionAsync(id);
+            Refresh();
+            if (!changed)
             {
-                var changed = await App.State.UpdateSubscriptionAsync(id);
-                Refresh();
-                if (!changed)
-                {
-                    ShowStatus(InfoBarSeverity.Informational, Loc.Get("Update", "更新"),
-                        Loc.Get("The subscription content is unchanged.", "订阅内容没有变化。"));
-                }
+                ShowStatus(InfoBarSeverity.Informational, Loc.Get("Profiles.Update"),
+                    Loc.Get("Profiles.TheSubscriptionContentIsUnchanged"));
             }
-            catch (Exception error)
-            {
-                Refresh();
-                ShowStatus(InfoBarSeverity.Error, Loc.Get("Update failed", "更新失败"), error.Message);
-            }
-        });
+        }
+        catch (Exception error)
+        {
+            Refresh();
+            ShowStatus(InfoBarSeverity.Error, Loc.Get("Profiles.UpdateFailed"), error.Message);
+        }
     }
 
     private void AutoUpdateToggle_Toggled(object sender, RoutedEventArgs e)
@@ -307,7 +289,7 @@ public sealed partial class ProfilesPage : Page
         }
         catch (Exception error)
         {
-            ShowStatus(InfoBarSeverity.Error, Loc.Get("Auto update", "自动更新"), error.Message);
+            ShowStatus(InfoBarSeverity.Error, Loc.Get("Profiles.AutoUpdate"), error.Message);
         }
     }
 
@@ -324,7 +306,7 @@ public sealed partial class ProfilesPage : Page
         }
         catch (Exception error)
         {
-            ShowStatus(InfoBarSeverity.Error, Loc.Get("Unable to remove profile", "无法删除配置"), error.Message);
+            ShowStatus(InfoBarSeverity.Error, Loc.Get("Profiles.UnableToRemoveProfile"), error.Message);
         }
         Refresh();
     }
@@ -365,7 +347,8 @@ public sealed partial class ProfilesPage : Page
                 _rows.Move(index, i);
             }
         }
-        CountText.Text = Loc.Get($"{profiles.Count} profile{(profiles.Count == 1 ? string.Empty : "s")}", $"{profiles.Count} 个配置");
+        CountText.Text = string.Format(
+            Loc.Get("Profiles.ProfileCount"), profiles.Count, profiles.Count == 1 ? string.Empty : "s");
     }
 
     private sealed partial class ProfileRow : ObservableObject
@@ -386,8 +369,9 @@ public sealed partial class ProfilesPage : Page
 
         public long Id => Profile.Id;
         public string Name => Profile.Name;
-        public string DisplaySource => Profile.DisplaySource;
-        public string Type => Profile.IsRemote ? Loc.Get("Remote", "远程") : Loc.Get("Local", "本地");
+        public string DisplaySource => Profile.IsRemote ? Profile.DisplaySource : string.Empty;
+        public bool HasDisplaySource => !string.IsNullOrEmpty(DisplaySource);
+        public string Type => Profile.IsRemote ? Loc.Get("Profiles.Remote") : Loc.Get("Profiles.Local");
         public bool IsRemote => Profile.IsRemote;
         public bool AutoUpdate => Profile.AutoUpdate;
 
@@ -400,6 +384,7 @@ public sealed partial class ProfilesPage : Page
             // notifications so edits are reflected without reopening the page.
             OnPropertyChanged(nameof(Name));
             OnPropertyChanged(nameof(DisplaySource));
+            OnPropertyChanged(nameof(HasDisplaySource));
             OnPropertyChanged(nameof(Type));
             OnPropertyChanged(nameof(AutoUpdate));
             OnPropertyChanged(nameof(LastUpdateError));

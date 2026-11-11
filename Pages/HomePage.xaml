@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Page x:Class="SFW.Pages.HomePage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:controls="using:SFW.Controls">
+<Page x:Class="SFW.Pages.HomePage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:controls="using:SFW.Controls" xmlns:toolkit="using:CommunityToolkit.WinUI.Controls">
     <ScrollViewer>
         <StackPanel Padding="40,28,40,40" Spacing="24">
 
@@ -10,7 +10,22 @@
 
             <!-- SFA/SFM "Dashboard Items" entry point; Windows-native left-aligned toolbar -->
             <StackPanel Orientation="Horizontal" Spacing="8">
-                <Button x:Name="DashboardItemsButton" Click="DashboardItemsButton_Click">
+                <Button x:Name="DashboardItemsButton">
+                    <Button.Flyout>
+                        <!-- Declared in XAML with x:Uid; only IsChecked is set from
+                             the saved settings when the flyout opens. -->
+                        <MenuFlyout x:Name="DashboardItemsFlyout" Opening="DashboardItemsFlyout_Opening">
+                            <ToggleMenuFlyoutItem x:Uid="DashboardUploadItem" Text="Upload" Tag="upload" Click="DashboardItemToggle_Click" />
+                            <ToggleMenuFlyoutItem x:Uid="DashboardDownloadItem" Text="Download" Tag="download" Click="DashboardItemToggle_Click" />
+                            <ToggleMenuFlyoutItem x:Uid="DashboardStatusItem" Text="Status" Tag="status" Click="DashboardItemToggle_Click" />
+                            <ToggleMenuFlyoutItem x:Uid="DashboardConnectionsItem" Text="Connections" Tag="connections" Click="DashboardItemToggle_Click" />
+                            <ToggleMenuFlyoutItem x:Uid="DashboardProxyItem" Text="System Proxy" Tag="proxy" Click="DashboardItemToggle_Click" />
+                            <ToggleMenuFlyoutItem x:Uid="DashboardModeItem" Text="Clash Mode" Tag="mode" Click="DashboardItemToggle_Click" />
+                            <MenuFlyoutSeparator />
+                            <!-- Profiles is always visible in SFA/SFM and cannot be hidden. -->
+                            <ToggleMenuFlyoutItem x:Uid="DashboardProfilesItem" Text="Profiles" IsChecked="True" IsEnabled="False" />
+                        </MenuFlyout>
+                    </Button.Flyout>
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <FontIcon Glyph="&#xE8A9;" FontSize="14" />
                         <TextBlock x:Uid="DashboardItemsText" Text="Dashboard items" VerticalAlignment="Center" />
@@ -124,9 +139,12 @@
                             <FontIcon Glyph="&#xE8A7;" FontSize="16" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
                             <TextBlock x:Uid="ModeLabel" Style="{StaticResource CardHeaderTextStyle}" Text="Mode" />
                         </StackPanel>
-                        <Border x:Name="ModeSegmented" Style="{StaticResource SegmentedContainerStyle}" Visibility="Collapsed">
-                            <Grid x:Name="ModeSegmentedPanel" />
-                        </Border>
+                        <!-- Native WinUI segmented control; only the modes and the
+                             selected one are set from code. -->
+                        <toolkit:Segmented x:Name="ModeSegmented"
+                                           Visibility="Collapsed"
+                                           SelectionMode="Single"
+                                           SelectionChanged="ModeSegment_SelectionChanged" />
                         <ComboBox x:Uid="ModeBox" x:Name="ModeBox" PlaceholderText="No Clash modes reported" HorizontalAlignment="Stretch" Visibility="Collapsed" SelectionChanged="ModeBox_SelectionChanged" />
                     </StackPanel>
                 </Border>

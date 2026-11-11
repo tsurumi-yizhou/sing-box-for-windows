@@ -1,11 +1,12 @@
 using System.Text;
 using SFW.Models;
 using System.Text.RegularExpressions;
+using CommunityToolkit.WinUI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Windows.ApplicationModel.DataTransfer;
-using Windows.Storage.Pickers;
+using Microsoft.Windows.Storage.Pickers;
 using SFW.Services;
 
 namespace SFW.Pages;
@@ -96,7 +97,7 @@ public sealed partial class LogsPage : Page
         if (_paused) return;
         if (reset) _rows.Clear();
 
-        var scrollViewer = VisualTree.FindScrollViewer(LogList);
+        var scrollViewer = LogList.FindDescendant<ScrollViewer>();
         var wasAtBottom = scrollViewer is null || scrollViewer.VerticalOffset >= scrollViewer.ScrollableHeight - 4;
 
         foreach (var line in lines)
@@ -125,7 +126,7 @@ public sealed partial class LogsPage : Page
     {
         _paused = !_paused;
         PauseIcon.Glyph = _paused ? "\uE768" : "\uE769"; // Play / Pause
-        PauseText.Text = _paused ? Loc.Get("Resume", "继续") : Loc.Get("Pause", "暂停");
+        PauseText.Text = _paused ? Loc.Get("Logs.Resume") : Loc.Get("Logs.Pause");
         if (!_paused) FlushPending();
     }
 
@@ -134,7 +135,7 @@ public sealed partial class LogsPage : Page
         foreach (var item in LevelMenu.Items.OfType<MenuFlyoutItem>())
         {
             var selected = item.Tag?.ToString() == _levelFilter.ToString();
-            item.Icon = selected ? new FontIcon { Glyph = "\uE73E" } : null;
+            item.Icon = selected ? MenuCheckIcon() : null;
         }
     }
 
@@ -143,19 +144,19 @@ public sealed partial class LogsPage : Page
         if (sender is not MenuFlyoutItem { Tag: string tag } item) return;
         _levelFilter = int.Parse(tag);
         LevelText.Text = _levelFilter == LevelDefault
-            ? Loc.Get("Default", "默认")
+            ? Loc.Get("Logs.Default")
             : item.Text;
 
         // SFA: an active level filter shows a dismissible banner.
         LevelFilterBar.IsOpen = _levelFilter != LevelDefault;
-        LevelFilterBar.Title = string.Format(Loc.Get("Filter: {0}", "过滤：{0}"), LevelText.Text);
+        LevelFilterBar.Title = string.Format(Loc.Get("Logs.Filter"), LevelText.Text);
         RebuildAll();
     }
 
     private void ClearFilter_Click(object sender, RoutedEventArgs e)
     {
         _levelFilter = LevelDefault;
-        LevelText.Text = Loc.Get("Default", "默认");
+        LevelText.Text = Loc.Get("Logs.Default");
         LevelFilterBar.IsOpen = false;
         RebuildAll();
     }
@@ -171,17 +172,14 @@ public sealed partial class LogsPage : Page
 
     private async void SaveToFile_Click(object sender, RoutedEventArgs e)
     {
-        var picker = new FileSavePicker
+        if (MainWindow.Instance is not { } window) return;
+
+        var picker = new FileSavePicker(window.AppWindow.Id)
         {
             SuggestedFileName = $"logs_{DateTime.Now:yyyyMMdd_HHmmss}",
             DefaultFileExtension = ".txt",
         };
-        picker.FileTypeChoices.Add("Text", [".txt"]);
-        if (MainWindow.Instance is not null)
-        {
-            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(MainWindow.Instance);
-            WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
-        }
+        picker.FileTypeChoices.Add("Text", new List<string> { ".txt" });
 
         var file = await picker.PickSaveFileAsync();
         if (file is null) return;
@@ -197,7 +195,7 @@ public sealed partial class LogsPage : Page
         }
         catch (Exception error)
         {
-            App.State.AppendLog(string.Format(Loc.Get("{0}  Unable to clear service logs: {1}", "{0}  无法清空服务日志：{1}"), DateTime.Now.ToString("HH:mm:ss"), error.Message));
+            App.State.AppendLog(string.Format(Loc.Get("Logs.UnableToClearServiceLogs"), DateTime.Now.ToString("HH:mm:ss"), error.Message));
         }
         RebuildAll();
     }
@@ -218,7 +216,7 @@ public sealed partial class LogsPage : Page
     private void RebuildAll()
     {
         var wasAtBottom = true;
-        var scrollViewer = VisualTree.FindScrollViewer(LogList);
+        var scrollViewer = LogList.FindDescendant<ScrollViewer>();
         if (scrollViewer is not null)
         {
             wasAtBottom = scrollViewer.VerticalOffset >= scrollViewer.ScrollableHeight - 4;
@@ -263,5 +261,13 @@ public sealed partial class LogsPage : Page
         };
         return (Brush)Application.Current.Resources[key];
     }
+
+    /// <summary>
+    /// The check mark the filter menu draws on its active item. It comes from a XAML
+    /// template because each item needs its own instance: an icon element can only
+    /// have one parent, and the menu leaves the slot empty for unmarked items.
+    /// </summary>
+    private FontIcon? MenuCheckIcon() =>
+        ((DataTemplate)Resources["MenuCheckIconTemplate"]).LoadContent() as FontIcon;
 
 }

@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using SFW.Controls;
 using SFW.Services;
 using SFW.Services.Core;
 
@@ -52,7 +53,7 @@ public sealed partial class ConnectionsPage : Page
         foreach (var item in StateFilterMenu.Items.OfType<MenuFlyoutItem>())
         {
             var selected = item.Tag?.ToString() == _stateFilter.ToString().ToLowerInvariant();
-            item.Icon = selected ? new FontIcon { Glyph = "\uE73E" } : null;
+            item.Icon = selected ? MenuCheckIcon() : null;
         }
     }
 
@@ -67,9 +68,9 @@ public sealed partial class ConnectionsPage : Page
         };
         StateFilterText.Text = _stateFilter switch
         {
-            StateFilter.All => Loc.Get("All", "全部"),
-            StateFilter.Closed => Loc.Get("Closed", "已关闭"),
-            _ => Loc.Get("Active", "活动"),
+            StateFilter.All => Loc.Get("Connections.All"),
+            StateFilter.Closed => Loc.Get("Connections.Closed"),
+            _ => Loc.Get("Connections.Active"),
         };
         Render(App.State.Core.Connections);
     }
@@ -79,7 +80,7 @@ public sealed partial class ConnectionsPage : Page
         foreach (var item in SortMenu.Items.OfType<MenuFlyoutItem>())
         {
             var selected = item.Tag?.ToString() == _sort.ToString().ToLowerInvariant();
-            item.Icon = selected ? new FontIcon { Glyph = "\uE73E" } : null;
+            item.Icon = selected ? MenuCheckIcon() : null;
         }
     }
 
@@ -94,9 +95,9 @@ public sealed partial class ConnectionsPage : Page
         };
         SortText.Text = _sort switch
         {
-            ConnectionSort.Traffic => Loc.Get("Traffic", "流量"),
-            ConnectionSort.TrafficTotal => Loc.Get("Traffic Total", "总流量"),
-            _ => Loc.Get("Date", "日期"),
+            ConnectionSort.Traffic => Loc.Get("Connections.Traffic"),
+            ConnectionSort.TrafficTotal => Loc.Get("Connections.TrafficTotal"),
+            _ => Loc.Get("Connections.Date"),
         };
         Render(App.State.Core.Connections);
     }
@@ -116,7 +117,7 @@ public sealed partial class ConnectionsPage : Page
             }
             catch (Exception error)
             {
-                ShowStatus(InfoBarSeverity.Error, Loc.Get("Unable to close connections", "无法关闭连接"), error.Message);
+                ShowStatus(InfoBarSeverity.Error, Loc.Get("Connections.UnableToCloseConnections"), error.Message);
             }
             finally
             {
@@ -175,14 +176,23 @@ public sealed partial class ConnectionsPage : Page
         if (!App.State.Core.State.IsRunning)
         {
             ShowStatus(InfoBarSeverity.Informational,
-                Loc.Get("Core is stopped", "核心已停止"),
-                Loc.Get("Start a profile to receive connections from the core service.", "启动配置以接收来自核心服务的连接。"));
+                Loc.Get("Connections.CoreIsStopped"),
+                Loc.Get("Connections.StartAProfileToReceiveConnectionsFromTheCoreService"));
         }
         else if (filtered.Count == 0)
         {
-            ShowStatus(InfoBarSeverity.Informational,
-                Loc.Get("No connections", "没有连接"),
-                Loc.Get("No connections match the current filter.", "没有符合当前过滤条件的连接。"));
+            // Upstream 5bbd923: the empty state names the filter instead of
+            // showing one generic sentence. A search query wins over the filter.
+            var search = SearchBox?.Text?.Trim();
+            var title = !string.IsNullOrEmpty(search)
+                ? Loc.Get("Connections.NoMatchingConnections")
+                : _stateFilter switch
+                {
+                    StateFilter.Active => Loc.Get("Connections.NoActiveConnections"),
+                    StateFilter.Closed => Loc.Get("Connections.NoClosedConnections"),
+                    _ => Loc.Get("Connections.NoConnections"),
+                };
+            ShowStatus(InfoBarSeverity.Informational, title, string.Empty);
         }
         else
         {
@@ -272,30 +282,23 @@ public sealed partial class ConnectionsPage : Page
         await ShowDetailsAsync(row.Connection);
     }
 
-    private void Connection_RightTapped(object sender, RightTappedRoutedEventArgs e)
+    // Row menu items are declared in XAML (ContextFlyout); they only carry the
+    // connection id, so the handler looks the live row up again.
+    private async void ConnectionCloseItem_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is not FrameworkElement { DataContext: ConnectionRow row } element) return;
-        var flyout = new MenuFlyout();
-        if (row.Connection.ClosedAt == 0)
-        {
-            var closeItem = new MenuFlyoutItem
-            {
-                Text = Loc.Get("Close", "关闭"),
-                Icon = new FontIcon { Glyph = "\uE74D" },
-            };
-            closeItem.Click += async (_, _) => await CloseConnectionAsync(row.Connection.Id);
-            flyout.Items.Add(closeItem);
-        }
-        var detailsItem = new MenuFlyoutItem
-        {
-            Text = Loc.Get("Details", "详细信息"),
-            Icon = new FontIcon { Glyph = "\uE946" },
-        };
-        detailsItem.Click += async (_, _) => await ShowDetailsAsync(row.Connection);
-        flyout.Items.Add(detailsItem);
-        flyout.ShowAt(element, new FlyoutShowOptions { Position = e.GetPosition(element) });
-        e.Handled = true;
+        if ((sender as FrameworkElement)?.Tag is not string id) return;
+        await CloseConnectionAsync(id);
     }
+
+    private async void ConnectionDetailsItem_Click(object sender, RoutedEventArgs e)
+    {
+        if ((sender as FrameworkElement)?.Tag is not string id) return;
+        if (FindRow(id)?.Connection is { } connection) await ShowDetailsAsync(connection);
+    }
+
+    private ConnectionRow? FindRow(string id) =>
+        (ConnectionsList.ItemsSource as System.Collections.IEnumerable)?
+            .OfType<ConnectionRow>().FirstOrDefault(row => row.Id == id);
 
     private async Task CloseConnectionAsync(string id)
     {
@@ -307,7 +310,7 @@ public sealed partial class ConnectionsPage : Page
         }
         catch (Exception error)
         {
-            ShowStatus(InfoBarSeverity.Error, Loc.Get("Unable to close connection", "无法关闭连接"), error.Message);
+            ShowStatus(InfoBarSeverity.Error, Loc.Get("Connections.UnableToCloseConnection"), error.Message);
         }
         finally
         {
@@ -317,120 +320,68 @@ public sealed partial class ConnectionsPage : Page
 
     private async Task ShowDetailsAsync(CoreConnection c)
     {
-        var panel = new StackPanel { Spacing = 16, MinWidth = 420 };
+        var panel = new SectionStack();
 
         var basic = new List<(string, string)>
         {
-            (Loc.Get("State", "状态"), c.ClosedAt == 0 ? Loc.Get("Active", "活动") : Loc.Get("Closed", "已关闭")),
-            (Loc.Get("Created At", "创建时间"), FormatTime(c.CreatedAt)),
+            (Loc.Get("Connections.State"), c.ClosedAt == 0 ? Loc.Get("Connections.Active") : Loc.Get("Connections.Closed")),
+            (Loc.Get("Connections.CreatedAt"), FormatTime(c.CreatedAt)),
         };
         if (c.ClosedAt > 0)
         {
-            basic.Add((Loc.Get("Closed At", "关闭时间"), FormatTime(c.ClosedAt)));
-            basic.Add((Loc.Get("Duration", "时长"), FormatDuration(c.ClosedAt - c.CreatedAt)));
+            basic.Add((Loc.Get("Connections.ClosedAt"), FormatTime(c.ClosedAt)));
+            basic.Add((Loc.Get("Connections.Duration"), FormatDuration(c.ClosedAt - c.CreatedAt)));
         }
-        basic.Add((Loc.Get("Uplink", "上行"), FormatBytes(c.UplinkTotal)));
-        basic.Add((Loc.Get("Downlink", "下行"), FormatBytes(c.DownlinkTotal)));
-        panel.Children.Add(BuildSection(Loc.Get("Basic Information", "基本信息"), basic));
+        basic.Add((Loc.Get("Connections.Uplink"), FormatBytes(c.UplinkTotal)));
+        basic.Add((Loc.Get("Connections.Downlink"), FormatBytes(c.DownlinkTotal)));
+        panel.Add(new DetailSection(Loc.Get("Connections.BasicInformation"), basic));
 
         var metadata = new List<(string, string)>
         {
-            (Loc.Get("Inbound", "入站"), c.Inbound),
-            (Loc.Get("Inbound Type", "入站类型"), c.InboundType),
-            (Loc.Get("IP Version", "IP 版本"), c.IpVersion == 6 ? "IPv6" : "IPv4"),
-            (Loc.Get("Network", "网络"), c.Network.ToUpperInvariant()),
-            (Loc.Get("Source", "来源"), c.Source),
-            (Loc.Get("Destination", "目标"), c.Destination),
+            (Loc.Get("Connections.Inbound"), c.Inbound),
+            (Loc.Get("Connections.InboundType"), c.InboundType),
+            (Loc.Get("Connections.IPVersion"), c.IpVersion == 6 ? "IPv6" : "IPv4"),
+            (Loc.Get("Connections.Network"), c.Network.ToUpperInvariant()),
+            (Loc.Get("Connections.Source"), c.Source),
+            (Loc.Get("Connections.Destination"), c.Destination),
         };
-        if (!string.IsNullOrWhiteSpace(c.Domain)) metadata.Add((Loc.Get("Domain", "域名"), c.Domain));
-        if (!string.IsNullOrWhiteSpace(c.Protocol)) metadata.Add((Loc.Get("Protocol", "协议"), c.Protocol));
-        if (!string.IsNullOrWhiteSpace(c.User)) metadata.Add((Loc.Get("User", "用户"), c.User));
-        if (!string.IsNullOrWhiteSpace(c.FromOutbound)) metadata.Add((Loc.Get("From Outbound", "来源出站"), c.FromOutbound));
-        if (!string.IsNullOrWhiteSpace(c.Rule)) metadata.Add((Loc.Get("Match Rule", "匹配规则"), c.Rule));
-        metadata.Add((Loc.Get("Outbound", "出站"), c.Outbound));
-        metadata.Add((Loc.Get("Outbound Type", "出站类型"), c.OutboundType));
-        if (c.Chain.Count > 1) metadata.Add((Loc.Get("Chain", "链"), string.Join(" → ", c.Chain)));
-        panel.Children.Add(BuildSection(Loc.Get("Metadata", "元数据"), metadata));
+        if (!string.IsNullOrWhiteSpace(c.Domain)) metadata.Add((Loc.Get("Connections.Domain"), c.Domain));
+        if (!string.IsNullOrWhiteSpace(c.Protocol)) metadata.Add((Loc.Get("Connections.Protocol"), c.Protocol));
+        if (!string.IsNullOrWhiteSpace(c.User)) metadata.Add((Loc.Get("Connections.User"), c.User));
+        if (!string.IsNullOrWhiteSpace(c.FromOutbound)) metadata.Add((Loc.Get("Connections.FromOutbound"), c.FromOutbound));
+        if (!string.IsNullOrWhiteSpace(c.Rule)) metadata.Add((Loc.Get("Connections.MatchRule"), c.Rule));
+        metadata.Add((Loc.Get("Connections.Outbound"), c.Outbound));
+        metadata.Add((Loc.Get("Connections.OutboundType"), c.OutboundType));
+        if (c.Chain.Count > 1) metadata.Add((Loc.Get("Connections.Chain"), string.Join(" → ", c.Chain)));
+        panel.Add(new DetailSection(Loc.Get("Connections.Metadata"), metadata));
 
         if (c.ProcessInfo is { } process)
         {
             var rows = new List<(string, string)>
             {
-                (Loc.Get("Process ID", "进程 ID"), process.ProcessId.ToString()),
-                (Loc.Get("Process Path", "进程路径"), process.ProcessPath),
+                (Loc.Get("Connections.ProcessID"), process.ProcessId.ToString()),
+                (Loc.Get("Connections.ProcessPath"), process.ProcessPath),
             };
-            if (!string.IsNullOrWhiteSpace(process.UserName)) rows.Add((Loc.Get("User Name", "用户名"), process.UserName));
-            if (process.PackageNames.Count > 0) rows.Add((Loc.Get("Package Name", "包名"), string.Join(", ", process.PackageNames)));
-            panel.Children.Add(BuildSection(Loc.Get("Process Information", "进程信息"), rows));
+            if (!string.IsNullOrWhiteSpace(process.UserName)) rows.Add((Loc.Get("Connections.UserName"), process.UserName));
+            if (process.PackageNames.Count > 0) rows.Add((Loc.Get("Connections.PackageName"), string.Join(", ", process.PackageNames)));
+            panel.Add(new DetailSection(Loc.Get("Connections.ProcessInformation"), rows));
         }
 
-        var dialog = new ContentDialog
-        {
-            Title = string.IsNullOrWhiteSpace(c.DisplayDestination) ? c.Destination : c.DisplayDestination,
-            Content = new ScrollViewer { Content = panel, MaxHeight = 560 },
-            CloseButtonText = Loc.Get("Close", "关闭"),
-            XamlRoot = XamlRoot,
-        };
-        if (c.ClosedAt == 0)
-        {
-            dialog.PrimaryButtonText = Loc.Get("Close connection", "关闭连接");
-            dialog.DefaultButton = ContentDialogButton.Close;
-        }
+        var dialog = new Dialogs.DetailDialog(
+            string.IsNullOrWhiteSpace(c.DisplayDestination) ? c.Destination : c.DisplayDestination,
+            panel,
+            "Connections.Close",
+            c.ClosedAt == 0 ? "Connections.CloseConnection" : null)
+        { XamlRoot = XamlRoot };
+        // Closing a live connection is the destructive action: keep Close as the
+        // default button even though a primary button is present.
+        if (c.ClosedAt == 0) dialog.DefaultButton = ContentDialogButton.Close;
 
         var result = await dialog.ShowAsync();
         if (result == ContentDialogResult.Primary)
         {
             await CloseConnectionAsync(c.Id);
         }
-    }
-
-    private static UIElement BuildSection(string title, List<(string Label, string Value)> rows)
-    {
-        var section = new StackPanel { Spacing = 8 };
-        section.Children.Add(new TextBlock
-        {
-            Text = title,
-            FontSize = 12,
-            FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
-            Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"],
-        });
-
-        var card = new Border
-        {
-            Style = (Style)Application.Current.Resources["CardBorderStyle"],
-            Padding = new Thickness(16, 12, 16, 12),
-        };
-        var grid = new Grid { RowSpacing = 8, ColumnSpacing = 16 };
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        for (var i = 0; i < rows.Count; i++)
-        {
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            var label = new TextBlock
-            {
-                Text = rows[i].Label,
-                Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"],
-                FontSize = 13,
-            };
-            Grid.SetRow(label, i);
-            grid.Children.Add(label);
-            var value = new TextBlock
-            {
-                Text = rows[i].Value,
-                FontSize = 13,
-                FontFamily = new FontFamily("Consolas"),
-                HorizontalAlignment = HorizontalAlignment.Right,
-                HorizontalTextAlignment = TextAlignment.Right,
-                TextWrapping = TextWrapping.Wrap,
-                IsTextSelectionEnabled = true,
-            };
-            Grid.SetRow(value, i);
-            Grid.SetColumn(value, 1);
-            grid.Children.Add(value);
-        }
-        card.Child = grid;
-        section.Children.Add(card);
-        return section;
     }
 
     private void ShowStatus(InfoBarSeverity severity, string title, string message)
@@ -470,5 +421,13 @@ public sealed partial class ConnectionsPage : Page
         < 1024 * 1024 * 1024 => $"{value / 1024d / 1024d:F1} MB",
         _ => $"{value / 1024d / 1024d / 1024d:F2} GB",
     };
+
+    /// <summary>
+    /// The check mark the filter menu draws on its active item. It comes from a XAML
+    /// template because each item needs its own instance: an icon element can only
+    /// have one parent, and the menu leaves the slot empty for unmarked items.
+    /// </summary>
+    private FontIcon? MenuCheckIcon() =>
+        ((DataTemplate)Resources["MenuCheckIconTemplate"]).LoadContent() as FontIcon;
 
 }
