@@ -6,7 +6,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)] [string[]] $Paths,
-    [string] $CertificateSubject = "CN=sing-box-for-windows-dev",
+    [string] $CertificateSubject = "CN=TONG Yizhou",
     [string] $ExportCertificatePath
 )
 

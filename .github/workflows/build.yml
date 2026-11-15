@@ -46,6 +46,21 @@ jobs:
             Remove-Item -LiteralPath $pfxPath -Force
           }
 
+          # Sign-Outputs.ps1 selects the certificate by the manifest publisher
+          # and creates a fresh self-signed one when nothing matches. Fail here
+          # instead, so a missing or mismatched secret cannot produce a release
+          # signed by a different certificate than the one imported above.
+          $publisher = ([xml](Get-Content Package.appxmanifest -Raw)).Package.Identity.Publisher
+          . ./Scripts/SigningCertificate.ps1
+          $cert = Get-ChildItem Cert:\CurrentUser\My |
+            Where-Object { $_.Subject -eq $publisher -and $_.HasPrivateKey } |
+            Sort-Object NotAfter -Descending |
+            Select-Object -First 1
+          if (-not $cert) { throw "No signing certificate for publisher '$publisher' was imported." }
+          Assert-SfwSigningCertificate -Certificate $cert
+          "SFW_SIGNING_THUMBPRINT=$($cert.Thumbprint)" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          Write-Host "Signing certificate: $($cert.Thumbprint), expires $($cert.NotAfter)"
+
       # boxdd is required: the app build fails without daemon\sing-box-daemon.exe.
       # .cache/upstream is gitignored, so fetch the pinned sing-box sources in CI.
       - name: Read pinned sing-box revision
@@ -129,6 +144,21 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         shell: pwsh
         run: ./Scripts/Build.ps1 -SkipDaemonBuild -OutputDirectory artifacts/bundle
+
+      # Bind the published bundle to the imported certificate: the exported
+      # public certificate must be the one whose private key signed the build.
+      - name: Verify release certificate
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        run: |
+          if (-not $env:SFW_SIGNING_THUMBPRINT) { throw 'The imported signing certificate was not recorded.' }
+          $exported = @(Get-ChildItem artifacts/bundle -Recurse -Filter 'SFW_Developer.cer')
+          if ($exported.Count -ne 1) { throw "Expected one exported certificate; found $($exported.Count)." }
+          $thumbprint = [Security.Cryptography.X509Certificates.X509Certificate2]::new($exported[0].FullName).Thumbprint
+          if ($thumbprint -ne $env:SFW_SIGNING_THUMBPRINT) {
+            throw "Release was signed by $thumbprint, not by the imported certificate $env:SFW_SIGNING_THUMBPRINT."
+          }
+          Write-Host "Release certificate verified: $thumbprint"
 
       - name: Upload release package
         if: startsWith(github.ref, 'refs/tags/v')
