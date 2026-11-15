@@ -4,7 +4,9 @@
 # which upstream revisions this repository is built against. This script can:
 #
 #   -Check          Verify every checkout matches its pin (offline, read-only).
-#   (default)       Clone missing checkouts and checkout the pinned commits.
+#   (default)       Clone missing checkouts, checkout the pinned commits, and
+#                   keep the Package.appxmanifest version in step with the
+#                   pinned sing-box release tag.
 #   -Pin name=sha   Advance a pin to a new commit and rewrite the lock file.
 #
 # Adding a new pinned source (for example sing-box-for-desktop) is a lock-file
@@ -161,4 +163,47 @@ if ($Pin) {
     $lock | ConvertTo-Json -Depth 8 | Set-Content $lockPath -Encoding utf8
     Write-Host "Lock file updated: $lockPath"
     Write-Host "Re-run this script with -Check to verify the new state, then build the app: Scripts\Build.ps1"
+}
+
+# The application version follows the pinned sing-box release: a three-part
+# core tag becomes a four-part MSIX version by appending a zero revision.
+# A pinned commit without an exact tag leaves the manifest untouched, and a
+# core version older than the manifest is never applied because MSIX cannot
+# install a downgrade.
+function Sync-PackageVersionWithCore {
+    param([string] $Ref, [string] $Checkout)
+
+    $core = $null
+    if ($Ref -match '^v?(\d+\.\d+\.\d+)(\.\d+)?$') { $core = $Matches[1] }
+    if (-not $core -and $Checkout -and (Test-Path (Join-Path $Checkout ".git"))) {
+        $tag = git -C $Checkout describe --tags --exact-match $Ref 2>$null
+        if ($LASTEXITCODE -eq 0 -and $tag -match '^v?(\d+\.\d+\.\d+)(\.\d+)?$') { $core = $Matches[1] }
+    }
+    if (-not $core) {
+        Write-Warning "No sing-box release tag for '$Ref'; Package.appxmanifest version left unchanged."
+        return
+    }
+
+    $target = [version]($core + ".0")
+    $manifestPath = Join-Path (Split-Path $PSScriptRoot -Parent) "Package.appxmanifest"
+    $text = Get-Content $manifestPath -Raw
+    if ($text -notmatch '<Identity\b[^>]*\bVersion="([^"]+)"') {
+        throw "Unable to read the package version from $manifestPath"
+    }
+    $current = [version]$Matches[1]
+    if ($target -eq $current) {
+        Write-Host "Package version $current already matches sing-box $core"
+        return
+    }
+    if ($target -lt $current) {
+        Write-Warning "sing-box $core is older than package version $current; version left unchanged."
+        return
+    }
+    $updated = $text -replace '(<Identity\b[^>]*\bVersion=")[^"]+(")', "`${1}$($target.ToString())`${2}"
+    [IO.File]::WriteAllText($manifestPath, $updated)
+    Write-Host "Package version updated to $target (sing-box $core)"
+}
+
+if ($null -ne $singBoxEntry) {
+    Sync-PackageVersionWithCore -Ref $lock.singbox.Ref -Checkout (Join-Path $upstream $singBoxEntry.Name)
 }
