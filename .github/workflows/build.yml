@@ -3,6 +3,7 @@ name: Build
 on:
   push:
     branches: [main]
+    tags: ["v*"]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -21,6 +22,29 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+
+      # Release tags distribute an MSIX package, which Windows only installs when
+      # it is signed. Import the development signing certificate from the
+      # repository secrets before anything is built, so the daemon, the app and
+      # the package all carry the same signer on this runner.
+      - name: Import release signing certificate
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        env:
+          PFX_BASE64: ${{ secrets.SFW_SIGNING_PFX }}
+          PFX_PASSWORD: ${{ secrets.SFW_SIGNING_PFX_PASSWORD }}
+        run: |
+          if (-not $env:PFX_BASE64) { throw 'Secret SFW_SIGNING_PFX is not set: the release signing certificate is missing.' }
+          $pfxPath = Join-Path $env:RUNNER_TEMP 'sfw-signing.pfx'
+          [IO.File]::WriteAllBytes($pfxPath, [Convert]::FromBase64String($env:PFX_BASE64))
+          try {
+            $password = if ($env:PFX_PASSWORD) {
+              ConvertTo-SecureString -String $env:PFX_PASSWORD -AsPlainText -Force
+            } else { [Security.SecureString]::new() }
+            Import-PfxCertificate -FilePath $pfxPath -CertStoreLocation Cert:\CurrentUser\My -Password $password | Out-Null
+          } finally {
+            Remove-Item -LiteralPath $pfxPath -Force
+          }
 
       # boxdd is required: the app build fails without daemon\sing-box-daemon.exe.
       # .cache/upstream is gitignored, so fetch the pinned sing-box sources in CI.
@@ -97,3 +121,47 @@ jobs:
           foreach ($path in @('Assets/AppIcon.ico', 'resources/daemon/sing-box-daemon.exe', 'resources/daemon/WinDivert64.sys')) {
             if (-not (Test-Path (Join-Path 'artifacts/release' $path))) { throw "Missing publish resource: $path" }
           }
+
+      # Tag builds reuse the local release entry point: it packs the signed
+      # sideload MSIX with its offline dependencies, installer scripts and
+      # public certificate, verifies the result, and writes the ZIP checksum.
+      - name: Package sideload release
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        run: ./Scripts/Build.ps1 -SkipDaemonBuild -OutputDirectory artifacts/bundle
+
+      - name: Upload release package
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: actions/upload-artifact@v4
+        with:
+          name: sfw-release
+          path: |
+            artifacts/bundle/**/SFW_*.zip
+            artifacts/bundle/**/SFW_*.zip.sha256
+          if-no-files-found: error
+
+  release:
+    name: Publish GitHub release
+    needs: app
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download release package
+        uses: actions/download-artifact@v4
+        with:
+          name: sfw-release
+          path: dist
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          zip=$(find dist -name '*.zip' -print -quit)
+          sha=$(find dist -name '*.zip.sha256' -print -quit)
+          args=(--title "SFW $GITHUB_REF_NAME" --generate-notes --latest)
+          case "$GITHUB_REF_NAME" in
+            *-*) args=(--title "SFW $GITHUB_REF_NAME" --generate-notes --prerelease --latest=false) ;;
+          esac
+          gh release create "$GITHUB_REF_NAME" "$zip" "$sha" "${args[@]}"
