@@ -164,4 +164,5 @@ jobs:
           case "$GITHUB_REF_NAME" in
             *-*) args=(--title "SFW $GITHUB_REF_NAME" --generate-notes --prerelease --latest=false) ;;
           esac
-          gh release create "$GITHUB_REF_NAME" "$zip" "$sha" "${args[@]}"
+          gh release create "$GITHUB_REF_NAME" "$zip" "$sha" \
+            --repo "$GITHUB_REPOSITORY" "${args[@]}"
